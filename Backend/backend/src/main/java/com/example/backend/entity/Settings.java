@@ -1,5 +1,6 @@
 package com.example.backend.entity;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.example.backend.entity.converter.JsonConverter;
@@ -28,7 +29,7 @@ public class Settings {
 
     @Column(columnDefinition = "jsonb")
     @Convert(converter = JsonConverter.class)
-    private Map<String, Object> preferences;
+    private Map<String, Object> preferences = new HashMap<>();
 
         public Long getId() {
         return id;

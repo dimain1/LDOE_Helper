@@ -1,5 +1,7 @@
 package com.example.backend.entity;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,7 +37,7 @@ public class GameContent {
 
     @Column(columnDefinition = "jsonb")
     @Convert(converter = JsonConverter.class)
-    private Map<String, Object> properties;
+    private Map<String, Object> properties = new HashMap<>();
 
     @ManyToMany()
     @JoinTable(
@@ -43,7 +45,7 @@ public class GameContent {
         joinColumns = @JoinColumn(name = "content_id"),
         inverseJoinColumns = @JoinColumn(name = "type_id")
     )
-    private Set<ContentType> types;
+    private Set<ContentType> types = new HashSet<>();
 
     public Long getId() {
         return id;

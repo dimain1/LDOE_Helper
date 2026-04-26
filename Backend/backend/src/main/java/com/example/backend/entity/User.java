@@ -1,7 +1,7 @@
 package com.example.backend.entity;
 
 
-
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -15,6 +15,16 @@ import jakarta.persistence.Table;
 @Entity 
 @Table(name = "users")
 public class User {
+
+    public User() {}
+
+    public User(String login, String password, String email, UserRole role) {
+        this.login = login;
+        setPassword(password);
+        this.email = email;
+        this.role = role;
+    }
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,7 +62,7 @@ public class User {
     }
 
     public void setPassword(String password) {
-        this.password = passwordEncoder.encode(password);
+        this.password = password;
     }
 
     public String getEmail() {
