@@ -45,6 +45,12 @@ public class AuthController {
         authService.logout(request);
     }
 
+    @GetMapping("/refresh")
+    @Transactional
+    public AuthResponse refresh(@RequestBody RefreshRequest request) {
+        return authService.refresh(request);
+    }
+
     @PostMapping("/test/token")
     public String testToken() {
         String token = jwtService.generateAccessToken("test");

@@ -31,6 +31,12 @@ public class SecurityConfig {
                         // публичные
                         .requestMatchers("/auth/**").permitAll()
 
+                        .requestMatchers(
+                "/v3/api-docs/**",
+                            "/swagger-ui/**",
+                            "/swagger-ui.html"
+                        ).permitAll()
+
                         // только админ
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 

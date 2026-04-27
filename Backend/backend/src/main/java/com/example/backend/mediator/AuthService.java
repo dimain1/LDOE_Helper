@@ -72,4 +72,22 @@ public class AuthService {
         refreshTokenRepository.deleteByToken(request.getRefreshToken());
     }
 
+    public AuthResponse refresh(RefreshRequest request) {
+        RefreshToken refreshToken = refreshTokenRepository.findByToken(request.getRefreshToken())
+                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+
+        if (refreshToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            refreshTokenRepository.delete(refreshToken);
+            throw new RuntimeException("Refresh token expired");
+        }
+
+        String accessToken = jwtService.generateAccessToken(refreshToken.getUser().getLogin());
+        String newRefreshToken = jwtService.generateRefreshToken(refreshToken.getUser().getLogin());
+
+        refreshToken.setToken(newRefreshToken);
+        refreshToken.setExpiryDate(LocalDateTime.now().plusDays(7));
+        refreshTokenRepository.save(refreshToken);
+
+        return new AuthResponse(accessToken, newRefreshToken);
+    }
 }
