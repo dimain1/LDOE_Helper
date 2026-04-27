@@ -1,6 +1,5 @@
 package com.example.backend.control;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,7 +11,6 @@ import com.example.backend.dto.auth.AuthResponse;
 import com.example.backend.dto.auth.LoginRequest;
 import com.example.backend.dto.auth.RefreshRequest;
 import com.example.backend.dto.auth.RegisterRequest;
-import com.example.backend.entity.User;
 import com.example.backend.mediator.AuthService;
 import com.example.backend.mediator.JwtService;
 

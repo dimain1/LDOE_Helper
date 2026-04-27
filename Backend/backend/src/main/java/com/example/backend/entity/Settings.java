@@ -3,6 +3,9 @@ package com.example.backend.entity;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import com.example.backend.entity.converter.JsonConverter;
 
 import jakarta.persistence.Column;
@@ -28,7 +31,8 @@ public class Settings {
     private User user;
 
     @Column(columnDefinition = "jsonb")
-    @Convert(converter = JsonConverter.class)
+    // @Convert(converter = JsonConverter.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, Object> preferences = new HashMap<>();
 
         public Long getId() {

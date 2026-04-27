@@ -1,6 +1,5 @@
 package com.example.backend.entity;
 
-import java.security.Timestamp;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.OnDelete;

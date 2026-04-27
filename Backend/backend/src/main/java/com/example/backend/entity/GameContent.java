@@ -5,12 +5,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import com.example.backend.entity.converter.JsonConverter;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -36,7 +38,8 @@ public class GameContent {
     private String imageUrl;
 
     @Column(columnDefinition = "jsonb")
-    @Convert(converter = JsonConverter.class)
+    // @Convert(converter = JsonConverter.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, Object> properties = new HashMap<>();
 
     @ManyToMany()

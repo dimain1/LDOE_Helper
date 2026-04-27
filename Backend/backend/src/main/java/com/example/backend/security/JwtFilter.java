@@ -13,7 +13,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.example.backend.mediator.JwtService;
 
 import java.io.IOException;
-import java.util.Collections;
 
 import org.springframework.security.core.userdetails.UserDetails;
 
