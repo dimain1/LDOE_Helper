@@ -6,8 +6,11 @@ val LinearGradientStartColor = Color(0xF0FF0022)
 val linearGradientEndColor = Color(0xFF500005)
 val ServiceFloatingButtonColor = Color(0xFCe1333d)
 
+val NotificationIconColor = Color(0xFFFFD329)
 
+val InfoIconColor = Color(0xFF02DC00)
 
+val TemplateIconColor = Color(0xFF235BFF)
 
 
 
