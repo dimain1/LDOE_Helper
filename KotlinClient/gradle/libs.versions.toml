@@ -11,6 +11,9 @@ composeBom = "2024.09.00"
 foundation = "1.11.0"
 navigationRuntimeKtx = "2.9.8"
 navigationCompose = "2.9.8"
+roomVersion = "2.8.4"
+kspVersion = "2.3.6"
+gsonVersion = "2.13.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -30,9 +33,17 @@ androidx-compose-material3 = { group = "androidx.compose.material3", name = "mat
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigationRuntimeKtx" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+androidx-room = { group= "androidx.room", name = "room-runtime", version.ref = "roomVersion"}
+# Зависимость для работы Room с корутинами
+androidx-room-ktx = { group= "androidx.room", name = "room-ktx", version.ref = "roomVersion"}
+# Зависимость для работы Room с KSP
+androidx-room-ksp = { group= "androidx.room", name = "room-compiler", version.ref = "roomVersion"}
+google-gson = {group="com.google.code.gson", name = "gson", version.ref = "gsonVersion"}
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "kspVersion" }
 
