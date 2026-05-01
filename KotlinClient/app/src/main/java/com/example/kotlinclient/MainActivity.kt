@@ -5,6 +5,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -12,9 +14,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.kotlinclient.presentation.AppHeader
+import com.example.kotlinclient.presentation.MyBottomAppBar
 import com.example.kotlinclient.presentation.home.HomeScreen
 import com.example.kotlinclient.presentation.navigation.ApplicationNavHost
 import com.example.kotlinclient.presentation.navigation.Routes
+import com.example.kotlinclient.presentation.navigation.navigateToEvent
+import com.example.kotlinclient.presentation.navigation.navigateToHome
+import com.example.kotlinclient.presentation.navigation.navigateToInfo
+import com.example.kotlinclient.presentation.navigation.navigateToSettings
+import com.example.kotlinclient.presentation.navigation.navigateToTemplate
 import com.example.kotlinclient.ui.theme.KotlinClientTheme
 
 class MainActivity : ComponentActivity() {
@@ -46,12 +55,31 @@ class MainActivity : ComponentActivity() {
             }
             // Конец логики реализации смены темы
 
+            // Основная тема приложения определяющая типографию и Цветовые схемы
             KotlinClientTheme(darkTheme) {
 
+                // Контроллер навигации осуществляющий переходы(Единственный экземпляр)
                 val navController = rememberNavController()
+                // Путь к начальному экрану
                 val startDestination = Routes.HomePage.route
+                // Системная обёртка позволяющая получить информацию об системных оступах и их предусмотреть
+                Scaffold(
+                    containerColor = colorScheme.primaryContainer,
+                    topBar = { AppHeader() },
+                    bottomBar = {
+                        MyBottomAppBar(
+                            { navigateToHome(navController) },
+                            { navigateToInfo(navController) },
+                            { navigateToEvent(navController) },
+                            { navigateToTemplate(navController) },
+                            { navigateToSettings(navController) },
+                        )
+                    }
+                ) { paddingValues ->
 
-                ApplicationNavHost(navController, startDestination)
+                        ApplicationNavHost(navController, startDestination,paddingValues)
+
+                }
             }
         }
     }

@@ -4,7 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.kotlinclient.ui.theme.Typography
 
+//Верхняя часть приложения
 @Composable
 fun AppHeader(){
     Column(
@@ -23,7 +27,8 @@ fun AppHeader(){
         modifier= Modifier
             .fillMaxWidth()
             .background(color= colorScheme.primaryContainer)
-            .padding(vertical = 12.dp)
+            .statusBarsPadding() // Системный отступ от верхней панели
+            .padding(bottom = 12.dp)
     )
     {
         Text(text= "Last Day On Earth", style= TextStyle(fontSize = Typography.titleLarge.fontSize, fontWeight = FontWeight.Bold), color= colorScheme.primary)
