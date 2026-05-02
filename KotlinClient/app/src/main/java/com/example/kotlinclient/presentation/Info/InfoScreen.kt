@@ -33,7 +33,9 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -43,14 +45,33 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.kotlinclient.state_management.entity.ContentType
+import com.example.kotlinclient.state_management.entity.GameContent
 import com.example.kotlinclient.ui.theme.Typography
+import kotlinx.coroutines.flow.debounce
 import kotlin.text.clear
 
 @Composable
-fun InfoScreen(paddingValues: PaddingValues){
+fun InfoScreen(
+    paddingValues: PaddingValues,
+    categoryList: List<ContentType>,
+    selectedCategory: Long,
+    onCategoryClick: (Long) -> Unit,
+    gameContent: List<GameContent>,
+    onSearchChange: (String) -> Unit,
+    onClearClick: () -> Unit,
+    onPinClick: (Long, Boolean) -> Unit
 
+){
     var textField: TextFieldState = rememberTextFieldState("")
 
+    LaunchedEffect(textField) {
+        snapshotFlow { textField.text }
+            .debounce(500)
+            .collect { newText ->
+                onSearchChange(newText.toString())
+            }
+    }
 
     Column(modifier= Modifier
         .fillMaxSize()
@@ -133,7 +154,7 @@ fun InfoScreen(paddingValues: PaddingValues){
                             .alpha(if (!textField.text.isEmpty()) 1f else 0f)
                             .clickable(onClick = {
                                 textField.edit { replace(0, length, "") }
-                                //onClearClick()
+                                onClearClick()
                             })
                     )
                 }
@@ -144,11 +165,11 @@ fun InfoScreen(paddingValues: PaddingValues){
             Spacer(Modifier.height(16.dp))
 
             // Категории
-            CategoryList()
+            CategoryList(categoryList, selectedCategory, onCategoryClick)
 
             Spacer(Modifier.height(24.dp))
 
-            ItemList()
+            ItemList(gameContent, onPinClick)
 
 
         }

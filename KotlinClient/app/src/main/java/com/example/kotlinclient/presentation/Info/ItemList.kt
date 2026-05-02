@@ -1,7 +1,9 @@
 package com.example.kotlinclient.presentation.Info
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,17 +25,27 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import com.example.kotlinclient.R
+import com.example.kotlinclient.presentation.LocalImage
+import com.example.kotlinclient.state_management.entity.GameContent
 import com.example.kotlinclient.ui.theme.Typography
+import java.io.File
 
 
 // Список предметов(Сущностей игры)
 @Composable
-fun ItemList(Items: List<String> = listOf()){
-
-    var Items = listOf("ak-47", "Glock-18","Cloth","ak-47", "Glock-18","Cloth")
+fun ItemList(
+    Items: List<GameContent> = listOf(),
+    onPinClick: (Long, Boolean) -> Unit
+)
+{
 
     LazyColumn(modifier=Modifier
         .fillMaxWidth()
@@ -50,7 +62,7 @@ fun ItemList(Items: List<String> = listOf()){
                     .padding(all = 12.dp)
             ){
                 // Картинка предмета(Замениться на Image)
-                Icon(Icons.Default.Clear, "image",Modifier.size(48.dp).border(2.dp, colorScheme.tertiary))
+                LocalImage(Items[item].image,48)
 
                 Spacer(Modifier.width(16.dp))
                 // Описание предмета
@@ -60,14 +72,19 @@ fun ItemList(Items: List<String> = listOf()){
                 )
 
                 {
-                    Text(text= Items[item].toUpperCase(), style = Typography.bodyLarge.copy(fontWeight = FontWeight.Bold), color= colorScheme.primary)
+                    Text(text= Items[item].name, style = Typography.bodyLarge.copy(fontWeight = FontWeight.Bold), color= colorScheme.primary)
                     Spacer(Modifier.height(8.dp))
-                    Text(text= Items[item].toLowerCase(), style = Typography.bodySmall, color=colorScheme.secondary, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(text= Items[item].description ?: "Описание отсутствует", style = Typography.bodySmall, color=colorScheme.secondary, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 }
 
                 Spacer(Modifier.width(8.dp))
-                // Кнопка закрепления сущности для домашнего экрана или отдельного экрана
-                Icon(Icons.Default.Add, "image",Modifier.size(32.dp).border(2.dp, colorScheme.tertiary))
+
+                Image(
+                    painter= painterResource ( if(Items[item].pinned == false) R.drawable.pinned_off else R.drawable.pinned_on),
+                    contentDescription = "Pinned Image",
+                    modifier= Modifier.size(32.dp).clickable(onClick = { onPinClick(Items[item].id, !Items[item].pinned) }),
+                    colorFilter= if(Items[item].pinned == false) null else ColorFilter.tint(colorScheme.tertiary)
+                )
 
             }
             // Между последним элементом и краем экрана отступ не добавляем
