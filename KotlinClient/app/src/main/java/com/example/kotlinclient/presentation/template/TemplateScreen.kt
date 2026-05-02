@@ -1,7 +1,9 @@
 package com.example.kotlinclient.presentation.template
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -33,14 +35,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.kotlinclient.R
+import com.example.kotlinclient.presentation.LocalImage
+import com.example.kotlinclient.state_management.entity.EventTemplate
 import com.example.kotlinclient.ui.theme.Typography
 
 @Composable
-fun TemplateScreen(paddingValues: PaddingValues){
+fun TemplateScreen(
+    templates: List<EventTemplate>,
+    onEditClick: (Long) -> Unit,
+    onDeleteClick: (Long) -> Unit,
+    onCreateClick: () -> Unit,
+    paddingValues: PaddingValues){
 
-    val templateList: List<String> =listOf("Bunker", "Raid", "Farm")
+
 
     // Контейнер всего экрана
     Column(
@@ -75,7 +87,7 @@ fun TemplateScreen(paddingValues: PaddingValues){
                     shape= RoundedCornerShape(25),
                     modifier= Modifier,
 
-                    onClick = {}
+                    onClick = {onCreateClick()}
                 )
                 {
                     // Иконка внутри кнопки
@@ -95,7 +107,7 @@ fun TemplateScreen(paddingValues: PaddingValues){
                 item {
                     Spacer(Modifier.height(16.dp))
                 }
-                items(templateList.size) { item ->
+                items(templates.size) { item ->
                     // Контейнер ивента
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -106,14 +118,7 @@ fun TemplateScreen(paddingValues: PaddingValues){
                     )
                     {
                         // Изображение ивента(Сейчас иконка)
-                        Icon(
-                            Icons.Default.Clear,
-                            "icon",
-                            modifier = Modifier
-                                .height(200.dp)
-                                .fillMaxWidth()
-                                .border(1.dp,colorScheme.tertiary)
-                        )
+                        LocalImage(templates[item].image, 200)
 
                         HorizontalDivider(thickness = 1.dp, color=colorScheme.outline)
 
@@ -132,7 +137,7 @@ fun TemplateScreen(paddingValues: PaddingValues){
                                 modifier= Modifier.weight(1f)
                             ) {
                                 // Название ивента
-                                Text(text =templateList[item], style= Typography.bodyLarge.copy(fontWeight = FontWeight.Bold), color= colorScheme.primary)
+                                Text(text =templates[item].name, style= Typography.bodyLarge.copy(fontWeight = FontWeight.Bold), color= colorScheme.primary)
 
                                 Spacer(Modifier.height(12.dp))
 
@@ -165,16 +170,28 @@ fun TemplateScreen(paddingValues: PaddingValues){
                             Row(
                                 modifier= Modifier
                             ){
-                                Icon(Icons.Default.Create, "delete", Modifier.size(18.dp), tint= colorScheme.secondary)
-                                Spacer(Modifier.width(12.dp))
-                                Icon(Icons.Default.Delete, "delete", Modifier.size(18.dp), tint= colorScheme.secondary)
+                                Image(
+                                    painterResource(R.drawable.pencil),
+                                    contentDescription = "Edit Event",
+                                    modifier=Modifier.size(16.dp)
+                                        .clickable(onClick = { onEditClick(templates[item].id)} ),
+                                    colorFilter = ColorFilter.tint(colorScheme.secondary)
+                                )
+                                Spacer(Modifier.width(16.dp))
+                                Image(
+                                    painterResource(R.drawable.trash_event),
+                                    contentDescription = "Edit Event",
+                                    modifier=Modifier.size(16.dp)
+                                        .clickable(onClick = { onDeleteClick(templates[item].id)} ),
+                                    colorFilter = ColorFilter.tint(colorScheme.secondary)
+                                )
                             }
                         }
                         Spacer(Modifier.height(32.dp))
 
                     }
 
-                    if( item != templateList.size -1 ){
+                    if( item != templates.size -1 ){
                         Spacer(Modifier.height(16.dp))
                     }
 
