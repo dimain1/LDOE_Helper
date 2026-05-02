@@ -1,6 +1,6 @@
 [versions]
 agp = "8.13.2"
-kotlin = "2.0.21"
+kotlin = "2.3.21"
 coreKtx = "1.18.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
@@ -13,7 +13,10 @@ navigationRuntimeKtx = "2.9.8"
 navigationCompose = "2.9.8"
 roomVersion = "2.8.4"
 kspVersion = "2.3.6"
-gsonVersion = "2.13.2"
+gsonVersion = "2.14.0"
+koinAndroid = "4.2.0"
+coil = "3.0.4"
+
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -39,6 +42,10 @@ androidx-room-ktx = { group= "androidx.room", name = "room-ktx", version.ref = "
 # Зависимость для работы Room с KSP
 androidx-room-ksp = { group= "androidx.room", name = "room-compiler", version.ref = "roomVersion"}
 google-gson = {group="com.google.code.gson", name = "gson", version.ref = "gsonVersion"}
+koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinAndroid" }
+koin-Compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinAndroid" }
+coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
+coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
 
 
 [plugins]
