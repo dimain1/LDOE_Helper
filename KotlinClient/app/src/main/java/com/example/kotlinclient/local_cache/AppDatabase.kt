@@ -4,6 +4,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 
 import androidx.room.TypeConverters
+import com.example.kotlinclient.local_cache.converters.DateTimeConverter
 import com.example.kotlinclient.local_cache.converters.MapConverter
 import com.example.kotlinclient.local_cache.dao.ContentTypeDao
 import com.example.kotlinclient.local_cache.dao.EventDao
@@ -26,9 +27,9 @@ import com.example.kotlinclient.local_cache.entity.UserEntity
         UserEntity::class,
         GameContentTypeCrossRef::class,
     ],
-    version = 1
+    version = 8
 )
-@TypeConverters(MapConverter::class)
+@TypeConverters(MapConverter::class, DateTimeConverter::class)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun UserDao(): UserDao
