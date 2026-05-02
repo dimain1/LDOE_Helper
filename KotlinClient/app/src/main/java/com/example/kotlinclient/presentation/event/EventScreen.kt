@@ -114,7 +114,7 @@ fun EventScreen(
                     )
                     {
 
-                        LocalImage(events[item].image, 200)
+                        LocalImage(events[item].image, 200, true)
 
 
                         HorizontalDivider(thickness = 1.dp, color=colorScheme.outline)

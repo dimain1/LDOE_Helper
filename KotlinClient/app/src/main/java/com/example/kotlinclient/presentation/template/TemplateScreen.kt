@@ -118,7 +118,7 @@ fun TemplateScreen(
                     )
                     {
                         // Изображение ивента(Сейчас иконка)
-                        LocalImage(templates[item].image, 200)
+                        LocalImage(templates[item].image, 200, true)
 
                         HorizontalDivider(thickness = 1.dp, color=colorScheme.outline)
 
@@ -146,7 +146,7 @@ fun TemplateScreen(
                                     modifier= Modifier.fillMaxWidth()
                                 )
                                 {
-                                    Text(text= "Bunker reset", style=Typography.bodyMedium, color=colorScheme.secondary)
+                                    Text(text= templates[item]?.description ?: "", style=Typography.bodyMedium, color=colorScheme.secondary)
                                 }
 
                                 Spacer(Modifier.height(12.dp))
@@ -163,7 +163,7 @@ fun TemplateScreen(
 
                                     Spacer(Modifier.width(10.dp))
 
-                                    Text(text= "30 Minutes", style=Typography.bodyMedium, color=colorScheme.secondary)
+                                    Text(text= (templates[item].duration / 1000).toString() + " " + "Minutes", style=Typography.bodyMedium, color=colorScheme.secondary)
                                 }
                             }
                             // Столбец Кнопок
