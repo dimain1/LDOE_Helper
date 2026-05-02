@@ -1,5 +1,6 @@
 package com.example.kotlinclient
 
+import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -12,8 +13,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import com.example.kotlinclient.local_cache.AppDatabase
+import com.example.kotlinclient.local_cache.entity.UserEntity
 import com.example.kotlinclient.presentation.AppHeader
 import com.example.kotlinclient.presentation.MyBottomAppBar
 import com.example.kotlinclient.presentation.home.HomeScreen
@@ -60,6 +67,9 @@ class MainActivity : ComponentActivity() {
 
                 // Контроллер навигации осуществляющий переходы(Единственный экземпляр)
                 val navController = rememberNavController()
+
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
                 // Путь к начальному экрану
                 val startDestination = Routes.HomePage.route
                 // Системная обёртка позволяющая получить информацию об системных оступах и их предусмотреть
@@ -68,6 +78,7 @@ class MainActivity : ComponentActivity() {
                     topBar = { AppHeader() },
                     bottomBar = {
                         MyBottomAppBar(
+                            currentRoute,
                             { navigateToHome(navController) },
                             { navigateToInfo(navController) },
                             { navigateToEvent(navController) },
@@ -76,9 +87,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 ) { paddingValues ->
-
-                        ApplicationNavHost(navController, startDestination,paddingValues)
-
+                    ApplicationNavHost(navController, startDestination,paddingValues)
                 }
             }
         }

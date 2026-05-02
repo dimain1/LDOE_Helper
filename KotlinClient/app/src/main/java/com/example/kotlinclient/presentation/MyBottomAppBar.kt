@@ -20,7 +20,10 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -33,6 +36,7 @@ import com.example.kotlinclient.ui.theme.Typography
 //Нижняя часть приложения(Bottom App Bar)
 @Composable
 fun MyBottomAppBar(
+    currentRoute: String?,
     onHomeClick: () -> Unit,
     onInfoClick: () -> Unit,
     onEventClick: () -> Unit,
@@ -55,11 +59,11 @@ fun MyBottomAppBar(
 
         ) {
             // Иконки
-            BottomIcons(R.drawable.home, "Home",onHomeClick)
-            BottomIcons(R.drawable.info, "Database", onInfoClick)
-            BottomIcons(R.drawable.notification, "Events", onEventClick)
-            BottomIcons(R.drawable.template, "Templates", onTemplateClick)
-            BottomIcons(R.drawable.settings, "Settings", onSettingsClick)
+            BottomIcons(R.drawable.home, "Home",currentRoute ,onHomeClick)
+            BottomIcons(R.drawable.info, "Database",currentRoute , onInfoClick)
+            BottomIcons(R.drawable.notification, "Events",currentRoute ,onEventClick)
+            BottomIcons(R.drawable.template, "Templates",currentRoute ,onTemplateClick)
+            BottomIcons(R.drawable.settings, "Settings",currentRoute ,onSettingsClick)
 
         }
 
@@ -68,18 +72,24 @@ fun MyBottomAppBar(
 
 // Шаблон иконок
 @Composable
-fun BottomIcons(image: Int, title: String, onClick: ()-> Unit){
+fun BottomIcons(image: Int, title: String,currentScreen: String?,onClick: ()-> Unit){
 
-    var color = if(title == "Home") colorScheme.tertiary else colorScheme.secondary
+    var color = if(title == currentScreen) colorScheme.tertiary else colorScheme.secondary
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier= Modifier
-            .clickable(onClick = onClick,
-                    interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(color = colorScheme.tertiary, radius = 36.dp) // Изменение эффекта нажатия на иконку
+            .clickable(
+                onClick = {
+                    onClick()
+                },
+                interactionSource = remember { MutableInteractionSource() },
+                indication = ripple(
+                    color = colorScheme.tertiary,
+                    radius = 36.dp
+                ) // Изменение эффекта нажатия на иконку
             )
-            .background(shape = RoundedCornerShape(15), color=colorScheme.primaryContainer)
+            .background(shape = RoundedCornerShape(15), color = colorScheme.primaryContainer)
             .padding(10.dp)
     )
     {

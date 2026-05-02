@@ -2,9 +2,9 @@ package com.example.kotlinclient.presentation.navigation
 
 // Перечисление путей к экранам
 enum class Routes(var route:String) {
-    HomePage(route="home"),
-    InfoPage(route="info"),
-    EventsPage(route="event"),
-    TemplatePage(route="template"),
-    SettingsPage(route="settings")
+    HomePage(route="Home"),
+    InfoPage(route="Database"),
+    EventsPage(route="Events"),
+    TemplatePage(route="Templates"),
+    SettingsPage(route="Settings")
 }
