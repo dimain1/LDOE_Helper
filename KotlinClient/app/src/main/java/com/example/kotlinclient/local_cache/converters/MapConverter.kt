@@ -8,16 +8,16 @@ class MapConverter {
     private val gson = Gson()
 
     @TypeConverter
-    fun fromMap(map: Map<String, Object>?): String? {
+    fun fromMap(map: Map<String, Any>?): String? {
         return map?.let { gson.toJson(it) }
     }
 
     @TypeConverter
-    fun toMap(value: String?): Map<String, Object>? {
+    fun toMap(value: String?): Map<String, Any>? {
         if (value == null) return null
 
         // Используем TypeToken, чтобы Gson знал, в какой тип данных десериализовать
-        val mapType = object : TypeToken<Map<String, Object>>() {}.type
+        val mapType = object : TypeToken<Map<String, Any>>() {}.type
         return gson.fromJson(value, mapType)
     }
 }

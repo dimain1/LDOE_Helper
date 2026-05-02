@@ -12,5 +12,5 @@ data class EventTemplateWithUser(
         parentColumn = "creator_id",
         entityColumn = "id"
     )
-    val user: UserEntity
+    val user: UserEntity?
 )

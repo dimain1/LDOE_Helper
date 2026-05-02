@@ -2,6 +2,7 @@ package com.example.kotlinclient.local_cache.entity
 
 import androidx.room.Entity
 import androidx.room.Index
+import androidx.room.PrimaryKey
 
 @Entity(tableName = "users",
     indices = [
@@ -11,6 +12,7 @@ import androidx.room.Index
 
 )
 data class UserEntity(
+    @PrimaryKey
     val id: Long,
     val login: String,
     val email: String,

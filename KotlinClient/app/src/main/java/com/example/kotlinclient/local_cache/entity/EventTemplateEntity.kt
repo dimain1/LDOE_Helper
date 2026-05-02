@@ -8,7 +8,11 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "event_template",
-    indices = [Index(value = ["name", "created"], unique = true) ],
+    indices =
+        [
+        Index(value = ["name", "creator_id"], unique = true),
+        Index(value = ["creator_id"])
+        ],
     foreignKeys = [
         ForeignKey(
             entity = UserEntity::class,

@@ -12,11 +12,11 @@ data class EventWithUserAndTemplate(
         parentColumn = "template_id",
         entityColumn = "id"
     )
-    val template: EventTemplateEntity,
+    val template: EventTemplateEntity?,
     @Relation(
         parentColumn = "user_id",
         entityColumn = "id"
     )
-    val user: UserEntity
+    val user: UserEntity?
 
 )

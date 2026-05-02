@@ -12,9 +12,13 @@ import com.example.kotlinclient.state_management.entity.GameContent
 data class GameContentWithTypes(
     @Embedded val content: GameContentEntity,
     @Relation(
-        parentColumn = "game_content_id",
-        entityColumn = "content_type_id",
-        associateBy = Junction(GameContentTypeCrossRef::class)
+        parentColumn = "id",
+        entityColumn = "id",
+        associateBy = Junction(
+            value = GameContentTypeCrossRef::class,
+            parentColumn = "game_content_id",
+            entityColumn = "content_type_id"
+        )
     )
     val types: List<ContentTypeEntity>
 )

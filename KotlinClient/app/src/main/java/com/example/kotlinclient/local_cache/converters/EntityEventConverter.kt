@@ -11,6 +11,8 @@ fun Event.toEntity(): EventEntity{
         templateId = this.template?.id,
         userId = this.user!!.id,
         name = this.name,
+        description = this.description,
+        imageUrl = this.image,
         startTime = this.start_time,
         endTime = this.end_time
     )
@@ -22,6 +24,8 @@ fun EventEntity.toModel() : Event{
         user = null,
         template = null ,
         name = this.name,
+        description = this.description,
+        image = this.imageUrl,
         start_time = this.startTime,
         end_time = this.endTime,
     )
@@ -30,9 +34,11 @@ fun EventEntity.toModel() : Event{
 fun EventWithUserAndTemplate.toModel(): Event{
     return Event(
         id = this.event.id,
-        user = this.user.toModel(),
-        template = this.template.toModel(this.user.toModel()),
+        user = this.user?.toModel(),
+        template = this.template?.toModel(this.user?.toModel()),
         name = this.event.name,
+        description = this.event.description,
+        image = this.event.imageUrl,
         start_time = this.event.startTime,
         end_time = this.event.endTime
     )

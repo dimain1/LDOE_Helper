@@ -7,6 +7,8 @@ data class Event(
     val user: User?,
     val template: EventTemplate?,
     val name: String?,
+    val description: String?,
+    val image: String?,
     val start_time: OffsetDateTime,
     val end_time: OffsetDateTime
 )

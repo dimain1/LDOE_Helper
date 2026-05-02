@@ -10,6 +10,7 @@ fun GameContent.toEntity(): GameContentEntity{
         name = this.name,
         description = this.description,
         imageUrl = this.image,
+        pinned = this.pinned,
         attributes = this.attributes,
     )
 }
@@ -20,6 +21,7 @@ fun GameContentEntity.toModel(): GameContent{
         name = this.name,
         description = this.description,
         image = this.imageUrl,
+        pinned = this.pinned,
         types = null,
         attributes = this.attributes
     )
@@ -31,6 +33,7 @@ fun GameContentWithTypes.toModel(): GameContent{
         name = this.content.name,
         description = this.content.description,
         image = this.content.imageUrl,
+        pinned = this.content.pinned,
         types = this.types.map {type -> type.toModel() }.toSet(),
         attributes = this.content.attributes
     )

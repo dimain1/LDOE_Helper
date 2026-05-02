@@ -5,8 +5,9 @@ data class GameContent(
     val name: String,
     val description: String?,
     val image: String?,
+    val pinned: Boolean,
     val types: Set<ContentType>?,
-    val attributes: Map<String, Object>
+    val attributes: Map<String, Any>?
 
 ) {
 }

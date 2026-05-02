@@ -23,7 +23,11 @@ import java.time.OffsetDateTime
             onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index("template_id") ]
+    indices = [
+        Index("template_id"),
+        Index("user_id")
+
+    ]
     )
 data class EventEntity(
     @PrimaryKey(autoGenerate = true)
@@ -36,7 +40,12 @@ data class EventEntity(
     val userId: Long,
 
     val name: String?,
+    val description: String?,
+    @ColumnInfo(name = "image")
+    val imageUrl: String?,
+    @ColumnInfo(name="start_time")
     val startTime: OffsetDateTime,
+    @ColumnInfo(name="end_time")
     val endTime: OffsetDateTime
 
 
