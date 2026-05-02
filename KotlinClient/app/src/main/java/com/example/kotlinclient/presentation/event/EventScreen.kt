@@ -1,7 +1,9 @@
 package com.example.kotlinclient.presentation.event
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -30,14 +32,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.kotlinclient.R
+import com.example.kotlinclient.presentation.LocalImage
+import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.ui.theme.Typography
+import java.time.format.DateTimeFormatter
 
 @Composable
-fun EventScreen(paddingValues: PaddingValues){
-
-    val eventList: List<String> =listOf("Bunker", "Raid", "Farm")
+fun EventScreen(
+    events:List<Event>,
+    onDeleteClick: (Long) -> Unit,
+    onEditClick: (Long) -> Unit,
+    onCreateClick: () -> Unit,
+    paddingValues: PaddingValues){
 
     // Контейнер всего экрана
     Column(
@@ -61,7 +72,7 @@ fun EventScreen(paddingValues: PaddingValues){
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
-                modifier= Modifier.fillMaxWidth()                .padding(horizontal = 16.dp)
+                modifier= Modifier.fillMaxWidth().padding(horizontal = 16.dp)
             )
             {
                 // Заголовок экрана
@@ -72,7 +83,7 @@ fun EventScreen(paddingValues: PaddingValues){
                     shape= RoundedCornerShape(25),
                     modifier= Modifier,
 
-                    onClick = {}
+                    onClick = {onCreateClick()}
                 )
                 {
                     // Иконка внутри кнопки
@@ -92,7 +103,7 @@ fun EventScreen(paddingValues: PaddingValues){
                 item {
                     Spacer(Modifier.height(16.dp))
                 }
-                items(eventList.size) {item ->
+                items(events.size) {item ->
                     // Контейнер ивента
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -102,15 +113,9 @@ fun EventScreen(paddingValues: PaddingValues){
                             .border(width = 2.dp, color= colorScheme.outline, shape=RoundedCornerShape(10)),
                     )
                     {
-                        // Изображение ивента(Сейчас иконка)
-                        Icon(
-                            Icons.Default.Clear,
-                            "icon",
-                            modifier = Modifier
-                                .height(200.dp)
-                                .fillMaxWidth()
-                                .border(1.dp,colorScheme.tertiary)
-                        )
+
+                        LocalImage(events[item].image, 200)
+
 
                         HorizontalDivider(thickness = 1.dp, color=colorScheme.outline)
 
@@ -129,7 +134,7 @@ fun EventScreen(paddingValues: PaddingValues){
                                 modifier= Modifier.weight(1f)
                             ) {
                                 // Название ивента
-                                Text(text =eventList[item], style= Typography.bodyLarge.copy(fontWeight = FontWeight.Bold), color= colorScheme.primary)
+                                Text(text =events[item]?.name ?: "", style= Typography.bodyLarge.copy(fontWeight = FontWeight.Bold), color= colorScheme.primary)
 
                                 Spacer(Modifier.height(16.dp))
 
@@ -146,7 +151,10 @@ fun EventScreen(paddingValues: PaddingValues){
 
                                     Spacer(Modifier.width(10.dp))
 
-                                    Text(text= "Apr 27", style=Typography.bodyMedium, color=colorScheme.secondary)
+                                    Text(
+                                        text= events[item].start_time.month.toString() + " " + events[item].start_time.dayOfMonth.toString(),
+                                        style=Typography.bodyMedium,
+                                        color=colorScheme.secondary)
                                 }
 
                                 Spacer(Modifier.height(8.dp))
@@ -158,28 +166,41 @@ fun EventScreen(paddingValues: PaddingValues){
                                     Icon(
                                         Icons.Default.DateRange,
                                         "Date",
-                                        modifier= Modifier.size(12.dp),
+                                        modifier= Modifier.size(16.dp),
                                         tint=colorScheme.secondary)
 
                                     Spacer(Modifier.width(10.dp))
 
-                                    Text(text= "08:00 AM - 09:00 AM", style=Typography.bodyMedium, color=colorScheme.secondary)
+                                    Text(text= "${events[item].start_time.format(DateTimeFormatter.ISO_LOCAL_TIME)} - ${events[item].end_time.format(DateTimeFormatter.ISO_LOCAL_TIME)}", style=Typography.bodyMedium, color=colorScheme.secondary)
                                 }
                             }
                             // Столбец Кнопок
                             Row(
                                 modifier= Modifier
                             ){
-                                Icon(Icons.Default.Delete, "delete", Modifier.size(18.dp), tint= colorScheme.secondary)
+                                Image(
+                                    painterResource(R.drawable.pencil),
+                                    contentDescription = "Edit Event",
+                                    modifier=Modifier.size(16.dp)
+                                        .clickable(onClick = { onEditClick(events[item].id)} ),
+                                    colorFilter = ColorFilter.tint(colorScheme.secondary)
+                                )
                                 Spacer(Modifier.width(16.dp))
-                                Icon(Icons.Default.Delete, "delete", Modifier.size(18.dp), tint= colorScheme.secondary)
+                                Image(
+                                    painterResource(R.drawable.trash_event),
+                                    contentDescription = "Edit Event",
+                                    modifier=Modifier.size(16.dp)
+                                        .clickable(onClick = { onDeleteClick(events[item].id)} ),
+                                    colorFilter = ColorFilter.tint(colorScheme.secondary)
+                                )
+
                             }
                         }
                         Spacer(Modifier.height(32.dp))
 
                     }
 
-                    if( item != eventList.size -1 ){
+                    if( item != events.size -1 ){
                         Spacer(Modifier.height(16.dp))
                     }
 

@@ -1,11 +1,11 @@
 package com.example.kotlinclient.presentation.home
 
 import android.content.Context
-import android.content.SharedPreferences
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,17 +24,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -48,13 +40,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.edit
 import com.example.kotlinclient.R
-import com.example.kotlinclient.presentation.AppHeader
-import com.example.kotlinclient.presentation.MyBottomAppBar
+import com.example.kotlinclient.presentation.LocalImage
+import com.example.kotlinclient.state_management.entity.Event
+import com.example.kotlinclient.state_management.entity.GameContent
 import com.example.kotlinclient.ui.theme.InfoIconColor
 import com.example.kotlinclient.ui.theme.LinearGradientStartColor
 import com.example.kotlinclient.ui.theme.NotificationIconColor
@@ -67,10 +59,18 @@ import com.example.kotlinclient.ui.theme.linearGradientEndColor
 
 //Главный экран приложения
 @Composable
-fun HomeScreen(paddingValues: PaddingValues){
+fun HomeScreen(
+    upcomingEvents: List<Event>,
+    onDeleteClick: (Long) -> Unit,
+    pinnedEntity: List<GameContent>,
+    onPinClick: (Long, Boolean) -> Unit,
+    onNewEventClick: () -> Unit,
+    onTemplateClick: () -> Unit,
+    onMyEventClick: () -> Unit,
+    onDatabaseClick: () -> Unit,
+    paddingValues: PaddingValues){
 
     val scrollState = rememberScrollState()
-    var emptyList: MutableList<String> = mutableListOf("Daily Raid", "Not a nothing","Not a nothing","Not a nothing","Not a nothing")
     val content: Context = LocalContext.current
     //var emptyList: List<String> = emptyList<String>()
 
@@ -160,7 +160,7 @@ fun HomeScreen(paddingValues: PaddingValues){
                 Spacer(Modifier.height(20.dp))
                 // Нижняя часть с кнопкой
                 Button(
-                    onClick = { changeTheme(content)},
+                    onClick = { },
                     shape = RoundedCornerShape(15),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White,
@@ -217,7 +217,8 @@ fun HomeScreen(paddingValues: PaddingValues){
                         title= "New Event",
                         desc ="Quick create",
                         modifier= Modifier.weight(1f),
-                        color= Color.Red
+                        color= Color.Red,
+                        onClick = onNewEventClick
                     )
 
                     Spacer(Modifier.width(12.dp))
@@ -228,7 +229,8 @@ fun HomeScreen(paddingValues: PaddingValues){
                         "Templates",
                         "Your saved templates",
                         Modifier.weight(1f),
-                        TemplateIconColor
+                        TemplateIconColor,
+                        onTemplateClick
                     )
 
                 }
@@ -246,9 +248,10 @@ fun HomeScreen(paddingValues: PaddingValues){
                     QuickBlock(
                         R.drawable.notification,
                         "My Events",
-                        "2 upcoming",
+                        "${upcomingEvents.size} upcoming",
                         Modifier.weight(1f),
-                        NotificationIconColor
+                        NotificationIconColor,
+                        onMyEventClick
                     )
 
                     Spacer(Modifier.width(12.dp))
@@ -259,7 +262,8 @@ fun HomeScreen(paddingValues: PaddingValues){
                         "Database",
                         "Browse items",
                         Modifier.weight(1f),
-                        InfoIconColor
+                        InfoIconColor,
+                        onDatabaseClick
                     )
 
                 }
@@ -267,130 +271,10 @@ fun HomeScreen(paddingValues: PaddingValues){
 
             Spacer(Modifier.height(16.dp))
 
-
-            // Upcoming Events Контейнер
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(color = colorScheme.surface, shape = RoundedCornerShape(10))
-                    .border(
-                        BorderStroke(2.dp, colorScheme.outline),
-                        shape = RoundedCornerShape(10)
-                    )
-                    .padding(top = 24.dp, start = 16.dp, end = 16.dp, bottom = 16.dp)
-
-            )
-            {
-                // Заголовок блока
-                Text(
-                    text = "Upcoming Events",
-                    style = TextStyle(
-                        fontSize = Typography.titleMedium.fontSize,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = colorScheme.primary
-                )
-
-                Spacer(Modifier.height(16.dp))
-                // Проверка на наличие событий
-                if (emptyList.size == 0) {
-                    Text(text = "Oops. Maybe you don't have an active events. Go to create one")
-                } else {
-                    // Если события есть, то отрисовывается контейнер с ними
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(0.dp, 200.dp)
-                    ) {
-                        items(emptyList.size) { item ->
-                            // Контейнер события
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(
-                                        color = colorScheme.tertiaryContainer,
-                                        shape = RoundedCornerShape(10)
-                                    )
-                                    .padding(12.dp)
-
-                            )
-                            {
-                                // Изображение события
-                                Icon(
-                                    imageVector = Icons.Default.Clear,
-                                    contentDescription = emptyList[item],
-                                    modifier = Modifier.size(48.dp)
-                                )
-
-                                Spacer(Modifier.width(12.dp))
-                                // Содержание события
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .weight(1f)
-                                )
-                                {
-                                    // Название события
-                                    Text(
-                                        text = emptyList[item],
-                                        style = TextStyle(
-                                            fontSize = Typography.bodyMedium.fontSize,
-                                            fontWeight = FontWeight.Bold
-                                        ),
-                                        color = colorScheme.primary
-                                    )
-                                    // Время начала события
-                                    Text(
-                                        text = emptyList[item],
-                                        style = TextStyle(
-                                            fontSize = Typography.bodySmall.fontSize,
-                                            fontWeight = FontWeight.Normal
-                                        ),
-                                        color = colorScheme.secondary
-                                    )
-
-                                }
-                                Icon(Icons.Default.Delete, "image",Modifier.size(32.dp).border(2.dp, colorScheme.tertiary))
-
-                            }
-                            if (item != emptyList.size-1) {
-                                Spacer(Modifier.height(16.dp))
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            // Pinned entities Контейнер
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(color = colorScheme.surface, shape = RoundedCornerShape(10))
-                    .border(
-                        BorderStroke(2.dp, colorScheme.outline),
-                        shape = RoundedCornerShape(10)
-                    )
-                    .padding(top = 24.dp, start = 16.dp, end = 16.dp, bottom = 16.dp)
-
-            )
-            {
-                // Заголовок блока
-                Text(
-                    text = "Pinned entites",
-                    style = TextStyle(
-                        fontSize = Typography.titleMedium.fontSize,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = colorScheme.primary
-                )
-
-                Spacer(Modifier.height(16.dp))
-                // Проверка на наличие сущностей
-                if (emptyList.size == 0) {
-                    Text(text = "Oops. Maybe you don't have an pinned entities. Go to pin one")
+            // Upcoming events
+            QuickList("Upcoming Events"){
+                if (upcomingEvents.size == 0) {
+                    Text(text = "Oops. Maybe you don't have upcoming events. Go to create one")
                 } else {
                     // Если сущности есть, то отрисовывается контейнер с ними
                     LazyColumn(
@@ -398,7 +282,7 @@ fun HomeScreen(paddingValues: PaddingValues){
                             .fillMaxWidth()
                             .heightIn(0.dp, 200.dp)
                     ) {
-                        items(emptyList.size) { item ->
+                        items(upcomingEvents.size) { item ->
                             // Контейнер события
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -411,12 +295,8 @@ fun HomeScreen(paddingValues: PaddingValues){
                                     .padding(12.dp)
 
                             ) {
-                                // Изображение события
-                                Icon(
-                                    imageVector = Icons.Default.Clear,
-                                    contentDescription = emptyList[item],
-                                    modifier = Modifier.size(48.dp)
-                                )
+                                // Изображение события !!!!!!!!!!!!!!!!
+                                LocalImage(upcomingEvents[item].image, 48)
 
                                 Spacer(Modifier.width(12.dp))
                                 // Содержание события
@@ -428,33 +308,117 @@ fun HomeScreen(paddingValues: PaddingValues){
                                 {
                                     // Название события
                                     Text(
-                                        text = emptyList[item],
+                                        text = upcomingEvents[item]?.name ?: "",
                                         style = TextStyle(
                                             fontSize = Typography.bodyMedium.fontSize,
                                             fontWeight = FontWeight.Bold
                                         ),
                                         color = colorScheme.primary
                                     )
-                                    // Время начала события
+                                    // Время конца события
                                     Text(
-                                        text = emptyList[item],
+                                        text = upcomingEvents[item].end_time.toString(),
                                         style = TextStyle(
                                             fontSize = Typography.bodySmall.fontSize,
                                             fontWeight = FontWeight.Normal
                                         ),
-                                        color = colorScheme.secondary
+                                        color = colorScheme.secondary,
+                                        overflow = TextOverflow.Ellipsis,
+                                        maxLines = 1
                                     )
 
                                 }
-                                Icon(Icons.Default.Add, "image",Modifier.size(32.dp).border(2.dp, colorScheme.tertiary))
+                                Image(
+                                    painter= painterResource(R.drawable.trash),
+                                    contentDescription = "Delete Image",
+                                    modifier= Modifier.size(32.dp).clickable(onClick = { onDeleteClick(upcomingEvents[item].id) }),
+                                    colorFilter = ColorFilter.tint(colorScheme.primary)
+                                )
                             }
-                            if (item != emptyList.size - 1) {
+                            if (item != upcomingEvents.size - 1) {
                                 Spacer(Modifier.height(16.dp))
                             }
                         }
                     }
                 }
             }
+
+            Spacer(Modifier.height(16.dp))
+
+            // Pinned entities Контейнер
+
+            QuickList("Pinned Entity"){
+                if (pinnedEntity.size == 0) {
+
+                    Text(text = "Oops. Maybe you don't have an pinned entities. Go to pin one")
+                } else {
+                    // Если сущности есть, то отрисовывается контейнер с ними
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(0.dp, 200.dp)
+                    ) {
+                        items(pinnedEntity.size) { item ->
+                            // Контейнер события
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        color = colorScheme.tertiaryContainer,
+                                        shape = RoundedCornerShape(10)
+                                    )
+                                    .padding(12.dp)
+
+                            ) {
+                                // Изображение события !!!!!!!!!!!!!!!!
+                                LocalImage(pinnedEntity[item].image, 48)
+
+                                Spacer(Modifier.width(12.dp))
+                                // Содержание события
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f)
+                                )
+                                {
+                                    // Название события
+                                    Text(
+                                        text = pinnedEntity[item].name,
+                                        style = TextStyle(
+                                            fontSize = Typography.bodyMedium.fontSize,
+                                            fontWeight = FontWeight.Bold
+                                        ),
+                                        color = colorScheme.primary
+                                    )
+                                    // Краткое описание
+                                    Text(
+                                        text = pinnedEntity[item]?.description ?: "",
+                                        style = TextStyle(
+                                            fontSize = Typography.bodySmall.fontSize,
+                                            fontWeight = FontWeight.Normal
+                                        ),
+                                        color = colorScheme.secondary,
+                                        overflow = TextOverflow.Ellipsis,
+                                        maxLines = 2
+                                    )
+
+                                }
+                                Image(
+                                    painter= painterResource ( if(pinnedEntity[item].pinned == false) R.drawable.pinned_off else R.drawable.pinned_on),
+                                    contentDescription = "Pinned Image",
+                                    modifier= Modifier.size(32.dp).clickable(onClick = { onPinClick(pinnedEntity[item].id, !pinnedEntity[item].pinned) }),
+                                    colorFilter= if(pinnedEntity[item].pinned == false) null else ColorFilter.tint(colorScheme.tertiary)
+                                )
+                            }
+                            if (item != pinnedEntity.size - 1) {
+                                Spacer(Modifier.height(16.dp))
+                            }
+                        }
+                    }
+                }
+            }
+
             Spacer(Modifier.height(16.dp))
         }
 
@@ -463,12 +427,44 @@ fun HomeScreen(paddingValues: PaddingValues){
 
 }
 
+@Composable
+fun QuickList(title: String, list: @Composable () -> Unit){
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(color = colorScheme.surface, shape = RoundedCornerShape(10))
+            .border(
+                BorderStroke(2.dp, colorScheme.outline),
+                shape = RoundedCornerShape(10)
+            )
+            .padding(top = 24.dp, start = 16.dp, end = 16.dp, bottom = 16.dp)
 
+    )
+    {
+        // Заголовок блока
+        Text(
+            text = title,
+            style = TextStyle(
+                fontSize = Typography.titleMedium.fontSize,
+                fontWeight = FontWeight.Bold
+            ),
+            color = colorScheme.primary
+        )
+
+        Spacer(Modifier.height(16.dp))
+
+        list()
+
+
+        // Проверка на наличие сущностей
+
+    }
+}
 
 
 // шаблон контейнера иконки быстрого доступа
 @Composable
-fun QuickBlock(image: Int, title: String, desc: String, modifier: Modifier, color:Color ){
+fun QuickBlock(image: Int, title: String, desc: String, modifier: Modifier, color:Color, onClick: () -> Unit){
     // контейнер шаблона иконки быстрого доступа
     Column(
         verticalArrangement = Arrangement.Center,
@@ -476,6 +472,7 @@ fun QuickBlock(image: Int, title: String, desc: String, modifier: Modifier, colo
             .height(80.dp)
             .border(BorderStroke(2.dp, color = colorScheme.outline), shape = RoundedCornerShape(10))
             .background(color = colorScheme.surface, shape = RoundedCornerShape(10))
+            .clickable(onClick = {onClick() })
             .padding(20.dp)
     ){
         // Строка с иконкой и заголовком
@@ -502,9 +499,3 @@ fun QuickBlock(image: Int, title: String, desc: String, modifier: Modifier, colo
 }
 
 
-
-fun changeTheme(context: Context): Unit{
-    val preferences: SharedPreferences = context.getSharedPreferences("my_app_preferences", Context.MODE_PRIVATE)
-
-    preferences.edit { putBoolean("theme", !preferences.getBoolean("theme", false)) }
-}

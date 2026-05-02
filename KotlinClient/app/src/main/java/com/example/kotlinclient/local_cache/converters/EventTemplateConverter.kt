@@ -30,7 +30,7 @@ fun EventTemplateEntity.toModel(user: User? = null): EventTemplate{
 fun EventTemplateWithUser.toModel(): EventTemplate{
     return EventTemplate(
         id = this.eventTemplate.id,
-        creator = this.user.toModel(),
+        creator = this.user?.toModel(),
         name = this.eventTemplate.name,
         description = this.eventTemplate.description,
         image = this.eventTemplate.imageUrl,
