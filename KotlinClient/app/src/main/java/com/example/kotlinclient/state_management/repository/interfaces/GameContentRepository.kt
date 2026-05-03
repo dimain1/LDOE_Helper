@@ -5,12 +5,11 @@ import kotlinx.coroutines.flow.Flow
 
 interface GameContentRepository {
 
-    fun getAllContent(): Flow<List<GameContent>>
-
+    fun getPinnedContent(): Flow<List<GameContent>>
     fun getFilteredContent(query: String, typeId: Long): Flow<List<GameContent>>
 
-    fun getPinnedContent(): Flow<List<GameContent>>
+    suspend fun pinContent(contentId: Long)
 
-    suspend fun changeContentPin(id: Long, pinStatus: Boolean)
+    suspend fun unpinContent(contentId: Long)
 
 }

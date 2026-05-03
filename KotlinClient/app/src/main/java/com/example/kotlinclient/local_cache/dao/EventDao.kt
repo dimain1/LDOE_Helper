@@ -10,14 +10,14 @@ import kotlinx.coroutines.flow.Flow
 interface EventDao {
 
     @Transaction
-    @Query("SELECT * FROM events WHERE datetime(end_time) > datetime('now') ")
-    fun getAllEventsUpcomingWithTemplate(): Flow<List<EventWithUserAndTemplate>>
+    @Query("SELECT * FROM events WHERE datetime(end_time) > datetime('now') AND user_id = :userId ")
+    fun getAllEventsUpcomingWithTemplate(userId: Long): Flow<List<EventWithUserAndTemplate>>
 
     @Transaction
-    @Query("SELECT * FROM events")
-    fun getAllEventsWithTemplate(): Flow<List<EventWithUserAndTemplate>>
+    @Query("SELECT * FROM events WHERE user_id = :userId")
+    fun getAllEventsWithTemplate(userId: Long): Flow<List<EventWithUserAndTemplate>>
 
-    @Query("DELETE FROM events WHERE id = :id")
-    fun deleteEventById(id:Long)
+    @Query("DELETE FROM events WHERE id = :id AND user_id = :userId")
+    fun deleteEventById(userId: Long, id:Long)
 
 }

@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -33,6 +34,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -40,6 +42,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchColors
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -52,24 +55,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
+import com.example.kotlinclient.state_management.entity.User
 import com.example.kotlinclient.ui.theme.Typography
 
 
 @Composable
-fun SettingsScreen(paddingValues: PaddingValues){
+fun SettingsScreen(
+    notification: Boolean,
+    sound: Boolean,
+    theme: Boolean,
+    onSwitchClick: (String) -> Unit,
+    userId: Long,
+    user: User?,
+    onAuthClick: (Long) -> Unit,
+    onExitClick : () -> Unit,
+    paddingValues: PaddingValues){
 
     val scrollState: ScrollState = rememberScrollState()
-    val context = LocalContext.current
-
-    val preferences: SharedPreferences = context.getSharedPreferences("my_app_preferences", Context.MODE_PRIVATE)
-
-    var notifications by remember {  mutableStateOf(preferences.getBoolean("notification",false))}
-    var sounds by remember {  mutableStateOf(preferences.getBoolean("sound",false))}
-    var theme by remember {  mutableStateOf(preferences.getBoolean("theme",false))}
-
-
+    val textFieldState = rememberTextFieldState("")
 
     // Контейнер всего экрана
     Column(modifier= Modifier
@@ -125,9 +131,24 @@ fun SettingsScreen(paddingValues: PaddingValues){
                     modifier= Modifier
                         .fillMaxWidth()
                 ){
-                    Text(text="Username", style= Typography.bodyLarge.copy(fontWeight = FontWeight.Bold), color=colorScheme.primary)
+                    if(userId == -1L){
+                        TextField(
+                            value= textFieldState.text.toString(),
+                            onValueChange = { text: String -> textFieldState.edit { replace(0, length, text) } }
+                        )
+                        Button(
+                            onClick= { onAuthClick(textFieldState.text.toString().toLong())}
+                        )
+                        {
+                            Text("Auth")
+                        }
+
+                    }
+                    else{
+                    Text(text=user?.login ?: "", style= Typography.bodyLarge.copy(fontWeight = FontWeight.Bold), color=colorScheme.primary)
                     Spacer(Modifier.height(12.dp))
-                    Text(text="UserEmail@mail.ru", style=Typography.bodyMedium,color= colorScheme.secondary)
+                    Text(text=user?.email ?: "", style=Typography.bodyMedium,color= colorScheme.secondary)
+                    }
                 }
             }
 
@@ -142,7 +163,7 @@ fun SettingsScreen(paddingValues: PaddingValues){
 
                 HorizontalDivider(thickness = 1.dp, color=colorScheme.outline)
 
-                SettingsBlockRow(Icons.Default.ExitToApp, "Sign Out", true) {}
+                SettingsBlockRow(Icons.Default.ExitToApp, "Sign Out", true, onRowClick = onExitClick) {}
             }
 
             SettingsBlockTitle("Preferences")
@@ -151,12 +172,12 @@ fun SettingsScreen(paddingValues: PaddingValues){
             {
                 SettingsBlockRow(Icons.Default.Clear, "Push Notifications")
                 {
-                    CustomSwitcher(notifications, {changeNotifications(context)})
+                    CustomSwitcher(notification, {onSwitchClick("notification")})
                 }
                 HorizontalDivider(thickness =  1.dp, color= colorScheme.outline)
                 SettingsBlockRow(Icons.Default.Clear, "Sound Effects")
                 {
-                    CustomSwitcher(sounds, {changeSound(context)})
+                    CustomSwitcher(sound, {onSwitchClick("sound")})
                 }
                 HorizontalDivider(thickness =  1.dp, color= colorScheme.outline)
                 SettingsBlockRow(Icons.Default.Clear, "Language")
@@ -172,7 +193,7 @@ fun SettingsScreen(paddingValues: PaddingValues){
                 HorizontalDivider(thickness =  1.dp, color= colorScheme.outline)
                 SettingsBlockRow(Icons.Default.Clear, "Dark Theme")
                 {
-                    CustomSwitcher(theme, {changeTheme(context) })
+                    CustomSwitcher(theme, {onSwitchClick("theme") })
                 }
             }
 
@@ -216,7 +237,7 @@ fun SettingsBlockTitle(title:String){
 
 // Строка блока настроек
 @Composable
-fun SettingsBlockRow(icon: ImageVector, text: String, isImportant: Boolean = false,  content: @Composable ()-> Unit){
+fun SettingsBlockRow(icon: ImageVector, text: String, isImportant: Boolean = false, onRowClick: ()-> Unit = {},  content: @Composable ()-> Unit){
 
     val importantColor = if(isImportant) colorScheme.tertiary else colorScheme.secondary
 
@@ -225,7 +246,7 @@ fun SettingsBlockRow(icon: ImageVector, text: String, isImportant: Boolean = fal
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier=Modifier
             .fillMaxWidth()
-
+            .clickable( onClick = {onRowClick()})
             .padding(all = 16.dp)
 
     ){
@@ -259,19 +280,17 @@ fun SettingsBlock(content: @Composable () -> Unit){
 // Кастомный переключатель
 @Composable
 fun CustomSwitcher(checked: Boolean ,onClick: () -> Unit = {}){
-    var checkedState by remember { mutableStateOf<Boolean>(checked)}
     val width by animateDpAsState(
-        targetValue = if (checkedState) 20.dp else 0.dp,
+        targetValue = if (checked) 20.dp else 0.dp,
         animationSpec = spring(dampingRatio = 2f)
     )
     Row(
         modifier= Modifier
             .background(
-                color = if (checkedState) colorScheme.tertiary else colorScheme.tertiaryContainer,
+                color = if (checked) colorScheme.tertiary else colorScheme.tertiaryContainer,
                 shape = RoundedCornerShape(50)
             )
             .clickable(onClick = {
-                checkedState = !checkedState
                 onClick()
             })
             .width(50.dp)
@@ -289,22 +308,5 @@ fun CustomSwitcher(checked: Boolean ,onClick: () -> Unit = {}){
 }
 
 // Перенести в ViewModel !!!!!!!!!!!!!!!!!!!!!!!
-fun changeNotifications(context: Context): Unit{
-    val preferences: SharedPreferences = context.getSharedPreferences("my_app_preferences", Context.MODE_PRIVATE)
-
-    preferences.edit { putBoolean("notification", !preferences.getBoolean("notification", false)) }
-}
-
-fun changeSound(context: Context): Unit{
-    val preferences: SharedPreferences = context.getSharedPreferences("my_app_preferences", Context.MODE_PRIVATE)
-
-    preferences.edit { putBoolean("sound", !preferences.getBoolean("sound", false)) }
-}
-
-fun changeTheme(context: Context): Unit{
-    val preferences: SharedPreferences = context.getSharedPreferences("my_app_preferences", Context.MODE_PRIVATE)
-
-    preferences.edit { putBoolean("theme", !preferences.getBoolean("theme", false)) }
-}
 
 

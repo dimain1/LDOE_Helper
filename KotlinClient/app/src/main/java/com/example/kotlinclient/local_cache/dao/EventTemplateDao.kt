@@ -10,9 +10,9 @@ import kotlinx.coroutines.flow.Flow
 interface EventTemplateDao {
 
     @Transaction
-    @Query("SELECT * FROM event_template")
-    fun getAllEventTemplateWithUser(): Flow<List<EventTemplateWithUser>>
+    @Query("SELECT * FROM event_template WHERE creator_id = :userId")
+    fun getAllEventTemplateWithUser(userId: Long): Flow<List<EventTemplateWithUser>>
 
-    @Query("DELETE FROM event_template WHERE id = :id")
-    fun deleteTemplateById(id: Long)
+    @Query("DELETE FROM event_template WHERE id = :id AND creator_id = :userId")
+    fun deleteTemplateById(userId: Long,id: Long)
 }

@@ -25,10 +25,5 @@ class HomeViewModel(
         viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList()
     )
 
-    fun updateContentPin(id: Long, pinStatus: Boolean){
-        viewModelScope.launch {
-            gameContentRepository.changeContentPin(id, pinStatus)
-        }
-    }
 
 }

@@ -17,6 +17,7 @@ import com.example.kotlinclient.local_cache.entity.EventTemplateEntity
 import com.example.kotlinclient.local_cache.entity.GameContentEntity
 import com.example.kotlinclient.local_cache.entity.GameContentTypeCrossRef
 import com.example.kotlinclient.local_cache.entity.UserEntity
+import com.example.kotlinclient.local_cache.entity.UserPinnedGameContentCrossRef
 
 @Database(
     entities= [
@@ -26,8 +27,9 @@ import com.example.kotlinclient.local_cache.entity.UserEntity
         EventTemplateEntity::class,
         UserEntity::class,
         GameContentTypeCrossRef::class,
+        UserPinnedGameContentCrossRef::class
     ],
-    version = 8
+    version = 9
 )
 @TypeConverters(MapConverter::class, DateTimeConverter::class)
 abstract class AppDatabase : RoomDatabase() {

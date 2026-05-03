@@ -43,7 +43,7 @@ class MainActivity : ComponentActivity() {
             val preferences = getSharedPreferences("my_app_preferences", MODE_PRIVATE)
             val key: String = "theme"
 
-            var darkTheme by remember { mutableStateOf(preferences.getBoolean("theme",false)) }
+            var darkTheme by remember { mutableStateOf(preferences.getBoolean(key, false)) }
 
 
             DisposableEffect(key) {

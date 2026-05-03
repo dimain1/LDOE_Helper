@@ -2,6 +2,7 @@ package com.example.kotlinclient
 
 import android.app.Application
 import com.example.kotlinclient.di.databaseModule
+import com.example.kotlinclient.di.preferencesModule
 import com.example.kotlinclient.di.repositoryModule
 import com.example.kotlinclient.di.viewModelModule
 import org.koin.android.ext.koin.androidContext
@@ -17,7 +18,8 @@ class App: Application() {
             modules(
                 databaseModule,
                 repositoryModule,
-                viewModelModule
+                viewModelModule,
+                preferencesModule
             )
         }
     }

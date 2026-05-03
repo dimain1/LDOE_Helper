@@ -16,14 +16,7 @@ data class GameContentEntity(
     val description: String?,
     @ColumnInfo(name="image")
     val imageUrl: String?,
-    val pinned: Boolean,
 
     val attributes: Map<String, Any>?
-
-
-
-
-
-
 
 )

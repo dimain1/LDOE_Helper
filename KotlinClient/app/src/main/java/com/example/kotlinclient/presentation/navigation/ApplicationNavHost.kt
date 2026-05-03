@@ -23,6 +23,7 @@ import com.example.kotlinclient.state_management.viewModel.EventTemplateViewMode
 import com.example.kotlinclient.state_management.viewModel.EventViewModel
 import com.example.kotlinclient.state_management.viewModel.HomeViewModel
 import com.example.kotlinclient.state_management.viewModel.InfoViewModel
+import com.example.kotlinclient.state_management.viewModel.SettingsViewModel
 import com.example.kotlinclient.ui.theme.KotlinClientTheme
 import org.koin.androidx.compose.koinViewModel
 
@@ -34,6 +35,9 @@ fun ApplicationNavHost(navController: NavHostController, startDestination: Strin
     val homeViewModel: HomeViewModel = koinViewModel()
     val eventViewModel: EventViewModel = koinViewModel()
     val eventTemplateViewModel: EventTemplateViewModel = koinViewModel()
+    val settingsViewModel: SettingsViewModel = koinViewModel ()
+
+
 
     // Главный компонент навигации, определяет пути и экраны, которые будут вызваны по этому пути
     NavHost(navController, startDestination = startDestination) {
@@ -106,7 +110,24 @@ fun ApplicationNavHost(navController: NavHostController, startDestination: Strin
 
 
         composable(route= Routes.SettingsPage.route){
-            SettingsScreen(paddingValues)
+
+            val notification = settingsViewModel.notification.collectAsState()
+            val sound = settingsViewModel.sound.collectAsState()
+            val theme = settingsViewModel.theme.collectAsState()
+
+            val userId = settingsViewModel.userId.collectAsState()
+            val user = settingsViewModel.user.collectAsState()
+
+            SettingsScreen(
+                notification= notification.value,
+                sound= sound.value,
+                theme= theme.value,
+                onSwitchClick = { key -> settingsViewModel.switchBooleanPreferences(key)},
+                userId = userId.value,
+                user = user.value,
+                onAuthClick = { id -> settingsViewModel.setUserId(id) },
+                onExitClick = {settingsViewModel.setUserId(-1)},
+                paddingValues= paddingValues)
         }
 
     }

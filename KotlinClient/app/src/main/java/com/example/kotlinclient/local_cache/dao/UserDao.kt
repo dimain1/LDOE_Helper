@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.kotlinclient.local_cache.entity.UserEntity
+import kotlinx.coroutines.flow.Flow
 
 
 @Dao
@@ -16,7 +17,7 @@ interface UserDao {
     fun addNewUser(user: UserEntity)
 
     @Query("SELECT * FROM users WHERE id = :id") // Получение информации о пользователе по его id, по логике будет вызываться только для id = id текущего активного пользоватея
-    fun getUserById(id:Long): UserEntity
+    fun getUserById(id:Long): Flow<UserEntity?>
 
     @Delete(entity= UserEntity::class)
     fun deleteUser(user: UserEntity)

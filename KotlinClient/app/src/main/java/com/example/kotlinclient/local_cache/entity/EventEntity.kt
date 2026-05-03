@@ -47,6 +47,4 @@ data class EventEntity(
     val startTime: OffsetDateTime,
     @ColumnInfo(name="end_time")
     val endTime: OffsetDateTime
-
-
 )

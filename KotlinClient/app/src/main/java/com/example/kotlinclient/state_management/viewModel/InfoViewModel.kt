@@ -65,7 +65,12 @@ class InfoViewModel(
 
     fun updateContentPin(id: Long, pinStatus: Boolean){
         viewModelScope.launch {
-            gameContentRepository.changeContentPin(id, pinStatus)
+            if(pinStatus){
+                gameContentRepository.pinContent(id)
+            }
+            else{
+                gameContentRepository.unpinContent(id)
+            }
         }
     }
 }
