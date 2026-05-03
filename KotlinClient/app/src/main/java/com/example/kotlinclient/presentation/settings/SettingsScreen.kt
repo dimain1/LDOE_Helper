@@ -71,11 +71,17 @@ fun SettingsScreen(
     userId: Long,
     user: User?,
     onAuthClick: (Long) -> Unit,
+    onApproveClick: (String, String) -> Unit,
     onExitClick : () -> Unit,
     paddingValues: PaddingValues){
 
     val scrollState: ScrollState = rememberScrollState()
     val textFieldState = rememberTextFieldState("")
+    var showModal by remember { mutableStateOf(false)}
+
+    val onDismiss = {showModal = false}
+
+    EditProfileModal(showModal, user?.login ?: "", user?.email ?: "",onApproveClick, onDismiss)
 
     // Контейнер всего экрана
     Column(modifier= Modifier
@@ -156,7 +162,7 @@ fun SettingsScreen(
 
             SettingsBlock()
             {
-                SettingsBlockRow(Icons.Default.Person, "Edit Profile")
+                SettingsBlockRow(Icons.Default.Person, "Edit Profile", onRowClick = { if(userId == -1L) {} else {showModal = !showModal} })
                 {
                     Icon(Icons.Default.KeyboardArrowRight, "Arrow Right", modifier=Modifier.size(16.dp) ,tint=colorScheme.secondary)
                 }
@@ -246,7 +252,7 @@ fun SettingsBlockRow(icon: ImageVector, text: String, isImportant: Boolean = fal
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier=Modifier
             .fillMaxWidth()
-            .clickable( onClick = {onRowClick()})
+            .clickable(onClick = { onRowClick() })
             .padding(all = 16.dp)
 
     ){

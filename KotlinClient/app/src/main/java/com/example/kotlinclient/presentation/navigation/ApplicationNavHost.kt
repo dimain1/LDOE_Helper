@@ -126,6 +126,7 @@ fun ApplicationNavHost(navController: NavHostController, startDestination: Strin
                 userId = userId.value,
                 user = user.value,
                 onAuthClick = { id -> settingsViewModel.setUserId(id) },
+                onApproveClick = {login, email -> settingsViewModel.updateUserInfo(login, email)},
                 onExitClick = {settingsViewModel.setUserId(-1)},
                 paddingValues= paddingValues)
         }

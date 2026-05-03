@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlin.math.log
 
 class SettingsViewModel(
     val sharedPreferencesRepository: SharedPreferencesRepository,
@@ -53,6 +54,12 @@ class SettingsViewModel(
     fun setUserId(id: Long){
         viewModelScope.launch {
             sharedPreferencesRepository.putLongByKey("user_id", id)
+        }
+    }
+
+    fun updateUserInfo(login: String, email:String){
+        viewModelScope.launch {
+            userRepository.updateUserInfo(login,email)
         }
     }
 

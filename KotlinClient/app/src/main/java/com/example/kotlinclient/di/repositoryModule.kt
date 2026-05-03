@@ -33,7 +33,7 @@ val repositoryModule = module {
     }
 
     single<UserRepository>{
-        UserRepositoryImpl(get())
+        UserRepositoryImpl(get(), get())
     }
 
     single<SharedPreferencesRepository>{

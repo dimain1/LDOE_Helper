@@ -22,6 +22,6 @@ interface UserDao {
     @Delete(entity= UserEntity::class)
     fun deleteUser(user: UserEntity)
 
-    @Update(entity = UserEntity::class)
+    @Update(entity = UserEntity::class, onConflict = OnConflictStrategy.REPLACE)
     fun updateUserInfo(user: UserEntity)
 }
