@@ -25,7 +25,7 @@ import androidx.room.PrimaryKey
 data class EventTemplateEntity(
 
     @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
+    val id: Long? = null,
 
     @ColumnInfo(name= "creator_id")
     val creatorId: Long?,

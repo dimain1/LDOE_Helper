@@ -31,7 +31,7 @@ import java.time.OffsetDateTime
     )
 data class EventEntity(
     @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
+    val id: Long? = null,
 
     @ColumnInfo(name= "template_id")
     val templateId: Long?,
