@@ -21,6 +21,7 @@ import com.example.kotlinclient.state_management.entity.ContentType
 import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.state_management.viewModel.EventTemplateViewModel
 import com.example.kotlinclient.state_management.viewModel.EventViewModel
+import com.example.kotlinclient.state_management.viewModel.HomeAction
 import com.example.kotlinclient.state_management.viewModel.HomeViewModel
 import com.example.kotlinclient.state_management.viewModel.InfoViewModel
 import com.example.kotlinclient.state_management.viewModel.SettingsViewModel
@@ -41,120 +42,41 @@ fun ApplicationNavHost(navController: NavHostController, startDestination: Strin
 
     // Главный компонент навигации, определяет пути и экраны, которые будут вызваны по этому пути
     NavHost(navController, startDestination = startDestination) {
-        composable(route = Routes.HomePage.route){
 
-            val upcomingEvents = homeViewModel.upcomingEvents.collectAsState()
-            val pinnedEntity = homeViewModel.pinnedEntity.collectAsState()
+        homeScreen(
+            homeViewModel,
+            eventViewModel,
+            infoViewModel,
+            navController,
+            paddingValues
+        )
 
-            HomeScreen(
-                upcomingEvents = upcomingEvents.value,
-                onDeleteClick = { id -> eventViewModel.deleteEventById(id) },
-                pinnedEntity = pinnedEntity.value,
-                onPinClick = { id, pinStatus -> infoViewModel.updateContentPin(id, pinStatus) },
-                onNewEventClick = { navigateToEvent(navController) },
-                onTemplateClick = { navigateToTemplate(navController) },
-                onMyEventClick = { navigateToEvent(navController) },
-                onDatabaseClick = { navigateToInfo(navController) },
-                paddingValues = paddingValues
-            )
-        }
+        infoScreen(
+            infoViewModel,
+            paddingValues
+        )
 
+        eventScreen(
+            eventViewModel,
+            eventTemplateViewModel,
+            paddingValues
+        )
 
-        composable(route= Routes.InfoPage.route){
+        templateScreen(
+            eventTemplateViewModel,
+            paddingValues
+        )
 
-            val types = infoViewModel.types.collectAsState()
-            val selected_type = infoViewModel.selected_type.collectAsState()
-            Log.e("types","types: ${types.value.size}")
-
-            val gameContent = infoViewModel.gameContent.collectAsState()
-
-            InfoScreen(
-                paddingValues,
-                types.value,
-                selected_type.value,
-                { id -> infoViewModel.selectType(id) },
-                gameContent.value,
-                {query -> infoViewModel.changeSearchQuery(query)},
-                {infoViewModel.clearQuery()},
-                {id, pinStatus ->infoViewModel.updateContentPin(id, pinStatus)}
-
-
-            )
-        }
-
-
-        composable(route= Routes.EventsPage.route){
-
-            val events = eventViewModel.Events.collectAsState()
-
-            EventScreen(
-                events= events.value,
-                onEditClick = { id -> eventViewModel.deleteEventById(id) },
-                onDeleteClick = { id -> eventViewModel.deleteEventById(id) },
-                onCreateClick = {},
-                paddingValues = paddingValues)
-        }
-
-
-        composable(route= Routes.TemplatePage.route){
-
-            val templates = eventTemplateViewModel.templates.collectAsState()
-
-            TemplateScreen(
-                templates= templates.value,
-                onEditClick = { id -> eventTemplateViewModel.deleteTemplate(id) },
-                onDeleteClick = {id -> eventTemplateViewModel.deleteTemplate(id) },
-                onCreateClick = {},
-                paddingValues= paddingValues)
-        }
-
-
-        composable(route= Routes.SettingsPage.route){
-
-            val notification = settingsViewModel.notification.collectAsState()
-            val sound = settingsViewModel.sound.collectAsState()
-            val theme = settingsViewModel.theme.collectAsState()
-
-            val userId = settingsViewModel.userId.collectAsState()
-            val user = settingsViewModel.user.collectAsState()
-
-            SettingsScreen(
-                notification= notification.value,
-                sound= sound.value,
-                theme= theme.value,
-                onSwitchClick = { key -> settingsViewModel.switchBooleanPreferences(key)},
-                userId = userId.value,
-                user = user.value,
-                onAuthClick = { id -> settingsViewModel.setUserId(id) },
-                onApproveClick = {login, email -> settingsViewModel.updateUserInfo(login, email)},
-                onExitClick = {settingsViewModel.setUserId(-1)},
-                paddingValues= paddingValues)
-        }
+        settingsScreen(
+            settingsViewModel,
+            paddingValues
+        )
 
     }
 
 }
 
-// Функции навигации(Переходы)
-fun navigateToHome(navController: NavController){
-    navController.navigate(Routes.HomePage.route)
-}
 
-fun navigateToInfo(navController: NavController){
-    navController.navigate(Routes.InfoPage.route)
-}
-
-fun navigateToEvent(navController: NavController){
-    navController.navigate(Routes.EventsPage.route)
-}
-
-fun navigateToTemplate(navController: NavController){
-    navController.navigate(Routes.TemplatePage.route)
-}
-
-fun navigateToSettings(navController: NavController){
-    navController.navigate(Routes.SettingsPage.route)
-}
 
 
 

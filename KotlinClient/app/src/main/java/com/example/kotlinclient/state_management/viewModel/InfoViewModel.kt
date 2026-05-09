@@ -15,44 +15,68 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+data class InfoUiState(
+    val types: List<ContentType> = emptyList(),
+    val searchQuery: String = "",
+    val selectedType: Long = 0,
+    val gameContent: List<GameContent> = emptyList()
+)
+
+sealed interface InfoAction{
+    data class SelectType(val id: Long): InfoAction
+    data class ChangeSearchQuery(val query: String): InfoAction
+    data object ClearQuery : InfoAction
+    data class UpdateContentPin(val id: Long, val pinStatus: Boolean) : InfoAction
+}
+
 
 class InfoViewModel(
     val contentTypeRepository: ContentTypeRepository,
     val gameContentRepository: GameContentRepository
 ): ViewModel() {
 
-    val types: StateFlow<List<ContentType>> = contentTypeRepository.getAllTypes().stateIn(viewModelScope,
-        SharingStarted.Lazily, emptyList())
+    private val _uiState = MutableStateFlow(InfoUiState())
+    val uiState = _uiState.asStateFlow()
 
-    private val _searchQuery: MutableStateFlow<String> = MutableStateFlow("")
+    private val _searchQuery = MutableStateFlow("")
+    private val _selectedType = MutableStateFlow(0L)
 
-    val searchQuery = _searchQuery.asStateFlow()
+    init{
 
-    private val _selected_type: MutableStateFlow<Long> = MutableStateFlow(0)
+        contentTypeRepository.getAllTypes().onEach { types ->
+            _uiState.update { it.copy(types=types) }
+        }.launchIn(viewModelScope)
 
-    val selected_type = _selected_type.asStateFlow()
-
-
-    val gameContent: StateFlow<List<GameContent>> =
-        combine(_searchQuery, selected_type)
+        combine(_searchQuery, _selectedType)
         {
-            query, typeId  ->  query to typeId
-        }.flatMapLatest{
-            (query, typeId) -> gameContentRepository.getFilteredContent(query, typeId)
-        }
-
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            emptyList())
-
-
+            query, typeId ->
+            query to typeId
+        }.debounce(300)
+            .flatMapLatest { (query, typeId)  ->
+                gameContentRepository.getFilteredContent(query,typeId)
+            }
+            .onEach {
+                content ->
+                _uiState.update { it.copy(
+                    gameContent=content,
+                    searchQuery = _searchQuery.value,
+                    selectedType = _selectedType.value
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
+    }
 
     fun selectType(id: Long){
-        _selected_type.value = id
+        _selectedType.value = id
     }
 
     fun changeSearchQuery(query: String){

@@ -3,6 +3,7 @@ package com.example.kotlinclient.presentation.settings
 import android.content.Context
 import android.content.SharedPreferences
 import android.text.Layout
+import android.util.Log
 import androidx.compose.animation.core.Spring.StiffnessLow
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
@@ -59,55 +60,54 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import com.example.kotlinclient.state_management.entity.User
+import com.example.kotlinclient.state_management.viewModel.SettingsAction
+import com.example.kotlinclient.state_management.viewModel.SettingsUiState
 import com.example.kotlinclient.ui.theme.Typography
 
 
 @Composable
 fun SettingsScreen(
-    notification: Boolean,
-    sound: Boolean,
-    theme: Boolean,
-    onSwitchClick: (String) -> Unit,
-    userId: Long,
-    user: User?,
-    onAuthClick: (Long) -> Unit,
-    onApproveClick: (String, String) -> Unit,
-    onExitClick : () -> Unit,
-    paddingValues: PaddingValues){
+    uiState: SettingsUiState,
+    onAction: (SettingsAction) -> Unit,
+    paddingValues: PaddingValues
+) {
 
     val scrollState: ScrollState = rememberScrollState()
     val textFieldState = rememberTextFieldState("")
-    var showModal by remember { mutableStateOf(false)}
+    var showModal by remember { mutableStateOf(false) }
 
-    val onDismiss = {showModal = false}
 
-    EditProfileModal(showModal, user?.login ?: "", user?.email ?: "",onApproveClick, onDismiss)
+
+    EditProfileModal(
+        showModal,
+        uiState.user,
+        { showModal = false },
+        { login, email -> onAction(SettingsAction.EditUserInfo(login, email)) })
 
     // Контейнер всего экрана
-    Column(modifier= Modifier
-        .fillMaxSize()
-        .padding(paddingValues)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
     )
     {
 
-        HorizontalDivider(thickness = 1.dp,color = colorScheme.outline)
-
+        HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
 
         // Основной контейнер экрана
         Column(
-            modifier=Modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
                 .verticalScroll(scrollState)
                 .background(color = colorScheme.secondaryContainer)
                 .padding(horizontal = 16.dp)
-        )
-        {
+        ) {
             Spacer(Modifier.height(16.dp))
             // Контейнер пользователя
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier=Modifier
+                modifier = Modifier
                     .fillMaxWidth()
                     .background(colorScheme.surface, shape = RoundedCornerShape(10))
                     .border(1.dp, colorScheme.outline, shape = RoundedCornerShape(10))
@@ -117,9 +117,9 @@ fun SettingsScreen(
                 //Контейнер иконки
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier= Modifier
-                        .background(colorScheme.tertiary, shape= CircleShape)
-                ){
+                    modifier = Modifier
+                        .background(colorScheme.tertiary, shape = CircleShape)
+                ) {
                     Icon(
                         Icons.Default.Person,
                         "Person Icon",
@@ -134,26 +134,44 @@ fun SettingsScreen(
 
                 //Столбец инфорации о пользователе
                 Column(
-                    modifier= Modifier
+                    modifier = Modifier
                         .fillMaxWidth()
-                ){
-                    if(userId == -1L){
+                ) {
+                    if (uiState.user == null) {
                         TextField(
-                            value= textFieldState.text.toString(),
-                            onValueChange = { text: String -> textFieldState.edit { replace(0, length, text) } }
+                            value = textFieldState.text.toString(),
+                            onValueChange = { text: String ->
+                                textFieldState.edit {
+                                    replace(
+                                        0,
+                                        length,
+                                        text
+                                    )
+                                }
+                            }
                         )
                         Button(
-                            onClick= { onAuthClick(textFieldState.text.toString().toLong())}
+                            onClick = {
+                                onAction(SettingsAction.SetUserId(textFieldState.text.toString().toLong()))
+                                Log.e("UserName", "${uiState.user.toString()}")
+                            }
                         )
                         {
                             Text("Auth")
                         }
 
-                    }
-                    else{
-                    Text(text=user?.login ?: "", style= Typography.bodyLarge.copy(fontWeight = FontWeight.Bold), color=colorScheme.primary)
-                    Spacer(Modifier.height(12.dp))
-                    Text(text=user?.email ?: "", style=Typography.bodyMedium,color= colorScheme.secondary)
+                    } else {
+                        Text(
+                            text = uiState.user.login,
+                            style = Typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                            color = colorScheme.primary
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            text = uiState.user.email,
+                            style = Typography.bodyMedium,
+                            color = colorScheme.secondary
+                        )
                     }
                 }
             }
@@ -162,14 +180,32 @@ fun SettingsScreen(
 
             SettingsBlock()
             {
-                SettingsBlockRow(Icons.Default.Person, "Edit Profile", onRowClick = { if(userId == -1L) {} else {showModal = !showModal} })
+                SettingsBlockRow(
+                    Icons.Default.Person,
+                    "Edit Profile",
+                    onRowClick = {
+                        if (uiState.user == null) {
+                        } else {
+                            showModal = !showModal
+                        }
+                    })
                 {
-                    Icon(Icons.Default.KeyboardArrowRight, "Arrow Right", modifier=Modifier.size(16.dp) ,tint=colorScheme.secondary)
+                    Icon(
+                        Icons.Default.KeyboardArrowRight,
+                        "Arrow Right",
+                        modifier = Modifier.size(16.dp),
+                        tint = colorScheme.secondary
+                    )
                 }
 
-                HorizontalDivider(thickness = 1.dp, color=colorScheme.outline)
+                HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
 
-                SettingsBlockRow(Icons.Default.ExitToApp, "Sign Out", true, onRowClick = onExitClick) {}
+                SettingsBlockRow(
+                    Icons.Default.ExitToApp,
+                    "Sign Out",
+                    true,
+                    onRowClick = { onAction(SettingsAction.ExitProfile) }
+                ) {}
             }
 
             SettingsBlockTitle("Preferences")
@@ -178,28 +214,37 @@ fun SettingsScreen(
             {
                 SettingsBlockRow(Icons.Default.Clear, "Push Notifications")
                 {
-                    CustomSwitcher(notification, {onSwitchClick("notification")})
+                    CustomSwitcher(uiState.notification, { onAction(SettingsAction.SwitchPreference("notification")) })
                 }
-                HorizontalDivider(thickness =  1.dp, color= colorScheme.outline)
+                HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
                 SettingsBlockRow(Icons.Default.Clear, "Sound Effects")
                 {
-                    CustomSwitcher(sound, {onSwitchClick("sound")})
+                    CustomSwitcher(uiState.sound, { onAction(SettingsAction.SwitchPreference("sound")) })
                 }
-                HorizontalDivider(thickness =  1.dp, color= colorScheme.outline)
+                HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
                 SettingsBlockRow(Icons.Default.Clear, "Language")
                 {
                     Row(
                         verticalAlignment = Alignment.CenterVertically
-                    ){
-                        Text("English", style=Typography.bodyMedium,color= colorScheme.secondary)
+                    ) {
+                        Text(
+                            "English",
+                            style = Typography.bodyMedium,
+                            color = colorScheme.secondary
+                        )
                         Spacer(Modifier.width(12.dp))
-                        Icon(Icons.Default.KeyboardArrowRight, "Arrow Right", modifier=Modifier.size(16.dp) ,tint=colorScheme.secondary)
+                        Icon(
+                            Icons.Default.KeyboardArrowRight,
+                            "Arrow Right",
+                            modifier = Modifier.size(16.dp),
+                            tint = colorScheme.secondary
+                        )
                     }
                 }
-                HorizontalDivider(thickness =  1.dp, color= colorScheme.outline)
+                HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
                 SettingsBlockRow(Icons.Default.Clear, "Dark Theme")
                 {
-                    CustomSwitcher(theme, {onSwitchClick("theme") })
+                    CustomSwitcher(uiState.theme, { onAction(SettingsAction.SwitchPreference("theme")) })
                 }
             }
 
@@ -210,58 +255,83 @@ fun SettingsScreen(
             {
                 SettingsBlockRow(Icons.Default.Info, "Version")
                 {
-                    Text("1.0.0", style=Typography.bodyMedium,color= colorScheme.secondary)
+                    Text("1.0.0", style = Typography.bodyMedium, color = colorScheme.secondary)
                 }
-                HorizontalDivider(thickness =  1.dp, color= colorScheme.outline)
+                HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
                 SettingsBlockRow(Icons.Default.Info, "Terms of Service")
                 {
-                    Icon(Icons.Default.KeyboardArrowRight, "Arrow Right", modifier=Modifier.size(16.dp) ,tint=colorScheme.secondary)
+                    Icon(
+                        Icons.Default.KeyboardArrowRight,
+                        "Arrow Right",
+                        modifier = Modifier.size(16.dp),
+                        tint = colorScheme.secondary
+                    )
                 }
-                HorizontalDivider(thickness =  1.dp, color= colorScheme.outline)
+                HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
                 SettingsBlockRow(Icons.Default.Info, "Privacy Policy")
                 {
-                    Icon(Icons.Default.KeyboardArrowRight, "Arrow Right", modifier=Modifier.size(16.dp) ,tint=colorScheme.secondary)
+                    Icon(
+                        Icons.Default.KeyboardArrowRight,
+                        "Arrow Right",
+                        modifier = Modifier.size(16.dp),
+                        tint = colorScheme.secondary
+                    )
                 }
             }
             Spacer(Modifier.height(16.dp))
         }
 
-        HorizontalDivider(thickness = 1.dp,color = colorScheme.outline)
+        HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
     }
 
 }
 
 // Заголовок блока настроек
 @Composable
-fun SettingsBlockTitle(title:String){
+fun SettingsBlockTitle(title: String) {
     Spacer(Modifier.height(28.dp))
     // Заголовок Account-пунктов настроек
-    Text(text= title, style=Typography.bodyMedium,color= colorScheme.secondary, modifier=Modifier.padding(start=8.dp) )
+    Text(
+        text = title,
+        style = Typography.bodyMedium,
+        color = colorScheme.secondary,
+        modifier = Modifier.padding(start = 8.dp)
+    )
 
     Spacer(Modifier.height(16.dp))
 }
 
 // Строка блока настроек
 @Composable
-fun SettingsBlockRow(icon: ImageVector, text: String, isImportant: Boolean = false, onRowClick: ()-> Unit = {},  content: @Composable ()-> Unit){
+fun SettingsBlockRow(
+    icon: ImageVector,
+    text: String,
+    isImportant: Boolean = false,
+    onRowClick: () -> Unit = {},
+    content: @Composable () -> Unit
+) {
 
-    val importantColor = if(isImportant) colorScheme.tertiary else colorScheme.secondary
+    val importantColor = if (isImportant) colorScheme.tertiary else colorScheme.secondary
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
-        modifier=Modifier
+        modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = { onRowClick() })
             .padding(all = 16.dp)
 
-    ){
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-        ){
-            Icon(icon, text,modifier=Modifier.size(32.dp) ,tint=importantColor)
+        ) {
+            Icon(icon, text, modifier = Modifier.size(32.dp), tint = importantColor)
             Spacer(Modifier.width(12.dp))
-            Text(text, style= Typography.bodyLarge.copy(fontWeight = FontWeight.Bold), color= if(isImportant) importantColor else colorScheme.primary)
+            Text(
+                text,
+                style = Typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                color = if (isImportant) importantColor else colorScheme.primary
+            )
         }
 
         content()
@@ -270,9 +340,9 @@ fun SettingsBlockRow(icon: ImageVector, text: String, isImportant: Boolean = fal
 
 // Контейнер блока настроек
 @Composable
-fun SettingsBlock(content: @Composable () -> Unit){
+fun SettingsBlock(content: @Composable () -> Unit) {
     Column(
-        modifier= Modifier
+        modifier = Modifier
             .fillMaxWidth()
             .background(colorScheme.surface, RoundedCornerShape(10))
             .border(1.dp, colorScheme.outline, RoundedCornerShape(10))
@@ -285,13 +355,13 @@ fun SettingsBlock(content: @Composable () -> Unit){
 
 // Кастомный переключатель
 @Composable
-fun CustomSwitcher(checked: Boolean ,onClick: () -> Unit = {}){
+fun CustomSwitcher(checked: Boolean, onClick: () -> Unit = {}) {
     val width by animateDpAsState(
         targetValue = if (checked) 20.dp else 0.dp,
         animationSpec = spring(dampingRatio = 2f)
     )
     Row(
-        modifier= Modifier
+        modifier = Modifier
             .background(
                 color = if (checked) colorScheme.tertiary else colorScheme.tertiaryContainer,
                 shape = RoundedCornerShape(50)
@@ -302,14 +372,14 @@ fun CustomSwitcher(checked: Boolean ,onClick: () -> Unit = {}){
             .width(50.dp)
             .padding(all = 5.dp)
 
-    ){
+    ) {
         Spacer(Modifier.width(width))
         Box(
-            modifier=Modifier
+            modifier = Modifier
                 .size(20.dp)
                 .background(color = colorScheme.primary, shape = CircleShape)
 
-        ){}
+        ) {}
     }
 }
 

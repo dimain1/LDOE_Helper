@@ -42,18 +42,15 @@ import androidx.compose.ui.unit.dp
 import com.example.kotlinclient.R
 import com.example.kotlinclient.presentation.LocalImage
 import com.example.kotlinclient.state_management.entity.EventTemplate
+import com.example.kotlinclient.state_management.viewModel.EventTemplateAction
 import com.example.kotlinclient.ui.theme.Typography
 
 @Composable
 fun TemplateScreen(
     templates: List<EventTemplate>,
-    onEditClick: (Long) -> Unit,
-    onDeleteClick: (Long) -> Unit,
-    onCreateClick: () -> Unit,
-    paddingValues: PaddingValues){
-
-
-
+    onAction: (EventTemplateAction) -> Unit,
+    paddingValues: PaddingValues)
+{
     // Контейнер всего экрана
     Column(
         modifier=Modifier
@@ -87,7 +84,7 @@ fun TemplateScreen(
                     shape= RoundedCornerShape(25),
                     modifier= Modifier,
 
-                    onClick = {onCreateClick()}
+                    onClick = {}
                 )
                 {
                     // Иконка внутри кнопки
@@ -102,104 +99,10 @@ fun TemplateScreen(
 
             HorizontalDivider(thickness = 1.dp, color= colorScheme.outline)
 
+            Spacer(Modifier.height(16.dp))
+
             // Список ивентов
-            LazyColumn(Modifier                .padding(horizontal = 16.dp)) {
-                item {
-                    Spacer(Modifier.height(16.dp))
-                }
-                items(templates.size) { item ->
-                    // Контейнер ивента
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier= Modifier
-                            .fillMaxWidth()
-                            .background(color=colorScheme.surface, shape = RoundedCornerShape(10))
-                            .border(width = 2.dp, color= colorScheme.outline, shape=RoundedCornerShape(10)),
-                    )
-                    {
-                        // Изображение ивента(Сейчас иконка)
-                        LocalImage(templates[item].image, 200, true)
-
-                        HorizontalDivider(thickness = 1.dp, color=colorScheme.outline)
-
-                        Spacer(Modifier.height(20.dp))
-                        // Контейнер для описания ивента
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier= Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-
-                        )
-                        {
-                            // Столбец информации
-                            Column(
-                                modifier= Modifier.weight(1f)
-                            ) {
-                                // Название ивента
-                                Text(text =templates[item].name, style= Typography.bodyLarge.copy(fontWeight = FontWeight.Bold), color= colorScheme.primary)
-
-                                Spacer(Modifier.height(12.dp))
-
-                                // Описание
-                                Row(
-                                    modifier= Modifier.fillMaxWidth()
-                                )
-                                {
-                                    Text(text= templates[item]?.description ?: "", style=Typography.bodyMedium, color=colorScheme.secondary)
-                                }
-
-                                Spacer(Modifier.height(12.dp))
-
-                                // Время
-                                Row(
-                                    modifier = Modifier.fillMaxWidth()
-                                ){
-                                    Icon(
-                                        Icons.Default.Star,
-                                        "Time",
-                                        modifier= Modifier.size(16.dp),
-                                        tint=colorScheme.secondary)
-
-                                    Spacer(Modifier.width(10.dp))
-
-                                    Text(text= (templates[item].duration / 1000).toString() + " " + "Minutes", style=Typography.bodyMedium, color=colorScheme.secondary)
-                                }
-                            }
-                            // Столбец Кнопок
-                            Row(
-                                modifier= Modifier
-                            ){
-                                Image(
-                                    painterResource(R.drawable.pencil),
-                                    contentDescription = "Edit Event",
-                                    modifier=Modifier.size(16.dp)
-                                        .clickable(onClick = { onEditClick(templates[item].id)} ),
-                                    colorFilter = ColorFilter.tint(colorScheme.secondary)
-                                )
-                                Spacer(Modifier.width(16.dp))
-                                Image(
-                                    painterResource(R.drawable.trash_event),
-                                    contentDescription = "Edit Event",
-                                    modifier=Modifier.size(16.dp)
-                                        .clickable(onClick = { onDeleteClick(templates[item].id)} ),
-                                    colorFilter = ColorFilter.tint(colorScheme.secondary)
-                                )
-                            }
-                        }
-                        Spacer(Modifier.height(32.dp))
-
-                    }
-
-                    if( item != templates.size -1 ){
-                        Spacer(Modifier.height(16.dp))
-                    }
-
-                }
-                item {
-                    Spacer(Modifier.height(16.dp))
-                }
-            }
+            TemplateList(templates, 200, onDeleteClick= {id -> onAction(EventTemplateAction.DeleteTemplate(id))} , onEditClick={})
 
         }
 

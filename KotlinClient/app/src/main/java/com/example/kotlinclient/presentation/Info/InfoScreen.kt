@@ -47,30 +47,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.kotlinclient.state_management.entity.ContentType
 import com.example.kotlinclient.state_management.entity.GameContent
+import com.example.kotlinclient.state_management.viewModel.InfoAction
+import com.example.kotlinclient.state_management.viewModel.InfoUiState
 import com.example.kotlinclient.ui.theme.Typography
 import kotlinx.coroutines.flow.debounce
 import kotlin.text.clear
 
 @Composable
 fun InfoScreen(
+    uiState: InfoUiState,
+    onAction: (InfoAction) -> Unit,
     paddingValues: PaddingValues,
-    categoryList: List<ContentType>,
-    selectedCategory: Long,
-    onCategoryClick: (Long) -> Unit,
-    gameContent: List<GameContent>,
-    onSearchChange: (String) -> Unit,
-    onClearClick: () -> Unit,
-    onPinClick: (Long, Boolean) -> Unit
-
 ){
     var textField: TextFieldState = rememberTextFieldState("")
 
     LaunchedEffect(textField) {
-        snapshotFlow { textField.text }
-            .debounce(500)
-            .collect { newText ->
-                onSearchChange(newText.toString())
-            }
+        onAction(InfoAction.ChangeSearchQuery(textField.text.toString()) )
     }
 
     Column(modifier= Modifier
@@ -154,7 +146,7 @@ fun InfoScreen(
                             .alpha(if (!textField.text.isEmpty()) 1f else 0f)
                             .clickable(onClick = {
                                 textField.edit { replace(0, length, "") }
-                                onClearClick()
+                                onAction(InfoAction.ClearQuery)
                             })
                     )
                 }
@@ -165,11 +157,11 @@ fun InfoScreen(
             Spacer(Modifier.height(16.dp))
 
             // Категории
-            CategoryList(categoryList, selectedCategory, onCategoryClick)
+            CategoryList(uiState.types, uiState.selectedType, { id -> onAction(InfoAction.SelectType(id)) })
 
             Spacer(Modifier.height(24.dp))
 
-            ItemList(gameContent, onPinClick)
+            ItemList(uiState.gameContent, { id, status -> onAction(InfoAction.UpdateContentPin(id, status)) } )
 
 
         }

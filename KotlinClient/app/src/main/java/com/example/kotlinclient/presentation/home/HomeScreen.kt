@@ -47,6 +47,8 @@ import com.example.kotlinclient.R
 import com.example.kotlinclient.presentation.LocalImage
 import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.state_management.entity.GameContent
+import com.example.kotlinclient.state_management.viewModel.HomeAction
+import com.example.kotlinclient.state_management.viewModel.HomeUiState
 import com.example.kotlinclient.ui.theme.InfoIconColor
 import com.example.kotlinclient.ui.theme.LinearGradientStartColor
 import com.example.kotlinclient.ui.theme.NotificationIconColor
@@ -60,14 +62,8 @@ import com.example.kotlinclient.ui.theme.linearGradientEndColor
 //Главный экран приложения
 @Composable
 fun HomeScreen(
-    upcomingEvents: List<Event>,
-    onDeleteClick: (Long) -> Unit,
-    pinnedEntity: List<GameContent>,
-    onPinClick: (Long, Boolean) -> Unit,
-    onNewEventClick: () -> Unit,
-    onTemplateClick: () -> Unit,
-    onMyEventClick: () -> Unit,
-    onDatabaseClick: () -> Unit,
+    uiState: HomeUiState,
+    onAction: (HomeAction) -> Unit,
     paddingValues: PaddingValues){
 
     val scrollState = rememberScrollState()
@@ -218,7 +214,7 @@ fun HomeScreen(
                         desc ="Quick create",
                         modifier= Modifier.weight(1f),
                         color= Color.Red,
-                        onClick = onNewEventClick
+                        onClick = { onAction(HomeAction.ToEvent) }
                     )
 
                     Spacer(Modifier.width(12.dp))
@@ -230,7 +226,7 @@ fun HomeScreen(
                         "Your saved templates",
                         Modifier.weight(1f),
                         TemplateIconColor,
-                        onTemplateClick
+                        { onAction(HomeAction.ToTemplate) }
                     )
 
                 }
@@ -248,10 +244,10 @@ fun HomeScreen(
                     QuickBlock(
                         R.drawable.notification,
                         "My Events",
-                        "${upcomingEvents.size} upcoming",
+                        "${uiState.upcomingEvents.size} upcoming",
                         Modifier.weight(1f),
                         NotificationIconColor,
-                        onMyEventClick
+                        { onAction(HomeAction.ToEvent) }
                     )
 
                     Spacer(Modifier.width(12.dp))
@@ -263,7 +259,7 @@ fun HomeScreen(
                         "Browse items",
                         Modifier.weight(1f),
                         InfoIconColor,
-                        onDatabaseClick
+                        { onAction(HomeAction.ToInfo) }
                     )
 
                 }
@@ -273,7 +269,10 @@ fun HomeScreen(
 
             // Upcoming events
             QuickList("Upcoming Events"){
-                if (upcomingEvents.size == 0) {
+
+                val events = uiState.upcomingEvents
+
+                if (events.size == 0) {
                     Text(text = "Oops. Maybe you don't have upcoming events. Go to create one")
                 } else {
                     // Если сущности есть, то отрисовывается контейнер с ними
@@ -282,7 +281,10 @@ fun HomeScreen(
                             .fillMaxWidth()
                             .heightIn(0.dp, 200.dp)
                     ) {
-                        items(upcomingEvents.size) { item ->
+                        items(events.size) { item ->
+
+                            val event = events[item]
+
                             // Контейнер события
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -296,7 +298,7 @@ fun HomeScreen(
 
                             ) {
                                 // Изображение события !!!!!!!!!!!!!!!!
-                                LocalImage(upcomingEvents[item].image, 48)
+                                LocalImage(event.image, Modifier.size(48.dp))
 
                                 Spacer(Modifier.width(12.dp))
                                 // Содержание события
@@ -308,7 +310,7 @@ fun HomeScreen(
                                 {
                                     // Название события
                                     Text(
-                                        text = upcomingEvents[item]?.name ?: "",
+                                        text = event.name ?: "",
                                         style = TextStyle(
                                             fontSize = Typography.bodyMedium.fontSize,
                                             fontWeight = FontWeight.Bold
@@ -317,7 +319,7 @@ fun HomeScreen(
                                     )
                                     // Время конца события
                                     Text(
-                                        text = upcomingEvents[item].end_time.toString(),
+                                        text = event.end_time.toString(),
                                         style = TextStyle(
                                             fontSize = Typography.bodySmall.fontSize,
                                             fontWeight = FontWeight.Normal
@@ -331,11 +333,13 @@ fun HomeScreen(
                                 Image(
                                     painter= painterResource(R.drawable.trash),
                                     contentDescription = "Delete Image",
-                                    modifier= Modifier.size(32.dp).clickable(onClick = { onDeleteClick(upcomingEvents[item].id) }),
+                                    modifier= Modifier
+                                        .size(32.dp)
+                                        .clickable(onClick = { onAction(HomeAction.DeleteEvent(event.id!!)) }),
                                     colorFilter = ColorFilter.tint(colorScheme.primary)
                                 )
                             }
-                            if (item != upcomingEvents.size - 1) {
+                            if (item != events.size - 1) {
                                 Spacer(Modifier.height(16.dp))
                             }
                         }
@@ -348,7 +352,10 @@ fun HomeScreen(
             // Pinned entities Контейнер
 
             QuickList("Pinned Entity"){
-                if (pinnedEntity.size == 0) {
+
+                val entities = uiState.pinnedEntity
+
+                if (entities.size == 0) {
 
                     Text(text = "Oops. Maybe you don't have an pinned entities. Go to pin one")
                 } else {
@@ -358,7 +365,10 @@ fun HomeScreen(
                             .fillMaxWidth()
                             .heightIn(0.dp, 200.dp)
                     ) {
-                        items(pinnedEntity.size) { item ->
+                        items(entities.size) { item ->
+
+                            val entity = entities[item]
+
                             // Контейнер события
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -372,7 +382,7 @@ fun HomeScreen(
 
                             ) {
                                 // Изображение события !!!!!!!!!!!!!!!!
-                                LocalImage(pinnedEntity[item].image, 48)
+                                LocalImage(entity.image, Modifier.size(48.dp))
 
                                 Spacer(Modifier.width(12.dp))
                                 // Содержание события
@@ -384,7 +394,7 @@ fun HomeScreen(
                                 {
                                     // Название события
                                     Text(
-                                        text = pinnedEntity[item].name,
+                                        text = entity.name,
                                         style = TextStyle(
                                             fontSize = Typography.bodyMedium.fontSize,
                                             fontWeight = FontWeight.Bold
@@ -393,7 +403,7 @@ fun HomeScreen(
                                     )
                                     // Краткое описание
                                     Text(
-                                        text = pinnedEntity[item]?.description ?: "",
+                                        text = entity.description ?: "",
                                         style = TextStyle(
                                             fontSize = Typography.bodySmall.fontSize,
                                             fontWeight = FontWeight.Normal
@@ -405,13 +415,17 @@ fun HomeScreen(
 
                                 }
                                 Image(
-                                    painter= painterResource ( if(pinnedEntity[item].pinned == false) R.drawable.pinned_off else R.drawable.pinned_on),
+                                    painter= painterResource ( if(entity.pinned == false) R.drawable.pinned_off else R.drawable.pinned_on),
                                     contentDescription = "Pinned Image",
-                                    modifier= Modifier.size(32.dp).clickable(onClick = { onPinClick(pinnedEntity[item].id, !pinnedEntity[item].pinned) }),
-                                    colorFilter= if(pinnedEntity[item].pinned == false) null else ColorFilter.tint(colorScheme.tertiary)
+                                    modifier= Modifier
+                                        .size(32.dp)
+                                        .clickable(onClick = {
+                                            onAction(HomeAction.TogglePin(entity.id, !entity.pinned))
+                                        }),
+                                    colorFilter= if(entity.pinned == false) null else ColorFilter.tint(colorScheme.tertiary)
                                 )
                             }
-                            if (item != pinnedEntity.size - 1) {
+                            if (item != entities.size - 1) {
                                 Spacer(Modifier.height(16.dp))
                             }
                         }
@@ -472,7 +486,7 @@ fun QuickBlock(image: Int, title: String, desc: String, modifier: Modifier, colo
             .height(80.dp)
             .border(BorderStroke(2.dp, color = colorScheme.outline), shape = RoundedCornerShape(10))
             .background(color = colorScheme.surface, shape = RoundedCornerShape(10))
-            .clickable(onClick = {onClick() })
+            .clickable(onClick = { onClick() })
             .padding(20.dp)
     ){
         // Строка с иконкой и заголовком

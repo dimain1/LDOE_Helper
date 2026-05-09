@@ -62,7 +62,7 @@ fun ItemList(
                     .padding(all = 12.dp)
             ){
                 // Картинка предмета(Замениться на Image)
-                LocalImage(Items[item].image,48)
+                LocalImage(Items[item].image,Modifier.size(48.dp))
 
                 Spacer(Modifier.width(16.dp))
                 // Описание предмета
