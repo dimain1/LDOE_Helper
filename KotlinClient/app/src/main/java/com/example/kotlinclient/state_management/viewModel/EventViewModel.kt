@@ -24,17 +24,26 @@ import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
 data class EventUiState(
-    val events: List<Event> = emptyList()
+    val events: List<Event> = emptyList(),
+    val activeDialog: EventDialogType? = null
 )
+
+sealed interface EventDialogType{
+    data object Create: EventDialogType
+    data object Edit: EventDialogType
+    data class View(val eventData: Event): EventDialogType
+}
 
 sealed interface EventAction {
     data class DeleteEvent(val id: Long) : EventAction
+    data object DismissDialog : EventAction
+    data class OpenDialog(val dialog: EventDialogType): EventAction
 
 }
 
-data class EventCreateUiState(
+data class EventFormFields(
 
-    val id: Long? = null,
+    val id: Long? =  null,
     val name: TextFieldState = TextFieldState(""),
     val description: TextFieldState = TextFieldState(""),
     val startTime: TextFieldState = TextFieldState(""),
@@ -42,12 +51,12 @@ data class EventCreateUiState(
     val template: EventTemplate? = null,
 )
 
-sealed interface EventCreateAction{
-    data object ClearUiState : EventCreateAction
-    data class SelectTemplate(val template: EventTemplate): EventCreateAction
-    data class LoadUiState(val id: Long): EventCreateAction
-    data object ValidateAndSave: EventCreateAction
-    data object UpdateEndTime: EventCreateAction
+sealed interface EventFormAction{
+    data object ClearUiState : EventFormAction
+    data class SelectTemplate(val template: EventTemplate): EventFormAction
+    data class LoadUiState(val event: Event): EventFormAction
+    data object ValidateAndSave: EventFormAction
+    data object UpdateEndTime: EventFormAction
 }
 
 sealed interface ValidationEvent {
@@ -73,15 +82,12 @@ class EventViewModel(
 
     val uiState = _uiState.asStateFlow()
 
-    private val _createUiState = MutableStateFlow(EventCreateUiState())
+    private val _eventFormFields = MutableStateFlow(EventFormFields())
 
-    val createUiState = _createUiState.asStateFlow()
+    val eventFormFields = _eventFormFields.asStateFlow()
 
     private val _selectedTemplate = MutableStateFlow<EventTemplate?>(null)
-
-
-
-    private val _updatedEventId = MutableStateFlow<Long?>(null)
+    private val _selectedId = MutableStateFlow<Long?>(null)
 
     init {
 
@@ -90,13 +96,14 @@ class EventViewModel(
         }.launchIn(viewModelScope)
 
         _selectedTemplate.onEach { template ->
-                _createUiState.update { it.copy(template = template) }
+            _eventFormFields.update { it.copy(template = template) }
                 if(template != null) onTemplateSelect()
         }.launchIn(viewModelScope)
 
-        _updatedEventId.onEach { id ->
-            _createUiState.update { it.copy(id = id) }
+        _selectedId.onEach { id ->
+            _eventFormFields.update { it.copy(id=id) }
         }.launchIn(viewModelScope)
+
 
     }
 
@@ -105,18 +112,18 @@ class EventViewModel(
     }
 
     fun insertTemplateName(){
-        _createUiState.value.name.edit { insert(0, "${_createUiState.value.template?.name} - ") }
+        _eventFormFields.value.name.edit { insert(0, "${_eventFormFields.value.template?.name} - ") }
     }
 
     fun updateEndTime(){
-        if(!_createUiState.value.startTime.text.isEmpty()) {
-            _createUiState.value.endTime.edit {
+        if(!_eventFormFields.value.startTime.text.isEmpty()) {
+            _eventFormFields.value.endTime.edit {
                 replace(
                     0,
                     length,
                     addDuration(
-                        _createUiState.value.startTime.text.toString(),
-                        _createUiState.value.template?.duration ?: 0
+                        _eventFormFields.value.startTime.text.toString(),
+                        _eventFormFields.value.template?.duration ?: 0
                     )
                 )
             }
@@ -146,15 +153,15 @@ class EventViewModel(
     }
 
     fun validateTime(): Boolean{
-        if(createUiState.value.startTime.text.isEmpty() || createUiState.value.endTime.text.isEmpty()) return false
-        val startTime = getTimeByString(createUiState.value.startTime.text.toString())
-        val endTime = getTimeByString(createUiState.value.endTime.text.toString())
+        if(_eventFormFields.value.startTime.text.isEmpty() || _eventFormFields.value.endTime.text.isEmpty()) return false
+        val startTime = getTimeByString(_eventFormFields.value.startTime.text.toString())
+        val endTime = getTimeByString(_eventFormFields.value.endTime.text.toString())
 
         return startTime.compareTo(endTime) < 0
     }
 
 
-    private suspend fun isDataValid(state: EventCreateUiState): Boolean {
+    private suspend fun isDataValid(state: EventFormFields): Boolean {
         return when {
             state.name.text.isEmpty() -> {
                 _validationEvents.send(ValidationEvent.EmptyName)
@@ -170,7 +177,7 @@ class EventViewModel(
 
 
     fun saveEvent() {
-        val state = _createUiState.value
+        val state = _eventFormFields.value
 
         viewModelScope.launch {
             if (isDataValid(state)) {
@@ -195,19 +202,16 @@ class EventViewModel(
         }
     }
 
-    fun loadUiState(id: Long){
-        var uiState = _createUiState.value
-        val event = _uiState.value.events.find { event -> event.id == id }
+    fun loadUiState(event: Event){
+        var uiState = _eventFormFields.value
 
         _selectedTemplate.value = event!!.template
-        _updatedEventId.value = event!!.id
+        _selectedId.value = event!!.id
         uiState.name.edit { replace(0, length, event.name.toString()) }
         uiState.description.edit { replace(0, length, event.description.toString()) }
         uiState.startTime.edit { replace(0, length, getStringByTime(event.start_time) ) }
         uiState.endTime.edit { replace(0, length, getStringByTime(event.end_time) ) }
     }
-
-
 
     fun deleteEvent(id: Long) {
         viewModelScope.launch {
@@ -216,7 +220,15 @@ class EventViewModel(
     }
 
     fun clearUiState() {
-        _createUiState.value = EventCreateUiState()
+        _eventFormFields.value = EventFormFields()
+    }
+
+    fun dismissDialog(){
+        _uiState.update { it.copy(activeDialog = null) }
+    }
+
+    fun openDialog(dialog: EventDialogType){
+        _uiState.update { it.copy(activeDialog = dialog) }
     }
 
 }

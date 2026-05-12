@@ -46,8 +46,9 @@ import com.example.kotlinclient.presentation.LocalImage
 import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.state_management.entity.EventTemplate
 import com.example.kotlinclient.state_management.viewModel.EventAction
-import com.example.kotlinclient.state_management.viewModel.EventCreateAction
-import com.example.kotlinclient.state_management.viewModel.EventCreateUiState
+import com.example.kotlinclient.state_management.viewModel.EventDialogType
+import com.example.kotlinclient.state_management.viewModel.EventFormAction
+import com.example.kotlinclient.state_management.viewModel.EventFormFields
 import com.example.kotlinclient.state_management.viewModel.EventUiState
 import com.example.kotlinclient.state_management.viewModel.ValidationEvent
 import com.example.kotlinclient.ui.theme.Typography
@@ -58,19 +59,39 @@ fun EventScreen(
     uiState: EventUiState,
     onAction: (EventAction) -> Unit,
     templates: List<EventTemplate>,
-    createUiState: EventCreateUiState,
-    onCreateAction: (EventCreateAction) -> Unit,
+    eventFormFields: EventFormFields,
+    onFormAction: (EventFormAction) -> Unit,
     paddingValues: PaddingValues){
 
     var showModal by remember { mutableStateOf(false) }
 
-    EventCreateModal(
-        showModal=showModal,
-        onDismiss= {showModal = false},
-        templates = templates,
-        createUiState= createUiState,
-        onCreateAction = onCreateAction,
-    )
+    when(uiState.activeDialog){
+        is EventDialogType.Create ->{
+
+            EventCreateModal(
+                onDismiss= { onAction(EventAction.DismissDialog) },
+                templates = templates,
+                eventFormFields= eventFormFields,
+                onFormAction = onFormAction,
+            )
+        }
+
+
+        is EventDialogType.Edit -> {
+            EventCreateModal(
+                onDismiss = { onAction(EventAction.DismissDialog) },
+                templates = templates,
+                eventFormFields = eventFormFields,
+                onFormAction = onFormAction,
+            )
+        }
+
+        is EventDialogType.View -> {}
+
+        else -> {}
+    }
+
+
 
 
 
@@ -108,11 +129,9 @@ fun EventScreen(
                     colors= ButtonDefaults.buttonColors(containerColor = colorScheme.tertiary, contentColor = Color.White),
                     shape= RoundedCornerShape(25),
                     modifier= Modifier,
-
                     onClick = {
-                        onCreateAction(EventCreateAction.ClearUiState)
-                        showModal = true
-                    }
+                        onFormAction(EventFormAction.ClearUiState)
+                        onAction(EventAction.OpenDialog(EventDialogType.Create)) }
                 )
                 {
                     // Иконка внутри кнопки
@@ -131,8 +150,10 @@ fun EventScreen(
 
             // Список ивентов
             EventList(uiState.events, 200, { id -> onAction(EventAction.DeleteEvent(id)) }, {
-                id -> onCreateAction(EventCreateAction.LoadUiState(id))
-                showModal = true
+
+                event ->
+                onFormAction(EventFormAction.LoadUiState(event))
+                onAction(EventAction.OpenDialog(EventDialogType.Edit(event)))
             })
 
         }

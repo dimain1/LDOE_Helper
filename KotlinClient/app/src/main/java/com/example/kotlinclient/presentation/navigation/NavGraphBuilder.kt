@@ -14,7 +14,7 @@ import com.example.kotlinclient.presentation.home.HomeScreen
 import com.example.kotlinclient.presentation.settings.SettingsScreen
 import com.example.kotlinclient.presentation.template.TemplateScreen
 import com.example.kotlinclient.state_management.viewModel.EventAction
-import com.example.kotlinclient.state_management.viewModel.EventCreateAction
+import com.example.kotlinclient.state_management.viewModel.EventFormAction
 import com.example.kotlinclient.state_management.viewModel.EventTemplateAction
 import com.example.kotlinclient.state_management.viewModel.EventTemplateViewModel
 import com.example.kotlinclient.state_management.viewModel.EventViewModel
@@ -107,7 +107,7 @@ fun NavGraphBuilder.eventScreen(
         val eventUiState = eventViewModel.uiState.collectAsState()
         val templateUiState = eventTemplateViewModel.uiState.collectAsState()
 
-        val createUiState= eventViewModel.createUiState.collectAsState()
+        val formFields = eventViewModel.eventFormFields.collectAsState()
 
 
         EventScreen(
@@ -119,16 +119,18 @@ fun NavGraphBuilder.eventScreen(
             onAction = { action ->
                 when(action) {
                     is EventAction.DeleteEvent -> eventViewModel.deleteEvent(action.id)
+                    is EventAction.DismissDialog -> eventViewModel.dismissDialog()
+                    is EventAction.OpenDialog -> eventViewModel.openDialog(action.dialog)
                 }
             },
-            createUiState= createUiState.value,
-            onCreateAction= {action ->
+            eventFormFields = formFields.value,
+            onFormAction = {action ->
                 when(action) {
-                    is EventCreateAction.SelectTemplate -> eventViewModel.selectTemplate(action.template)
-                    is EventCreateAction.ValidateAndSave -> eventViewModel.saveEvent()
-                    is EventCreateAction.UpdateEndTime -> eventViewModel.updateEndTime()
-                    is EventCreateAction.LoadUiState -> eventViewModel.loadUiState(action.id)
-                    is EventCreateAction.ClearUiState -> eventViewModel.clearUiState()
+                    is EventFormAction.SelectTemplate -> eventViewModel.selectTemplate(action.template)
+                    is EventFormAction.ValidateAndSave -> eventViewModel.saveEvent()
+                    is EventFormAction.UpdateEndTime -> eventViewModel.updateEndTime()
+                    is EventFormAction.LoadUiState -> eventViewModel.loadUiState(action.event)
+                    is EventFormAction.ClearUiState -> eventViewModel.clearUiState()
                 }
             },
             paddingValues = paddingValues)

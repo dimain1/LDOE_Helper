@@ -25,7 +25,7 @@ fun EventList(
     events: List<Event>,
     imageSize: Int,
     onDeleteClick: (Long) -> Unit,
-    onEditClick: (Long) -> Unit,
+    onEditClick: (Event) -> Unit,
 ) {
     LazyColumn(Modifier.padding(horizontal = 16.dp)) {
 
@@ -53,7 +53,7 @@ fun EventList(
                         painterResource(R.drawable.pencil),
                         contentDescription = "Edit Event",
                         modifier = Modifier.size(16.dp)
-                            .clickable(onClick = { onEditClick(event.id!!) }),
+                            .clickable(onClick = { onEditClick(event) }),
                         colorFilter = ColorFilter.tint(colorScheme.secondary)
                     )
 

@@ -55,8 +55,8 @@ import com.example.kotlinclient.presentation.template.TemplateItem
 import com.example.kotlinclient.presentation.utility.DateTimePicker
 import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.state_management.entity.EventTemplate
-import com.example.kotlinclient.state_management.viewModel.EventCreateAction
-import com.example.kotlinclient.state_management.viewModel.EventCreateUiState
+import com.example.kotlinclient.state_management.viewModel.EventFormAction
+import com.example.kotlinclient.state_management.viewModel.EventFormFields
 import com.example.kotlinclient.ui.theme.Typography
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -64,180 +64,178 @@ import kotlinx.coroutines.flow.onEach
 
 @Composable
 fun EventCreateModal(
-    showModal: Boolean,
-    onDismiss: () -> Unit,
+    onDismiss: ()-> Unit,
     templates: List<EventTemplate>,
-    createUiState: EventCreateUiState,
-    onCreateAction: (EventCreateAction) -> Unit,
+    eventFormFields: EventFormFields,
+    onFormAction: (EventFormAction) -> Unit,
 ) {
-    if (showModal) {
 
-        LaunchedEffect(createUiState.startTime) {
-            snapshotFlow { createUiState.startTime.text }
-                .onEach { onCreateAction(EventCreateAction.UpdateEndTime) }
-                .collect()
+    LaunchedEffect(eventFormFields.startTime) {
+        snapshotFlow { eventFormFields.startTime.text }
+            .onEach { onFormAction(EventFormAction.UpdateEndTime) }
+            .collect()
+    }
+
+    var showTemplateModal by remember { mutableStateOf(false) }
+
+    EventTemplatePicker(
+        showTemplateModal = showTemplateModal,
+        templates = templates,
+        onDismiss = {showTemplateModal = false},
+        onClick = { id ->
+            onFormAction(
+                EventFormAction.SelectTemplate(templates.find { template -> template.id == id }!!)
+            )
+        Log.d("DEBUG", "SELECTED ID IN MAIN MODAL ${eventFormFields.template?.id ?: "выфвфв"}")
         }
 
-        var showTemplateModal by remember { mutableStateOf(false) }
+    )
 
-        EventTemplatePicker(
-            showTemplateModal = showTemplateModal,
-            templates = templates,
-            onDismiss = {showTemplateModal = false},
-            onClick = { id ->
-                onCreateAction(
-                    EventCreateAction.SelectTemplate(templates.find { template -> template.id == id }!!)
-                )
-            Log.d("DEBUG", "SELECTED ID IN MAIN MODAL ${createUiState.template?.id ?: "выфвфв"}")
-            }
+    var showDateTimePicker by remember { mutableStateOf(false) }
 
-        )
+    var activeTextField by remember { mutableStateOf<TextFieldState?>(null) }
 
-        var showDateTimePicker by remember { mutableStateOf(false) }
-
-        var activeTextField by remember { mutableStateOf<TextFieldState?>(null) }
-
-        DateTimePicker(
-            showDateTimePicker,
-            initialDateTime = activeTextField?.text.toString(),
-            onDismiss =
-                {
-                    showDateTimePicker = false
-                    activeTextField = null
-                },
-            onConfirm = { text -> activeTextField?.edit { replace(0, length, text) } }
-        )
-
-        AlertDialog(
-            onDismissRequest = { onDismiss() },
-            title = {
-                Text(text = if(createUiState.id == null) "Создать событие" else "Редактировать событие")
+    DateTimePicker(
+        showDateTimePicker,
+        initialDateTime = activeTextField?.text.toString(),
+        onDismiss =
+            {
+                showDateTimePicker = false
+                activeTextField = null
             },
-            text = {
-                Column() {
+        onConfirm = { text -> activeTextField?.edit { replace(0, length, text) } }
+    )
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                color = colorScheme.tertiaryContainer,
-                                shape = RoundedCornerShape(10)
-                            )
-                            .border(2.dp, colorScheme.outline, RoundedCornerShape(10))
-                            .padding(12.dp)
+    AlertDialog(
+        onDismissRequest = {  },
+        title = {
+            Text(text = if(eventFormFields.id == null) "Создать событие" else "Редактировать событие")
+        },
+        text = {
+            Column() {
 
-                    ) {
-                        if (createUiState.template == null) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(1f)
-                            ) {}
-                            Image(
-                                painter = painterResource(R.drawable.pencil),
-                                contentDescription = "Select template",
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .clickable(onClick = { showTemplateModal = true }),
-                                colorFilter = ColorFilter.tint(colorScheme.primary)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = colorScheme.tertiaryContainer,
+                            shape = RoundedCornerShape(10)
+                        )
+                        .border(2.dp, colorScheme.outline, RoundedCornerShape(10))
+                        .padding(12.dp)
+
+                ) {
+                    if (eventFormFields.template == null) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                        ) {}
+                        Image(
+                            painter = painterResource(R.drawable.pencil),
+                            contentDescription = "Select template",
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clickable(onClick = { showTemplateModal = true }),
+                            colorFilter = ColorFilter.tint(colorScheme.primary)
+                        )
+                    } else {
+                        // Изображение события !!!!!!!!!!!!!!!!
+                        LocalImage(
+                            eventFormFields.template?.image,
+                            Modifier.size(48.dp)
+                        )
+
+                        Spacer(Modifier.width(12.dp))
+                        // Содержание события
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                        )
+                        {
+                            // Название события
+                            Text(
+                                text = eventFormFields.template?.name ?: "",
+                                style = TextStyle(
+                                    fontSize = Typography.bodyMedium.fontSize,
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = colorScheme.primary,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
                             )
-                        } else {
-                            // Изображение события !!!!!!!!!!!!!!!!
-                            LocalImage(
-                                createUiState.template?.image,
-                                Modifier.size(48.dp)
+                            // Длительность
+                            Text(
+                                text = (eventFormFields.template?.duration!! / 1000 / 60).toString() + " Minutes",
+                                style = TextStyle(
+                                    fontSize = Typography.bodySmall.fontSize,
+                                    fontWeight = FontWeight.Normal
+                                ),
+                                color = colorScheme.secondary,
+                                overflow = TextOverflow.Ellipsis,
+                                maxLines = 1
                             )
 
-                            Spacer(Modifier.width(12.dp))
-                            // Содержание события
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(1f)
-                            )
-                            {
-                                // Название события
-                                Text(
-                                    text = createUiState.template?.name ?: "",
-                                    style = TextStyle(
-                                        fontSize = Typography.bodyMedium.fontSize,
-                                        fontWeight = FontWeight.Bold
-                                    ),
-                                    color = colorScheme.primary,
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                // Длительность
-                                Text(
-                                    text = (createUiState.template?.duration!! / 1000 / 60).toString() + " Minutes",
-                                    style = TextStyle(
-                                        fontSize = Typography.bodySmall.fontSize,
-                                        fontWeight = FontWeight.Normal
-                                    ),
-                                    color = colorScheme.secondary,
-                                    overflow = TextOverflow.Ellipsis,
-                                    maxLines = 1
-                                )
-
-                            }
-                            Image(
-                                painter = painterResource(R.drawable.pencil),
-                                contentDescription = "Select Template",
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .clickable(onClick = { showTemplateModal = true }),
-                                colorFilter = ColorFilter.tint(colorScheme.primary)
-                            )
                         }
+                        Image(
+                            painter = painterResource(R.drawable.pencil),
+                            contentDescription = "Select Template",
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clickable(onClick = { showTemplateModal = true }),
+                            colorFilter = ColorFilter.tint(colorScheme.primary)
+                        )
                     }
-                    Spacer(Modifier.height(16.dp))
-                    BasicTextFieldInModal(createUiState.name, "Название")
-                    Spacer(Modifier.height(16.dp))
-                    BasicTextFieldInModal(createUiState.description, "Описание")
-                    Spacer(Modifier.height(16.dp))
-                    BasicTextFieldInModal(createUiState.startTime, "Время начала",
-                        onClick = {
-                            activeTextField = createUiState.startTime
-                            showDateTimePicker = true
-                        },
-                        readOnly = true
-                    )
-                    Spacer(Modifier.height(16.dp))
-                    BasicTextFieldInModal(createUiState.endTime, "Время окончания", true,
-                        onClick = if(createUiState.template == null) { {
-                            activeTextField = createUiState.endTime
-                            showDateTimePicker = true
-                        } } else { {} }
-                    )
+                }
+                Spacer(Modifier.height(16.dp))
+                BasicTextFieldInModal(eventFormFields.name, "Название")
+                Spacer(Modifier.height(16.dp))
+                BasicTextFieldInModal(eventFormFields.description, "Описание")
+                Spacer(Modifier.height(16.dp))
+                BasicTextFieldInModal(eventFormFields.startTime, "Время начала",
+                    onClick = {
+                        activeTextField = eventFormFields.startTime
+                        showDateTimePicker = true
+                    },
+                    readOnly = true
+                )
+                Spacer(Modifier.height(16.dp))
+                BasicTextFieldInModal(eventFormFields.endTime, "Время окончания", true,
+                    onClick = if(eventFormFields.template == null) { {
+                        activeTextField = eventFormFields.endTime
+                        showDateTimePicker = true
+                    } } else { {} }
+                )
 
+            }
+        },
+        confirmButton =
+            {
+                Button(
+                    onClick = {
+                        onFormAction(EventFormAction.ValidateAndSave)
+                        if(eventFormFields.id != null) onDismiss()
+                    },
+
+                )
+                {
+                    Text(if(eventFormFields.id == null) "Создать" else "Сохранить")
                 }
             },
-            confirmButton =
+        dismissButton =
+            {
+                Button(
+                    onClick = { onDismiss() }
+                )
                 {
-                    Button(
-                        onClick = {
-                            onCreateAction(EventCreateAction.ValidateAndSave)
-                            if(createUiState.id != null) onDismiss()
-                        },
+                    Text("Отменить")
+                }
+            },
+        containerColor = colorScheme.secondaryContainer
+    )
 
-                    )
-                    {
-                        Text(if(createUiState.id == null) "Создать" else "Сохранить")
-                    }
-                },
-            dismissButton =
-                {
-                    Button(
-                        onClick = { onDismiss() }
-                    )
-                    {
-                        Text("Отменить")
-                    }
-                },
-            containerColor = colorScheme.secondaryContainer
-        )
-    }
 }
 
 @Composable
