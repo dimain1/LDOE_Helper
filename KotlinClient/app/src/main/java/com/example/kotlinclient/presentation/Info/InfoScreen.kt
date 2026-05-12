@@ -62,8 +62,12 @@ fun InfoScreen(
     var textField: TextFieldState = rememberTextFieldState("")
 
     LaunchedEffect(textField) {
-        onAction(InfoAction.ChangeSearchQuery(textField.text.toString()) )
+        snapshotFlow { textField.text }
+            .collect { newText ->
+                onAction(InfoAction.ChangeSearchQuery(newText.toString()))
+            }
     }
+
 
     Column(modifier= Modifier
         .fillMaxSize()

@@ -315,7 +315,9 @@ fun HomeScreen(
                                             fontSize = Typography.bodyMedium.fontSize,
                                             fontWeight = FontWeight.Bold
                                         ),
-                                        color = colorScheme.primary
+                                        color = colorScheme.primary,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                     // Время конца события
                                     Text(

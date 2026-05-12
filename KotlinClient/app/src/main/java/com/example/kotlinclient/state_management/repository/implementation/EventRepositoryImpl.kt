@@ -2,6 +2,7 @@ package com.example.kotlinclient.state_management.repository.implementation
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import com.example.kotlinclient.local_cache.AppDatabase
+import com.example.kotlinclient.local_cache.converters.toEntity
 import com.example.kotlinclient.local_cache.converters.toModel
 import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.state_management.repository.UserSession
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import java.time.Instant
 import kotlin.collections.map
 
 class EventRepositoryImpl(
@@ -22,7 +24,8 @@ class EventRepositoryImpl(
     val eventDao = database.EventDao()
 
     override fun getAllEventsUpcomingWithTemplate(): Flow<List<Event>> {
-        return session.pipe { id  -> eventDao.getAllEventsUpcomingWithTemplate(id).map { list ->  list.map { event -> event.toModel() } }}
+        return session.pipe { id  -> eventDao.getAllEventsUpcomingWithTemplate(id,
+            Instant.now().toEpochMilli()).map { list ->  list.map { event -> event.toModel() } }}
     }
 
     override fun getAllEventsWithTemplate(): Flow<List<Event>> {
@@ -36,4 +39,7 @@ class EventRepositoryImpl(
         eventDao.deleteEventById(session.requireId(), id)
     }
 
+    override suspend fun addEvent(event: Event) {
+        eventDao.addEvent(event.toEntity())
+    }
 }

@@ -7,6 +7,7 @@ import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.kotlinclient.state_management.entity.User
+import com.example.kotlinclient.state_management.repository.UserSession
 import com.example.kotlinclient.state_management.repository.interfaces.SharedPreferencesRepository
 import com.example.kotlinclient.state_management.repository.interfaces.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,7 +41,8 @@ sealed interface SettingsAction{
 
 class SettingsViewModel(
     val sharedPreferencesRepository: SharedPreferencesRepository,
-    val userRepository: UserRepository
+    val session: UserSession,
+    val userRepository: UserRepository,
 ): ViewModel() {
 
     val uiState:StateFlow<SettingsUiState> = combine(
@@ -104,7 +106,7 @@ class SettingsViewModel(
 
     fun updateUserInfo(login: String, email:String){
         viewModelScope.launch {
-            userRepository.updateUserInfo(login,email)
+            userRepository.updateUserInfo(session.requireId() , login,email)
         }
     }
 

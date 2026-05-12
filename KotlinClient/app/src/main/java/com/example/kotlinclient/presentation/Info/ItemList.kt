@@ -34,7 +34,10 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.example.kotlinclient.R
 import com.example.kotlinclient.presentation.LocalImage
+import com.example.kotlinclient.presentation.utility.Authorized
+import com.example.kotlinclient.presentation.utility.roleBound
 import com.example.kotlinclient.state_management.entity.GameContent
+import com.example.kotlinclient.state_management.entity.UserRole
 import com.example.kotlinclient.ui.theme.Typography
 import java.io.File
 
@@ -82,7 +85,7 @@ fun ItemList(
                 Image(
                     painter= painterResource ( if(Items[item].pinned == false) R.drawable.pinned_off else R.drawable.pinned_on),
                     contentDescription = "Pinned Image",
-                    modifier= Modifier.size(32.dp).clickable(onClick = { onPinClick(Items[item].id, !Items[item].pinned) }),
+                    modifier= Modifier.Authorized().size(32.dp).clickable(onClick = { onPinClick(Items[item].id, !Items[item].pinned) }),
                     colorFilter= if(Items[item].pinned == false) null else ColorFilter.tint(colorScheme.tertiary)
                 )
 

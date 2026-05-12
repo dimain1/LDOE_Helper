@@ -3,6 +3,8 @@ package com.example.kotlinclient.local_cache.converters
 import com.example.kotlinclient.local_cache.entity.EventEntity
 import com.example.kotlinclient.local_cache.entity.relationExtension.EventWithUserAndTemplate
 import com.example.kotlinclient.state_management.entity.Event
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 
 fun Event.toEntity(): EventEntity{
@@ -13,8 +15,9 @@ fun Event.toEntity(): EventEntity{
         name = this.name,
         description = this.description,
         imageUrl = this.image,
-        startTime = this.start_time,
-        endTime = this.end_time
+        startTime = this.start_time.atZone(ZoneId.systemDefault()).toInstant(),
+        endTime = this.end_time.atZone(ZoneId.systemDefault()).toInstant()
+
     )
 }
 
@@ -26,8 +29,8 @@ fun EventEntity.toModel() : Event{
         name = this.name,
         description = this.description,
         image = this.imageUrl,
-        start_time = this.startTime,
-        end_time = this.endTime,
+        start_time = LocalDateTime.ofInstant(this.startTime, ZoneId.systemDefault()),
+        end_time = LocalDateTime.ofInstant(this.endTime, ZoneId.systemDefault()),
     )
 }
 
@@ -39,7 +42,7 @@ fun EventWithUserAndTemplate.toModel(): Event{
         name = this.event.name,
         description = this.event.description,
         image = this.event.imageUrl,
-        start_time = this.event.startTime,
-        end_time = this.event.endTime
+        start_time = LocalDateTime.ofInstant(this.event.startTime, ZoneId.systemDefault()),
+        end_time = LocalDateTime.ofInstant(this.event.endTime, ZoneId.systemDefault())
     )
 }

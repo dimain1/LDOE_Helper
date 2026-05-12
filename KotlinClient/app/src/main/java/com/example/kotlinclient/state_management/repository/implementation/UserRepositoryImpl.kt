@@ -12,7 +12,6 @@ import kotlin.math.log
 
 class UserRepositoryImpl(
     val database: AppDatabase,
-    val session: UserSession
 ): UserRepository
 {
     val userDao = database.UserDao()
@@ -21,8 +20,8 @@ class UserRepositoryImpl(
         return userDao.getUserById(id).map { userEntity -> userEntity?.toModel() }
     }
 
-    override suspend fun updateUserInfo(login: String, email: String) {
-        userDao.updateUserInfo(UserEntity(session.requireId(), login, email))
+    override suspend fun updateUserInfo(id:Long ,login: String, email: String) {
+        userDao.updateUserInfo(UserEntity(id, login, email))
     }
 
 

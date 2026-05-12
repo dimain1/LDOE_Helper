@@ -12,7 +12,7 @@ val preferencesModule = module {
     }
 
     single<UserSession>{
-        UserSession(get())
+        UserSession(get(), get(), get())
     }
 
 }

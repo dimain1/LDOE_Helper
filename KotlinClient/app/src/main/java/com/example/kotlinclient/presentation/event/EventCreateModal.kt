@@ -1,9 +1,13 @@
 package com.example.kotlinclient.presentation.event
 
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,11 +16,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -27,14 +34,17 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -45,45 +55,65 @@ import com.example.kotlinclient.presentation.template.TemplateItem
 import com.example.kotlinclient.presentation.utility.DateTimePicker
 import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.state_management.entity.EventTemplate
+import com.example.kotlinclient.state_management.viewModel.EventCreateAction
+import com.example.kotlinclient.state_management.viewModel.EventCreateUiState
 import com.example.kotlinclient.ui.theme.Typography
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 
 
 @Composable
 fun EventCreateModal(
     showModal: Boolean,
-    onDismiss: ()-> Unit,
+    onDismiss: () -> Unit,
     templates: List<EventTemplate>,
-    onCreateClick: (Event) -> Unit){
-    if(showModal){
+    createUiState: EventCreateUiState,
+    onCreateAction: (EventCreateAction) -> Unit,
+) {
+    if (showModal) {
 
-        val nameFieldState = rememberTextFieldState()
-        val descriptionFielddState = rememberTextFieldState()
-        val startTimeFieldState = rememberTextFieldState()
-        val endTimeFieldState = rememberTextFieldState()
+        LaunchedEffect(createUiState.startTime) {
+            snapshotFlow { createUiState.startTime.text }
+                .onEach { onCreateAction(EventCreateAction.UpdateEndTime) }
+                .collect()
+        }
 
         var showTemplateModal by remember { mutableStateOf(false) }
-        val onDismissTemplate = {showTemplateModal = !showTemplateModal}
 
-        var selectedTemplateId by remember { mutableStateOf<Long?>(null) }
-        var selected_template: EventTemplate? = if(selectedTemplateId != null) templates.find { template -> template.id == selectedTemplateId } else null
+        EventTemplatePicker(
+            showTemplateModal = showTemplateModal,
+            templates = templates,
+            onDismiss = {showTemplateModal = false},
+            onClick = { id ->
+                onCreateAction(
+                    EventCreateAction.SelectTemplate(templates.find { template -> template.id == id }!!)
+                )
+            Log.d("DEBUG", "SELECTED ID IN MAIN MODAL ${createUiState.template?.id ?: "выфвфв"}")
+            }
 
-
-        EventTemplatePicker(showTemplateModal= showTemplateModal,templates=templates, onDismiss = onDismissTemplate, onClick = {id ->selectedTemplateId = id} )
+        )
 
         var showDateTimePicker by remember { mutableStateOf(false) }
 
+        var activeTextField by remember { mutableStateOf<TextFieldState?>(null) }
+
         DateTimePicker(
             showDateTimePicker,
-            onDismiss= {showDateTimePicker = false},
-            onConfirm = { text -> startTimeFieldState.edit {replace(0,length,text)} }
+            initialDateTime = activeTextField?.text.toString(),
+            onDismiss =
+                {
+                    showDateTimePicker = false
+                    activeTextField = null
+                },
+            onConfirm = { text -> activeTextField?.edit { replace(0, length, text) } }
         )
 
         AlertDialog(
-            onDismissRequest={onDismiss()},
-            title= {
-                Text(text="Создать событие")
-                   },
-            text= {
+            onDismissRequest = { onDismiss() },
+            title = {
+                Text(text = "Создать событие")
+            },
+            text = {
                 Column() {
 
                     Row(
@@ -94,10 +124,11 @@ fun EventCreateModal(
                                 color = colorScheme.tertiaryContainer,
                                 shape = RoundedCornerShape(10)
                             )
+                            .border(2.dp, colorScheme.outline, RoundedCornerShape(10))
                             .padding(12.dp)
 
                     ) {
-                        if (selectedTemplateId == null) {
+                        if (createUiState.template == null) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -105,18 +136,16 @@ fun EventCreateModal(
                             ) {}
                             Image(
                                 painter = painterResource(R.drawable.pencil),
-                                contentDescription = "Delete Image",
+                                contentDescription = "Select template",
                                 modifier = Modifier
                                     .size(32.dp)
-                                    .clickable(onClick = { onDismissTemplate() }),
+                                    .clickable(onClick = { showTemplateModal = true }),
                                 colorFilter = ColorFilter.tint(colorScheme.primary)
                             )
-                        }
-                        else
-                        {
+                        } else {
                             // Изображение события !!!!!!!!!!!!!!!!
                             LocalImage(
-                                selected_template?.image,
+                                createUiState.template?.image,
                                 Modifier.size(48.dp)
                             )
 
@@ -130,7 +159,7 @@ fun EventCreateModal(
                             {
                                 // Название события
                                 Text(
-                                    text = selected_template?.name ?: "",
+                                    text = createUiState.template?.name ?: "",
                                     style = TextStyle(
                                         fontSize = Typography.bodyMedium.fontSize,
                                         fontWeight = FontWeight.Bold
@@ -141,7 +170,7 @@ fun EventCreateModal(
                                 )
                                 // Длительность
                                 Text(
-                                    text = (selected_template?.duration!! / 1000).toString() + " Minutes",
+                                    text = (createUiState.template?.duration!! / 1000).toString() + " Minutes",
                                     style = TextStyle(
                                         fontSize = Typography.bodySmall.fontSize,
                                         fontWeight = FontWeight.Normal
@@ -154,52 +183,49 @@ fun EventCreateModal(
                             }
                             Image(
                                 painter = painterResource(R.drawable.pencil),
-                                contentDescription = "Delete Image",
+                                contentDescription = "Select Template",
                                 modifier = Modifier
                                     .size(32.dp)
-                                    .clickable(onClick = { onDismissTemplate() }),
+                                    .clickable(onClick = { showTemplateModal = true }),
                                 colorFilter = ColorFilter.tint(colorScheme.primary)
                             )
                         }
                     }
-                    TextField(
-                        value = nameFieldState.text.toString(),
-                        onValueChange = {text -> nameFieldState.edit {replace(0,length,text)}},
-                        label= {Text(text= "Название")}
+                    Spacer(Modifier.height(16.dp))
+                    BasicTextFieldInModal(createUiState.name, "Название")
+                    Spacer(Modifier.height(16.dp))
+                    BasicTextFieldInModal(createUiState.description, "Описание")
+                    Spacer(Modifier.height(16.dp))
+                    BasicTextFieldInModal(createUiState.startTime, "Время начала",
+                        onClick = {
+                            activeTextField = createUiState.startTime
+                            showDateTimePicker = true
+                        },
+                        readOnly = true
                     )
-                    TextField(
-                        value = descriptionFielddState.text.toString(),
-                        onValueChange = {text -> descriptionFielddState.edit {replace(0,length,text)}},
-                        label= {Text(text= "Описание")}
+                    Spacer(Modifier.height(16.dp))
+                    BasicTextFieldInModal(createUiState.endTime, "Время окончания", true,
+                        onClick = if(createUiState.template == null) { {
+                            activeTextField = createUiState.endTime
+                            showDateTimePicker = true
+                        } } else { {} }
                     )
-                    TextField(
-                        value = startTimeFieldState.text.toString(),
-                        onValueChange = {text -> startTimeFieldState.edit {replace(0,length,text)}},
-                        label= {Text(text= "Время начала")},
-                        readOnly = true,
-                        enabled = false,
-                        modifier=Modifier.fillMaxWidth().clickable(onClick = {showDateTimePicker = true})
-                    )
-                    TextField(
-                        value = endTimeFieldState.text.toString(),
-                        onValueChange = {text -> endTimeFieldState.edit {replace(0,length,text)}},
-                        label= {Text(text= "Время окончания")},
-                        readOnly = if(selectedTemplateId != null) true else false
-                    )
+
                 }
-                  },
-            confirmButton=
+            },
+            confirmButton =
                 {
                     Button(
-                        onClick={
+                        onClick = {
+                            onCreateAction(EventCreateAction.ValidateAndSave)
+                        },
 
-                        }
                     )
                     {
                         Text("Создать")
                     }
                 },
-            dismissButton=
+            dismissButton =
                 {
                     Button(
                         onClick = { onDismiss() }
@@ -211,4 +237,41 @@ fun EventCreateModal(
             containerColor = colorScheme.secondaryContainer
         )
     }
+}
+
+@Composable
+fun BasicTextFieldInModal(state: TextFieldState, placeholder: String, readOnly: Boolean = false, onClick: () -> Unit = {})
+{
+    val interactionSource = remember { MutableInteractionSource() }
+
+    val isPressed by interactionSource.collectIsPressedAsState()
+    if (isPressed) {
+        LaunchedEffect(Unit) {
+            onClick()
+        }
+    }
+
+    BasicTextField(
+        state = state,
+        enabled = true,
+        readOnly = readOnly,
+        interactionSource = interactionSource,
+        modifier = Modifier
+            .heightIn(48.dp, 96.dp)
+            .fillMaxWidth()
+            .border(2.dp, colorScheme.outline, shape = RoundedCornerShape(10)),
+        decorator = { innerTextField ->
+            Box(
+                contentAlignment = Alignment.CenterStart,
+                modifier=Modifier.padding(horizontal = 16.dp).padding(vertical = 4.dp)
+            ) {
+                if (state.text.isEmpty()) {
+                    Text("${placeholder}" +
+                            "", style=Typography.bodyLarge, color= colorScheme.secondary)
+                }
+                innerTextField()
+            }
+        },
+        textStyle = Typography.bodyLarge.copy(color=colorScheme.primary)
+    )
 }

@@ -29,6 +29,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,7 +46,10 @@ import com.example.kotlinclient.presentation.LocalImage
 import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.state_management.entity.EventTemplate
 import com.example.kotlinclient.state_management.viewModel.EventAction
+import com.example.kotlinclient.state_management.viewModel.EventCreateAction
+import com.example.kotlinclient.state_management.viewModel.EventCreateUiState
 import com.example.kotlinclient.state_management.viewModel.EventUiState
+import com.example.kotlinclient.state_management.viewModel.ValidationEvent
 import com.example.kotlinclient.ui.theme.Typography
 import java.time.format.DateTimeFormatter
 
@@ -54,6 +58,8 @@ fun EventScreen(
     uiState: EventUiState,
     onAction: (EventAction) -> Unit,
     templates: List<EventTemplate>,
+    createUiState: EventCreateUiState,
+    onCreateAction: (EventCreateAction) -> Unit,
     paddingValues: PaddingValues){
 
     var showModal by remember { mutableStateOf(false) }
@@ -62,10 +68,8 @@ fun EventScreen(
         showModal=showModal,
         onDismiss= {showModal = false},
         templates = templates,
-        onCreateClick= {
-            showModal = true
-            onAction(EventAction.ClearUiState)
-        }
+        createUiState= createUiState,
+        onCreateAction = onCreateAction,
     )
     // Контейнер всего экрана
     Column(
@@ -102,7 +106,10 @@ fun EventScreen(
                     shape= RoundedCornerShape(25),
                     modifier= Modifier,
 
-                    onClick = {showModal = true}
+                    onClick = {
+                        onAction(EventAction.ClearUiState)
+                        showModal = true
+                    }
                 )
                 {
                     // Иконка внутри кнопки

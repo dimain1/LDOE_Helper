@@ -3,19 +3,16 @@ package com.example.kotlinclient.local_cache.converters
 import androidx.room.TypeConverter
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
+import java.time.Instant
 
 class DateTimeConverter {
-    private val formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
-
     @TypeConverter
-    fun fromOffsetDateTime(value: OffsetDateTime?): String? {
-        return value?.format(formatter)
+    fun fromInstant(instant: Instant?): Long? {
+        return instant?.toEpochMilli()
     }
 
     @TypeConverter
-    fun toOffsetDateTime(value: String?): OffsetDateTime? {
-        return value?.let {
-            formatter.parse(it, OffsetDateTime::from)
-        }
+    fun toInstant(millis: Long?): Instant? {
+        return millis?.let { Instant.ofEpochMilli(it) }
     }
 }

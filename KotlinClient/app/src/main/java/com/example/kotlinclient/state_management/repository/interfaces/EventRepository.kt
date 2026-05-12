@@ -10,4 +10,6 @@ interface EventRepository {
     fun getAllEventsWithTemplate() : Flow<List<Event>>
 
     suspend fun deleteEventById(id: Long)
+
+    suspend fun addEvent(event: Event)
 }

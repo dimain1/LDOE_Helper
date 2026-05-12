@@ -1,5 +1,6 @@
 package com.example.kotlinclient.presentation.event
 
+import android.util.Log
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -62,6 +63,7 @@ fun EventTemplatePicker(showTemplateModal: Boolean, templates: List<EventTemplat
                         Box(Modifier
                             .clickable(onClick = {
                                 onClick(template.id!!)
+                                Log.d("DEBUG", "selected Id ${template.id!!}")
                                 onDismiss()
                             }
                             )

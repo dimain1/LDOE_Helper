@@ -7,6 +7,6 @@ interface UserRepository {
 
     fun getUserById(id: Long) : Flow<User?>
 
-    suspend fun updateUserInfo(login: String, email:String)
+    suspend fun updateUserInfo(id: Long,login: String, email:String)
 
 }

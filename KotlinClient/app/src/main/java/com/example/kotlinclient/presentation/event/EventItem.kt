@@ -30,6 +30,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.kotlinclient.presentation.LocalImage
 import com.example.kotlinclient.ui.theme.Typography
+import java.time.Instant
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
@@ -37,8 +39,8 @@ import java.time.format.DateTimeFormatter
 fun EventItem(
     name: String,
     description: String?,
-    startTime: OffsetDateTime,
-    endTime: OffsetDateTime,
+    startTime: LocalDateTime,
+    endTime: LocalDateTime,
     image: String?,
     imageSize: Int,
     rightColumn: @Composable () -> Unit = {}
@@ -112,7 +114,7 @@ fun EventItem(
                     Spacer(Modifier.width(10.dp))
 
                     Text(
-                        text = startTime.month.toString() + " " + startTime.dayOfMonth.toString(),
+                        text = "${startTime.dayOfMonth} ${startTime.month} - ${endTime.dayOfMonth} ${endTime.month}",
                         style = Typography.bodyMedium,
                         color = colorScheme.secondary
                     )
@@ -134,9 +136,9 @@ fun EventItem(
                     Spacer(Modifier.width(10.dp))
 
                     Text(
-                        text = "${startTime.format(DateTimeFormatter.ISO_LOCAL_TIME)} - ${
+                        text = "${startTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"))} - ${
                             endTime.format(
-                                DateTimeFormatter.ISO_LOCAL_TIME
+                                DateTimeFormatter.ofPattern("HH:mm:ss")
                             )
                         }", style = Typography.bodyMedium, color = colorScheme.secondary
                     )

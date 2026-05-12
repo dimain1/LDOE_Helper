@@ -19,7 +19,7 @@ val viewModelModule = module {
     }
 
     viewModel{
-        EventViewModel(get())
+        EventViewModel(get(), get())
     }
 
     viewModel {
@@ -27,6 +27,6 @@ val viewModelModule = module {
     }
 
     viewModel {
-        SettingsViewModel(get(), get())
+        SettingsViewModel(get(), get(), get())
     }
 }

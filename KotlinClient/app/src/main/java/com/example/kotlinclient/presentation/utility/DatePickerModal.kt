@@ -12,14 +12,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DatePickerModal(showDatePicker:Boolean, onDismiss: ()-> Unit, onConfirm: (String) -> Unit){
+fun DatePickerModal(showDatePicker:Boolean, initialDate: String? ,onDismiss: ()-> Unit, onConfirm: (String) -> Unit){
 
-    val datePickerState = rememberDatePickerState()
+    val date: LocalDate? =  initialDate?.let {   LocalDate.parse(initialDate, DateTimeFormatter.ofPattern("dd.MM.yyyy")) }
+
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = date?.atStartOfDay(
+        ZoneId.systemDefault())?.toInstant()?.toEpochMilli())
     var selectedDateText by remember { mutableStateOf("Дата не выбрана") }
 
     if(showDatePicker){

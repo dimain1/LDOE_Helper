@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import java.time.Instant
 import java.time.OffsetDateTime
 
 @Entity(
@@ -44,7 +45,7 @@ data class EventEntity(
     @ColumnInfo(name = "image")
     val imageUrl: String?,
     @ColumnInfo(name="start_time")
-    val startTime: OffsetDateTime,
+    val startTime: Instant,
     @ColumnInfo(name="end_time")
-    val endTime: OffsetDateTime
+    val endTime: Instant
 )
