@@ -29,10 +29,12 @@ data class EventUiState(
 
 sealed interface EventAction {
     data class DeleteEvent(val id: Long) : EventAction
-    data object ClearUiState : EventAction
+
 }
 
 data class EventCreateUiState(
+
+    val id: Long? = null,
     val name: TextFieldState = TextFieldState(""),
     val description: TextFieldState = TextFieldState(""),
     val startTime: TextFieldState = TextFieldState(""),
@@ -41,7 +43,9 @@ data class EventCreateUiState(
 )
 
 sealed interface EventCreateAction{
+    data object ClearUiState : EventCreateAction
     data class SelectTemplate(val template: EventTemplate): EventCreateAction
+    data class LoadUiState(val id: Long): EventCreateAction
     data object ValidateAndSave: EventCreateAction
     data object UpdateEndTime: EventCreateAction
 }
@@ -49,7 +53,8 @@ sealed interface EventCreateAction{
 sealed interface ValidationEvent {
     data object EmptyName : ValidationEvent
     data object InvalidTime : ValidationEvent
-    data object Success : ValidationEvent
+    data object SuccessCreate : ValidationEvent
+    data object SuccessUpdate: ValidationEvent
 }
 
 
@@ -75,6 +80,9 @@ class EventViewModel(
     private val _selectedTemplate = MutableStateFlow<EventTemplate?>(null)
 
 
+
+    private val _updatedEventId = MutableStateFlow<Long?>(null)
+
     init {
 
         eventRepository.getAllEventsWithTemplate().onEach { events ->
@@ -85,6 +93,15 @@ class EventViewModel(
                 _createUiState.update { it.copy(template = template) }
                 if(template != null) onTemplateSelect()
         }.launchIn(viewModelScope)
+
+        _updatedEventId.onEach { id ->
+            _createUiState.update { it.copy(id = id) }
+        }.launchIn(viewModelScope)
+
+    }
+
+    fun selectTemplate(template: EventTemplate){
+        _selectedTemplate.value = template
     }
 
     fun insertTemplateName(){
@@ -106,25 +123,27 @@ class EventViewModel(
         }
     }
 
-
     fun onTemplateSelect() {
         insertTemplateName()
         updateEndTime()
     }
 
+
     fun getTimeByString(time: String, format: DateTimeFormatter = dateTimeFormat): LocalDateTime{
         return LocalDateTime.parse(time, format)
     }
+
+    fun getStringByTime(time: LocalDateTime, format: DateTimeFormatter=dateTimeFormat): String{
+        return time.format(format)
+    }
+
     fun addDuration(startTime: String, duration: Long): String {
         var startTimeInTime =
             getTimeByString(startTime)
 
         return startTimeInTime.plusSeconds(duration / 1000)
             .format(dateTimeFormat)
-
     }
-
-
 
     fun validateTime(): Boolean{
         if(createUiState.value.startTime.text.isEmpty() || createUiState.value.endTime.text.isEmpty()) return false
@@ -134,9 +153,61 @@ class EventViewModel(
         return startTime.compareTo(endTime) < 0
     }
 
-    fun selectTemplate(template: EventTemplate){
-        _selectedTemplate.value = template
+
+    private suspend fun isDataValid(state: EventCreateUiState): Boolean {
+        return when {
+            state.name.text.isEmpty() -> {
+                _validationEvents.send(ValidationEvent.EmptyName)
+                false
+            }
+            !validateTime() -> {
+                _validationEvents.send(ValidationEvent.InvalidTime)
+                false
+            }
+            else -> true
+        }
     }
+
+
+    fun saveEvent() {
+        val state = _createUiState.value
+
+        viewModelScope.launch {
+            if (isDataValid(state)) {
+                val event = Event(
+                    id = state.id, // null для создания, ID для обновления
+                    user = session.user.value,
+                    template = state.template,
+                    name = state.name.text.toString(),
+                    description = state.description.text.toString(),
+                    image = null,
+                    start_time = getTimeByString(state.startTime.text.toString()),
+                    end_time = getTimeByString(state.endTime.text.toString())
+                )
+                if (state.id == null) {
+                    eventRepository.addEvent(event)
+                    _validationEvents.send(ValidationEvent.SuccessCreate)
+                } else {
+                    eventRepository.updateEvent(event)
+                    _validationEvents.send(ValidationEvent.SuccessUpdate)
+                }
+            }
+        }
+    }
+
+    fun loadUiState(id: Long){
+        var uiState = _createUiState.value
+        val event = _uiState.value.events.find { event -> event.id == id }
+
+        _selectedTemplate.value = event!!.template
+        _updatedEventId.value = event!!.id
+        uiState.name.edit { replace(0, length, event.name.toString()) }
+        uiState.description.edit { replace(0, length, event.description.toString()) }
+        uiState.startTime.edit { replace(0, length, getStringByTime(event.start_time) ) }
+        uiState.endTime.edit { replace(0, length, getStringByTime(event.end_time) ) }
+    }
+
+
 
     fun deleteEvent(id: Long) {
         viewModelScope.launch {
@@ -146,35 +217,6 @@ class EventViewModel(
 
     fun clearUiState() {
         _createUiState.value = EventCreateUiState()
-    }
-
-    fun valildateAndSave(){
-        val state = createUiState.value
-
-        viewModelScope.launch {
-            when{
-                state.name.text.isEmpty() ->{
-                    _validationEvents.send(ValidationEvent.EmptyName)
-                }
-                !validateTime() ->{
-                    _validationEvents.send(ValidationEvent.InvalidTime)
-                }
-                else -> {
-                    eventRepository.addEvent(Event(
-                        id = null,
-                        user = session.user.value,
-                        template = state.template,
-                        name = state.name.text.toString(),
-                        description = state.description.text.toString(),
-                        image = null,
-                        start_time = getTimeByString(state.startTime.text.toString()),
-                        end_time = getTimeByString(state.endTime.text.toString())
-                    ))
-                    _validationEvents.send(ValidationEvent.Success)
-                }
-            }
-        }
-
     }
 
 }

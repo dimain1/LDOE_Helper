@@ -111,7 +111,7 @@ fun EventCreateModal(
         AlertDialog(
             onDismissRequest = { onDismiss() },
             title = {
-                Text(text = "Создать событие")
+                Text(text = if(createUiState.id == null) "Создать событие" else "Редактировать событие")
             },
             text = {
                 Column() {
@@ -170,7 +170,7 @@ fun EventCreateModal(
                                 )
                                 // Длительность
                                 Text(
-                                    text = (createUiState.template?.duration!! / 1000).toString() + " Minutes",
+                                    text = (createUiState.template?.duration!! / 1000 / 60).toString() + " Minutes",
                                     style = TextStyle(
                                         fontSize = Typography.bodySmall.fontSize,
                                         fontWeight = FontWeight.Normal
@@ -218,11 +218,12 @@ fun EventCreateModal(
                     Button(
                         onClick = {
                             onCreateAction(EventCreateAction.ValidateAndSave)
+                            if(createUiState.id != null) onDismiss()
                         },
 
                     )
                     {
-                        Text("Создать")
+                        Text(if(createUiState.id == null) "Создать" else "Сохранить")
                     }
                 },
             dismissButton =

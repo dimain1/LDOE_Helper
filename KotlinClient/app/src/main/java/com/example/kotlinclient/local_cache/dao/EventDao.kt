@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
 import com.example.kotlinclient.local_cache.entity.EventEntity
 import com.example.kotlinclient.local_cache.entity.relationExtension.EventWithUserAndTemplate
 import kotlinx.coroutines.flow.Flow
@@ -25,5 +26,8 @@ interface EventDao {
 
     @Insert(EventEntity::class, onConflict = OnConflictStrategy.REPLACE)
     fun addEvent(event: EventEntity)
+
+    @Update(EventEntity::class, onConflict = OnConflictStrategy.REPLACE)
+    fun updateEvent(event: EventEntity)
 
 }

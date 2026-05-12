@@ -71,6 +71,9 @@ fun EventScreen(
         createUiState= createUiState,
         onCreateAction = onCreateAction,
     )
+
+
+
     // Контейнер всего экрана
     Column(
         modifier=Modifier
@@ -107,7 +110,7 @@ fun EventScreen(
                     modifier= Modifier,
 
                     onClick = {
-                        onAction(EventAction.ClearUiState)
+                        onCreateAction(EventCreateAction.ClearUiState)
                         showModal = true
                     }
                 )
@@ -127,7 +130,10 @@ fun EventScreen(
             Spacer(Modifier.height(16.dp))
 
             // Список ивентов
-            EventList(uiState.events, 200, { id -> onAction(EventAction.DeleteEvent(id)) }, {})
+            EventList(uiState.events, 200, { id -> onAction(EventAction.DeleteEvent(id)) }, {
+                id -> onCreateAction(EventCreateAction.LoadUiState(id))
+                showModal = true
+            })
 
         }
 

@@ -12,4 +12,6 @@ interface EventRepository {
     suspend fun deleteEventById(id: Long)
 
     suspend fun addEvent(event: Event)
+
+    suspend fun updateEvent(event: Event)
 }

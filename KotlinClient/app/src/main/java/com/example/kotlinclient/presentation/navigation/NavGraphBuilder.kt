@@ -98,7 +98,8 @@ fun NavGraphBuilder.eventScreen(
                 when (event) {
                     is ValidationEvent.EmptyName -> Toast.makeText(context, "Имя пустое", Toast.LENGTH_SHORT).show()
                     is ValidationEvent.InvalidTime -> Toast.makeText(context, "Ошибка времени", Toast.LENGTH_SHORT).show()
-                    is ValidationEvent.Success -> Toast.makeText(context, "Успешно сохранено!", Toast.LENGTH_SHORT).show()
+                    is ValidationEvent.SuccessCreate -> Toast.makeText(context, "Успешно создано!", Toast.LENGTH_SHORT).show()
+                    is ValidationEvent.SuccessUpdate -> Toast.makeText(context, "Успешно изменено!", Toast.LENGTH_SHORT ).show()
                 }
             }
         }
@@ -118,15 +119,16 @@ fun NavGraphBuilder.eventScreen(
             onAction = { action ->
                 when(action) {
                     is EventAction.DeleteEvent -> eventViewModel.deleteEvent(action.id)
-                    is EventAction.ClearUiState -> eventViewModel.clearUiState()
                 }
             },
             createUiState= createUiState.value,
             onCreateAction= {action ->
                 when(action) {
                     is EventCreateAction.SelectTemplate -> eventViewModel.selectTemplate(action.template)
-                    is EventCreateAction.ValidateAndSave -> eventViewModel.valildateAndSave()
+                    is EventCreateAction.ValidateAndSave -> eventViewModel.saveEvent()
                     is EventCreateAction.UpdateEndTime -> eventViewModel.updateEndTime()
+                    is EventCreateAction.LoadUiState -> eventViewModel.loadUiState(action.id)
+                    is EventCreateAction.ClearUiState -> eventViewModel.clearUiState()
                 }
             },
             paddingValues = paddingValues)

@@ -124,7 +124,7 @@ fun TemplateItem(name: String, description: String?, duration: Long, image: Stri
                     Spacer(Modifier.width(10.dp))
 
                     Text(
-                        text = (duration / 1000).toString() + " " + "Minutes",
+                        text = (duration / 1000 / 60).toString() + " " + "Minutes",
                         style = Typography.bodyMedium,
                         color = colorScheme.secondary
                     )
