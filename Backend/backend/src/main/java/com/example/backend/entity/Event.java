@@ -1,5 +1,6 @@
 package com.example.backend.entity;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 
 import org.hibernate.annotations.OnDelete;
@@ -35,10 +36,10 @@ public class Event {
     private String name;
 
     @Column(name = "start_time", nullable = false)
-    private OffsetDateTime startTime;
+    private Instant startTime;
 
     @Column(name = "end_time", nullable = false)
-    private OffsetDateTime endTime;
+    private Instant endTime;
 
     public long getId() {
         return id;

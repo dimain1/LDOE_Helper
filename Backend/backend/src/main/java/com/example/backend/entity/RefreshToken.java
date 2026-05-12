@@ -1,5 +1,6 @@
 package com.example.backend.entity;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.OnDelete;
@@ -20,7 +21,7 @@ public class RefreshToken {
 
     public RefreshToken() {}
 
-    public RefreshToken(User user, String token, LocalDateTime expiryDate) {
+    public RefreshToken(User user, String token, Instant expiryDate) {
         this.user = user;
         this.token = token;
         this.expiryDate = expiryDate;
@@ -39,7 +40,7 @@ public class RefreshToken {
     private String token;
 
     @Column(nullable = false)
-    private LocalDateTime expiryDate;
+    private Instant expiryDate;
 
     public Long getId() {
         return id;
@@ -65,11 +66,11 @@ public class RefreshToken {
         this.token = token;
     }
 
-    public LocalDateTime getExpiryDate() {
+    public Instant getExpiryDate() {
         return expiryDate;
     }
 
-    public void setExpiryDate(LocalDateTime expiryDate) {
+    public void setExpiryDate(Instant expiryDate) {
         this.expiryDate = expiryDate;
     }
 

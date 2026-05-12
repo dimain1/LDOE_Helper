@@ -1,5 +1,6 @@
 package com.example.backend.mediator;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 
@@ -76,7 +77,7 @@ public class AuthService {
         RefreshToken refreshToken = refreshTokenRepository.findByToken(request.getRefreshToken())
                 .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
 
-        if (refreshToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+        if (refreshToken.getExpiryDate().isBefore(Instant.now())) {
             refreshTokenRepository.delete(refreshToken);
             throw new RuntimeException("Refresh token expired");
         }
@@ -85,7 +86,7 @@ public class AuthService {
         String newRefreshToken = jwtService.generateRefreshToken(refreshToken.getUser().getLogin());
 
         refreshToken.setToken(newRefreshToken);
-        refreshToken.setExpiryDate(LocalDateTime.now().plusDays(7));
+        refreshToken.setExpiryDate(Instant.now().plusSeconds(7 * 24 * 60 * 60)); // 7 days
         refreshTokenRepository.save(refreshToken);
 
         return new AuthResponse(accessToken, newRefreshToken);
