@@ -1,7 +1,8 @@
-package com.example.kotlinclient.presentation.event
+package com.example.kotlinclient.presentation.event.modal
 
 import android.util.Log
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -14,11 +15,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
@@ -29,7 +31,14 @@ import com.example.kotlinclient.presentation.template.TemplateItem
 import com.example.kotlinclient.state_management.entity.EventTemplate
 
 @Composable
-fun EventTemplatePicker(showTemplateModal: Boolean, templates: List<EventTemplate>, onDismiss: ()-> Unit, onClick: (Long)->Unit){
+fun EventTemplatePicker(
+    showTemplateModal: Boolean,
+    templates: List<EventTemplate>,
+    selectedTemplate: EventTemplate?,
+    onDismiss: ()-> Unit,
+    onConfirm: ()-> Unit,
+    onClick: (EventTemplate)->Unit)
+{
 
     val horizontalScroll: ScrollState = rememberScrollState()
 
@@ -62,10 +71,14 @@ fun EventTemplatePicker(showTemplateModal: Boolean, templates: List<EventTemplat
 
                         Box(Modifier
                             .clickable(onClick = {
-                                onClick(template.id!!)
+                                onClick(template)
                                 Log.d("DEBUG", "selected Id ${template.id!!}")
-                                onDismiss()
                             }
+                            )
+                            .border(
+                                2.dp,
+                                if (template.id == selectedTemplate?.id) colorScheme.tertiary else colorScheme.outline,
+                                RoundedCornerShape(30.dp)
                             )
                         ) {
                             TemplateItem(
@@ -74,8 +87,10 @@ fun EventTemplatePicker(showTemplateModal: Boolean, templates: List<EventTemplat
                                 template.duration,
                                 template.image,
                                 160,
-                                Modifier.width(200.dp).fillMaxHeight()
-                                ){}
+                                Modifier
+                                    .width(200.dp)
+                                    .fillMaxHeight()
+                                )
                         }
                         if(item != templates.size -1){
                             Spacer(Modifier.width(16.dp))
@@ -84,7 +99,14 @@ fun EventTemplatePicker(showTemplateModal: Boolean, templates: List<EventTemplat
                     }
                 }
             },
-            confirmButton = {},
+            confirmButton = {
+                Button(onClick= {
+                    onConfirm()
+                    onDismiss()
+                }) {
+                    Text("Подтвердить")
+                }
+            },
             containerColor = colorScheme.secondaryContainer
         )
     }

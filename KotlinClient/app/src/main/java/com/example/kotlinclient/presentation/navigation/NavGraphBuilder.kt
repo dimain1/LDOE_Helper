@@ -106,15 +106,14 @@ fun NavGraphBuilder.eventScreen(
 
         val eventUiState = eventViewModel.uiState.collectAsState()
         val templateUiState = eventTemplateViewModel.uiState.collectAsState()
+        val selectedTemplate = eventViewModel.selectedTemplate.collectAsState()
 
         val formFields = eventViewModel.eventFormFields.collectAsState()
+        val currentTime = eventViewModel.currentTime.collectAsState()
 
 
         EventScreen(
             uiState= eventUiState.value,
-//            onEditClick = { id -> eventViewModel.deleteEventById(id) },
-//            onDeleteClick = { id -> eventViewModel.deleteEventById(id) },
-//            onCreateClick = {},
             templates = templateUiState.value.templates,
             onAction = { action ->
                 when(action) {
@@ -126,13 +125,17 @@ fun NavGraphBuilder.eventScreen(
             eventFormFields = formFields.value,
             onFormAction = {action ->
                 when(action) {
-                    is EventFormAction.SelectTemplate -> eventViewModel.selectTemplate(action.template)
+                    is EventFormAction.SelectTemplateInPicker -> eventViewModel.selectTemplateInPicker(action.template)
+                    is EventFormAction.SelectTemplateInModal -> eventViewModel.selectTemplateInCreate()
+                    is EventFormAction.SyncFormTemplateAndSelectedTemplate -> eventViewModel.syncFormTemplateAndSelected()
                     is EventFormAction.ValidateAndSave -> eventViewModel.saveEvent()
                     is EventFormAction.UpdateEndTime -> eventViewModel.updateEndTime()
                     is EventFormAction.LoadUiState -> eventViewModel.loadUiState(action.event)
                     is EventFormAction.ClearUiState -> eventViewModel.clearUiState()
                 }
             },
+            currentTime = currentTime.value,
+            selectedTemplate = selectedTemplate.value,
             paddingValues = paddingValues)
     }
 }

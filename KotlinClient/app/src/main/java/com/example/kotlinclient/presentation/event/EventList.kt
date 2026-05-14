@@ -1,5 +1,6 @@
 package com.example.kotlinclient.presentation.event
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
@@ -19,6 +20,7 @@ import com.example.kotlinclient.R
 import com.example.kotlinclient.presentation.template.TemplateItem
 import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.state_management.entity.EventTemplate
+import java.time.LocalDateTime
 
 @Composable
 fun EventList(
@@ -26,6 +28,8 @@ fun EventList(
     imageSize: Int,
     onDeleteClick: (Long) -> Unit,
     onEditClick: (Event) -> Unit,
+    onEventClick: (Event) -> Unit,
+    currentTime: LocalDateTime,
 ) {
     LazyColumn(Modifier.padding(horizontal = 16.dp)) {
 
@@ -36,12 +40,10 @@ fun EventList(
 
             // Столбец информации
             EventItem(
-                event?.name ?: "",
-                event.description,
-                event.start_time,
-                event.end_time,
-                event.image,
-                200
+                event,
+                200,
+                onEventClick= onEventClick,
+                isNow = currentTime >= event.start_time && currentTime <= event.end_time
                 )
             {
                 // Столбец Кнопок

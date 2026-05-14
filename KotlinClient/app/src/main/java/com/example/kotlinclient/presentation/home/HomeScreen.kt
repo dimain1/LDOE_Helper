@@ -56,7 +56,8 @@ import com.example.kotlinclient.ui.theme.ServiceFloatingButtonColor
 import com.example.kotlinclient.ui.theme.TemplateIconColor
 import com.example.kotlinclient.ui.theme.Typography
 import com.example.kotlinclient.ui.theme.linearGradientEndColor
-
+import java.time.format.DateTimeFormatter
+import kotlin.reflect.typeOf
 
 
 //Главный экран приложения
@@ -64,11 +65,11 @@ import com.example.kotlinclient.ui.theme.linearGradientEndColor
 fun HomeScreen(
     uiState: HomeUiState,
     onAction: (HomeAction) -> Unit,
-    paddingValues: PaddingValues){
+    paddingValues: PaddingValues
+) {
 
     val scrollState = rememberScrollState()
     val content: Context = LocalContext.current
-    //var emptyList: List<String> = emptyList<String>()
 
     Column(
         Modifier
@@ -80,7 +81,10 @@ fun HomeScreen(
 //        // хедер всего приложения
 //        AppHeader()
 
-        HorizontalDivider(thickness = 1.dp, color = colorScheme.outline) // Разделитель между заголовком приложения и контейнером
+        HorizontalDivider(
+            thickness = 1.dp,
+            color = colorScheme.outline
+        ) // Разделитель между заголовком приложения и контейнером
         // Основной контейнер домашнего экрана
         Column(
             modifier = Modifier
@@ -124,10 +128,10 @@ fun HomeScreen(
                     {
                         // Иконка сервиса
                         Image(
-                            painter= painterResource(R.drawable.service_button),
+                            painter = painterResource(R.drawable.service_button),
                             contentDescription = "Service Icon",
                             colorFilter = ColorFilter.tint(Color.White),
-                            modifier=Modifier
+                            modifier = Modifier
                                 .size(24.dp)
                         )
                     }
@@ -175,7 +179,7 @@ fun HomeScreen(
                         // Иконка в кнопке
                         Image(
                             modifier = Modifier.size(20.dp),
-                            painter= painterResource(R.drawable.service_start_button),
+                            painter = painterResource(R.drawable.service_start_button),
                             contentDescription = "Play Arrow in button",
                             colorFilter = ColorFilter.tint(colorScheme.tertiary)
                         )
@@ -209,11 +213,11 @@ fun HomeScreen(
                 ) {
                     //Левая верхняя иконка
                     QuickBlock(
-                        image =R.drawable.plus,
-                        title= "New Event",
-                        desc ="Quick create",
-                        modifier= Modifier.weight(1f),
-                        color= Color.Red,
+                        image = R.drawable.plus,
+                        title = "New Event",
+                        desc = "Quick create",
+                        modifier = Modifier.weight(1f),
+                        color = Color.Red,
                         onClick = { onAction(HomeAction.ToEvent) }
                     )
 
@@ -266,185 +270,42 @@ fun HomeScreen(
             }
 
             Spacer(Modifier.height(16.dp))
-
             // Upcoming events
-            QuickList("Upcoming Events"){
 
-                val events = uiState.upcomingEvents
-
-                if (events.size == 0) {
-                    Text(text = "Oops. Maybe you don't have upcoming events. Go to create one")
-                } else {
-                    // Если сущности есть, то отрисовывается контейнер с ними
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(0.dp, 200.dp)
-                    ) {
-                        items(events.size) { item ->
-
-                            val event = events[item]
-
-                            // Контейнер события
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(
-                                        color = colorScheme.tertiaryContainer,
-                                        shape = RoundedCornerShape(10)
-                                    )
-                                    .padding(12.dp)
-
-                            ) {
-                                // Изображение события !!!!!!!!!!!!!!!!
-                                LocalImage(event.image, Modifier.size(48.dp))
-
-                                Spacer(Modifier.width(12.dp))
-                                // Содержание события
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .weight(1f)
-                                )
-                                {
-                                    // Название события
-                                    Text(
-                                        text = event.name ?: "",
-                                        style = TextStyle(
-                                            fontSize = Typography.bodyMedium.fontSize,
-                                            fontWeight = FontWeight.Bold
-                                        ),
-                                        color = colorScheme.primary,
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                    // Время конца события
-                                    Text(
-                                        text = event.end_time.toString(),
-                                        style = TextStyle(
-                                            fontSize = Typography.bodySmall.fontSize,
-                                            fontWeight = FontWeight.Normal
-                                        ),
-                                        color = colorScheme.secondary,
-                                        overflow = TextOverflow.Ellipsis,
-                                        maxLines = 1
-                                    )
-
-                                }
-                                Image(
-                                    painter= painterResource(R.drawable.trash),
-                                    contentDescription = "Delete Image",
-                                    modifier= Modifier
-                                        .size(32.dp)
-                                        .clickable(onClick = { onAction(HomeAction.DeleteEvent(event.id!!)) }),
-                                    colorFilter = ColorFilter.tint(colorScheme.primary)
-                                )
-                            }
-                            if (item != events.size - 1) {
-                                Spacer(Modifier.height(16.dp))
-                            }
-                        }
-                    }
-                }
-            }
+            QuickList(
+                "Upcoming Events",
+                "Oops. Maybe you don't have an upcoming evnts. Go to create one",
+                uiState.upcomingEvents,
+                onAction,
+            )
 
             Spacer(Modifier.height(16.dp))
 
             // Pinned entities Контейнер
+            "Oops. Maybe you don't have an pinned entities. Go to pin one"
 
-            QuickList("Pinned Entity"){
-
-                val entities = uiState.pinnedEntity
-
-                if (entities.size == 0) {
-
-                    Text(text = "Oops. Maybe you don't have an pinned entities. Go to pin one")
-                } else {
-                    // Если сущности есть, то отрисовывается контейнер с ними
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(0.dp, 200.dp)
-                    ) {
-                        items(entities.size) { item ->
-
-                            val entity = entities[item]
-
-                            // Контейнер события
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(
-                                        color = colorScheme.tertiaryContainer,
-                                        shape = RoundedCornerShape(10)
-                                    )
-                                    .padding(12.dp)
-
-                            ) {
-                                // Изображение события !!!!!!!!!!!!!!!!
-                                LocalImage(entity.image, Modifier.size(48.dp))
-
-                                Spacer(Modifier.width(12.dp))
-                                // Содержание события
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .weight(1f)
-                                )
-                                {
-                                    // Название события
-                                    Text(
-                                        text = entity.name,
-                                        style = TextStyle(
-                                            fontSize = Typography.bodyMedium.fontSize,
-                                            fontWeight = FontWeight.Bold
-                                        ),
-                                        color = colorScheme.primary
-                                    )
-                                    // Краткое описание
-                                    Text(
-                                        text = entity.description ?: "",
-                                        style = TextStyle(
-                                            fontSize = Typography.bodySmall.fontSize,
-                                            fontWeight = FontWeight.Normal
-                                        ),
-                                        color = colorScheme.secondary,
-                                        overflow = TextOverflow.Ellipsis,
-                                        maxLines = 2
-                                    )
-
-                                }
-                                Image(
-                                    painter= painterResource ( if(entity.pinned == false) R.drawable.pinned_off else R.drawable.pinned_on),
-                                    contentDescription = "Pinned Image",
-                                    modifier= Modifier
-                                        .size(32.dp)
-                                        .clickable(onClick = {
-                                            onAction(HomeAction.TogglePin(entity.id, !entity.pinned))
-                                        }),
-                                    colorFilter= if(entity.pinned == false) null else ColorFilter.tint(colorScheme.tertiary)
-                                )
-                            }
-                            if (item != entities.size - 1) {
-                                Spacer(Modifier.height(16.dp))
-                            }
-                        }
-                    }
-                }
-            }
+            QuickList(
+                "Pinned Entity",
+                "Oops. Maybe you don't have an pinned entities. Go to pin one",
+                uiState.pinnedEntity,
+                onAction,
+            )
 
             Spacer(Modifier.height(16.dp))
         }
 
-        HorizontalDivider(thickness = 1.dp, color= colorScheme.outline)
+        HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
     }
 
 }
 
 @Composable
-fun QuickList(title: String, list: @Composable () -> Unit){
+fun <T> QuickList(
+    title: String,
+    emptyErrorText: String,
+    listOfValue: List<T>,
+    onAction: (HomeAction) -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -469,48 +330,193 @@ fun QuickList(title: String, list: @Composable () -> Unit){
 
         Spacer(Modifier.height(16.dp))
 
-        list()
+        if (listOfValue.size == 0) {
+
+            Text(text = emptyErrorText, style= Typography.bodyMedium, color=colorScheme.secondary)
+        } else {
 
 
-        // Проверка на наличие сущностей
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(0.dp, 200.dp)
+            ) {
+                items(listOfValue.size) { item ->
 
+                    if (listOfValue[item] is Event) {
+                        val event: Event = listOfValue[item] as Event
+                        QuickListItem(
+                            event?.image ?: "", event?.name ?: "",
+                            description = "${event.start_time.dayOfMonth} ${event.start_time.month} ${
+                                event.start_time.format(
+                                    DateTimeFormatter.ofPattern("HH:mm:ss")
+                                )
+                            } - ${event.end_time.dayOfMonth} ${event.end_time.month} ${
+                                event.end_time.format(
+                                    DateTimeFormatter.ofPattern("HH:mm:ss")
+                                )
+                            }"
+                        )
+                        {
+                            Image(
+                                painter = painterResource(R.drawable.trash),
+                                contentDescription = "Delete Image",
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clickable(onClick = { onAction(HomeAction.DeleteEvent(event.id!!)) }),
+                                colorFilter = ColorFilter.tint(colorScheme.primary)
+                            )
+                        }
+                    }
+
+                    if (listOfValue[item] is GameContent) {
+                        val content: GameContent = listOfValue[item] as GameContent
+                        QuickListItem(
+                            content?.image ?: "",
+                            content.name,
+                            content?.description ?: ""
+                        )
+                        {
+                            Image(
+                                painter = painterResource(if (content.pinned == false) R.drawable.pinned_off else R.drawable.pinned_on),
+                                contentDescription = "Pinned Image",
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clickable(onClick = {
+                                        onAction(HomeAction.TogglePin(content.id, content.pinned))
+                                    }),
+                                colorFilter = if (content.pinned == false) null else ColorFilter.tint(
+                                    colorScheme.tertiary
+                                )
+                            )
+                        }
+                    }
+
+
+                    if (item != listOfValue.size - 1) {
+                        Spacer(Modifier.height(16.dp))
+                    }
+                }
+            }
+
+        }
+
+    }
+}
+
+@Composable
+fun QuickListItem(
+    fileName: String,
+    name: String,
+    description: String,
+    image: @Composable () -> Unit
+) {
+    // Контейнер события
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = colorScheme.tertiaryContainer,
+                shape = RoundedCornerShape(10)
+            )
+            .padding(12.dp)
+
+    ) {
+        // Изображение события !!!!!!!!!!!!!!!!
+        LocalImage(fileName, Modifier.size(48.dp))
+
+        Spacer(Modifier.width(12.dp))
+        // Содержание события
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        )
+        {
+            // Название события
+            Text(
+                text = name,
+                style = TextStyle(
+                    fontSize = Typography.bodyMedium.fontSize,
+                    fontWeight = FontWeight.Bold
+                ),
+                color = colorScheme.primary,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 2
+            )
+            // Краткое описание
+            Text(
+                text = description,
+                style = TextStyle(
+                    fontSize = Typography.bodySmall.fontSize,
+                    fontWeight = FontWeight.Normal
+                ),
+                color = colorScheme.secondary,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 2
+            )
+
+        }
+        image()
     }
 }
 
 
 // шаблон контейнера иконки быстрого доступа
 @Composable
-fun QuickBlock(image: Int, title: String, desc: String, modifier: Modifier, color:Color, onClick: () -> Unit){
+fun QuickBlock(
+    image: Int,
+    title: String,
+    desc: String,
+    modifier: Modifier,
+    color: Color,
+    onClick: () -> Unit
+) {
     // контейнер шаблона иконки быстрого доступа
     Column(
         verticalArrangement = Arrangement.Center,
-        modifier= modifier
+        modifier = modifier
             .height(80.dp)
             .border(BorderStroke(2.dp, color = colorScheme.outline), shape = RoundedCornerShape(10))
             .background(color = colorScheme.surface, shape = RoundedCornerShape(10))
             .clickable(onClick = { onClick() })
             .padding(20.dp)
-    ){
+    ) {
         // Строка с иконкой и заголовком
         Row(
             verticalAlignment = Alignment.CenterVertically
-        ){
+        ) {
             // Иконка
             Image(
-                painter= painterResource(image),
+                painter = painterResource(image),
                 contentDescription = desc,
-                modifier=Modifier.size(16.dp),
+                modifier = Modifier.size(16.dp),
                 colorFilter = ColorFilter.tint(color)
             )
 
             Spacer(Modifier.width(8.dp))
             // Текст заголовка
-            Text(text = title, style= TextStyle(fontSize = Typography.bodyMedium.fontSize, fontWeight = FontWeight.Bold), color=colorScheme.primary)
+            Text(
+                text = title,
+                style = TextStyle(
+                    fontSize = Typography.bodyMedium.fontSize,
+                    fontWeight = FontWeight.Bold
+                ),
+                color = colorScheme.primary
+            )
         }
 
         Spacer(Modifier.height(10.dp))
         // Текст описания
-        Text(text = desc, style= TextStyle(fontSize = Typography.bodySmall.fontSize, fontWeight = FontWeight.Normal), color=colorScheme.secondary)
+        Text(
+            text = desc,
+            style = TextStyle(
+                fontSize = Typography.bodySmall.fontSize,
+                fontWeight = FontWeight.Normal
+            ),
+            color = colorScheme.secondary
+        )
     }
 }
 
