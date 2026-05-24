@@ -23,6 +23,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+// region InfoScreen
+
 data class InfoUiState(
     val types: List<ContentType> = emptyList(),
     val searchQuery: String = "",
@@ -37,17 +39,22 @@ sealed interface InfoAction{
     data class UpdateContentPin(val id: Long, val pinStatus: Boolean) : InfoAction
 }
 
+// endregion
 
 class InfoViewModel(
     val contentTypeRepository: ContentTypeRepository,
     val gameContentRepository: GameContentRepository
 ): ViewModel() {
 
+    // region flows
+
     private val _uiState = MutableStateFlow(InfoUiState())
     val uiState = _uiState.asStateFlow()
 
     private val _searchQuery = MutableStateFlow("")
     private val _selectedType = MutableStateFlow(0L)
+
+    // endregion
 
     init{
 
@@ -75,19 +82,30 @@ class InfoViewModel(
             .launchIn(viewModelScope)
     }
 
-    fun selectType(id: Long){
+    fun onAction(action: InfoAction){
+        when(action){
+            is InfoAction.ChangeSearchQuery -> changeSearchQuery(action.query)
+            is InfoAction.ClearQuery -> clearQuery()
+            is InfoAction.SelectType -> selectType(action.id)
+            is InfoAction.UpdateContentPin -> updateContentPin(action.id,action.pinStatus)
+        }
+    }
+
+    // region onAction function
+
+    private fun selectType(id: Long){
         _selectedType.value = id
     }
 
-    fun changeSearchQuery(query: String){
+    private fun changeSearchQuery(query: String){
         _searchQuery.value = query
     }
 
-    fun clearQuery(){
+    private fun clearQuery(){
         _searchQuery.value = ""
     }
 
-    fun updateContentPin(id: Long, pinStatus: Boolean){
+    private fun updateContentPin(id: Long, pinStatus: Boolean){
         viewModelScope.launch {
             if(pinStatus){
                 gameContentRepository.pinContent(id)
@@ -97,4 +115,6 @@ class InfoViewModel(
             }
         }
     }
+
+    // endregion
 }

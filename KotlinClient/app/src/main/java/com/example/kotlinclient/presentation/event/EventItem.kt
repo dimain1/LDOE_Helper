@@ -31,11 +31,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.kotlinclient.presentation.LocalImage
 import com.example.kotlinclient.presentation.NowIndicator
+import com.example.kotlinclient.presentation.utility.AnimatedTimer
 import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.ui.theme.Typography
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -57,7 +59,7 @@ fun EventItem(
                 color = if (isNow) colorScheme.tertiary else colorScheme.outline,
                 shape = RoundedCornerShape(30.dp)
             )
-            .clickable(onClick = {onEventClick(event)})
+            .clickable(onClick = { onEventClick(event) })
     )
     {
         Box(
@@ -74,7 +76,9 @@ fun EventItem(
                 true
             )
             if (isNow) {
-                Box(modifier = Modifier.padding(16.dp).align(Alignment.TopEnd)) {
+                Box(modifier = Modifier
+                    .padding(16.dp)
+                    .align(Alignment.TopEnd)) {
                     NowIndicator()
                 }
             }
@@ -107,50 +111,54 @@ fun EventItem(
 
                 Spacer(Modifier.height(16.dp))
 
-                // Дата
-                Row(
-                    modifier = Modifier.fillMaxWidth()
+//                // Дата
+//                Row(
+//                    modifier = Modifier.fillMaxWidth()
+//                )
+//                {
+//                    Icon(
+//                        Icons.Default.DateRange,
+//                        "Date",
+//                        modifier = Modifier.size(16.dp),
+//                        tint = colorScheme.secondary
+//                    )
+//
+//                    Spacer(Modifier.width(10.dp))
+//
+//                    Text(
+//                        text = "${event.start_time.dayOfMonth} ${event.start_time.month} - ${event.end_time.dayOfMonth} ${event.end_time.month}",
+//                        style = Typography.bodyMedium,
+//                        color = colorScheme.secondary
+//                    )
+//                }
+//
+//                Spacer(Modifier.height(8.dp))
+//
+//                // Время
+//                Row(
+//                    modifier = Modifier.fillMaxWidth()
+//                ) {
+//                    Icon(
+//                        Icons.Default.DateRange,
+//                        "Date",
+//                        modifier = Modifier.size(16.dp),
+//                        tint = colorScheme.secondary
+//                    )
+//
+//                    Spacer(Modifier.width(10.dp))
+//
+//                    Text(
+//                        text = "${event.start_time.format(DateTimeFormatter.ofPattern("HH:mm:ss"))} - ${
+//                            event.end_time.format(
+//                                DateTimeFormatter.ofPattern("HH:mm:ss")
+//                            )
+//                        }", style = Typography.bodyMedium, color = colorScheme.secondary
+//                    )
+//                }
+
+                AnimatedTimer(
+                    event.end_time.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
                 )
-                {
-                    Icon(
-                        Icons.Default.DateRange,
-                        "Date",
-                        modifier = Modifier.size(16.dp),
-                        tint = colorScheme.secondary
-                    )
-
-                    Spacer(Modifier.width(10.dp))
-
-                    Text(
-                        text = "${event.start_time.dayOfMonth} ${event.start_time.month} - ${event.end_time.dayOfMonth} ${event.end_time.month}",
-                        style = Typography.bodyMedium,
-                        color = colorScheme.secondary
-                    )
-                }
-
-                Spacer(Modifier.height(8.dp))
-
-                // Время
-                Row(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        Icons.Default.DateRange,
-                        "Date",
-                        modifier = Modifier.size(16.dp),
-                        tint = colorScheme.secondary
-                    )
-
-                    Spacer(Modifier.width(10.dp))
-
-                    Text(
-                        text = "${event.start_time.format(DateTimeFormatter.ofPattern("HH:mm:ss"))} - ${
-                            event.end_time.format(
-                                DateTimeFormatter.ofPattern("HH:mm:ss")
-                            )
-                        }", style = Typography.bodyMedium, color = colorScheme.secondary
-                    )
-                }
 
                 Spacer(Modifier.height(16.dp))
 

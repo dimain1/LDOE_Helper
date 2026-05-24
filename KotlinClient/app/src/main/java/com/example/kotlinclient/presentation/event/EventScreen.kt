@@ -48,7 +48,6 @@ fun EventScreen(
     templates: List<EventTemplate>,
     eventFormFields: EventFormFields,
     onFormAction: (EventFormAction) -> Unit,
-    selectedTemplate: EventTemplate?,
     currentTime: LocalDateTime,
     paddingValues: PaddingValues){
 
@@ -60,7 +59,6 @@ fun EventScreen(
             EventCreateModal(
                 onDismiss = { onAction(EventAction.DismissDialog) },
                 templates = templates,
-                selectedTemplate = selectedTemplate,
                 eventFormFields = eventFormFields,
                 onFormAction = onFormAction,
             )
@@ -71,7 +69,6 @@ fun EventScreen(
             EventCreateModal(
                 onDismiss = { onAction(EventAction.DismissDialog) },
                 templates = templates,
-                selectedTemplate = selectedTemplate,
                 eventFormFields = eventFormFields,
                 onFormAction = onFormAction,
             )
@@ -87,10 +84,6 @@ fun EventScreen(
 
         else -> {}
     }
-
-
-
-
 
     // Контейнер всего экрана
     Column(

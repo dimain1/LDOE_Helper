@@ -25,19 +25,24 @@ import com.example.kotlinclient.state_management.viewModel.HomeAction
 import com.example.kotlinclient.state_management.viewModel.HomeViewModel
 import com.example.kotlinclient.state_management.viewModel.InfoViewModel
 import com.example.kotlinclient.state_management.viewModel.SettingsViewModel
+import com.example.kotlinclient.state_management.viewModel.SharedAppViewModel
 import com.example.kotlinclient.ui.theme.KotlinClientTheme
 import org.koin.androidx.compose.koinViewModel
 
 // Навигация приложения
 @Composable
-fun ApplicationNavHost(navController: NavHostController, startDestination: String, paddingValues: PaddingValues){
+fun ApplicationNavHost(
+    navController: NavHostController,
+    startDestination: String,
+    paddingValues: PaddingValues,
+    sharedAppViewModel: SharedAppViewModel
+) {
 
     val infoViewModel: InfoViewModel = koinViewModel()
     val homeViewModel: HomeViewModel = koinViewModel()
     val eventViewModel: EventViewModel = koinViewModel()
     val eventTemplateViewModel: EventTemplateViewModel = koinViewModel()
-    val settingsViewModel: SettingsViewModel = koinViewModel ()
-
+    val settingsViewModel: SettingsViewModel = koinViewModel()
 
 
     // Главный компонент навигации, определяет пути и экраны, которые будут вызваны по этому пути
@@ -48,7 +53,8 @@ fun ApplicationNavHost(navController: NavHostController, startDestination: Strin
             eventViewModel,
             infoViewModel,
             navController,
-            paddingValues
+            paddingValues,
+            sharedAppViewModel
         )
 
         infoScreen(

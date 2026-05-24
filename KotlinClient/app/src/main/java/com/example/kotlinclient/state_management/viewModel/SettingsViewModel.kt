@@ -25,6 +25,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.math.log
 
+// region Settings screen
+
 data class SettingsUiState(
     val user: User? = null,
     val notification: Boolean = false,
@@ -39,11 +41,15 @@ sealed interface SettingsAction{
     data object ExitProfile: SettingsAction
 }
 
+// endregion
+
 class SettingsViewModel(
     val sharedPreferencesRepository: SharedPreferencesRepository,
     val session: UserSession,
     val userRepository: UserRepository,
 ): ViewModel() {
+
+    // region flows
 
     val uiState:StateFlow<SettingsUiState> = combine(
         sharedPreferencesRepository.observeBoolean("notification",false),
@@ -91,28 +97,42 @@ class SettingsViewModel(
 //        }.launchIn(viewModelScope)
 //    }
 
+    // endregion
 
-    fun switchBooleanPreferences(key: String): Unit{
+    fun onAction(action: SettingsAction){
+        when(action){
+            is SettingsAction.SetUserId -> setUserId(action.id)
+            is SettingsAction.EditUserInfo -> updateUserInfo(action.login, action.email)
+            is SettingsAction.SwitchPreference -> switchBooleanPreferences(action.key)
+            is SettingsAction.ExitProfile -> exitProfile()
+        }
+    }
+
+    // region onAction fuction
+
+    private fun switchBooleanPreferences(key: String): Unit{
         viewModelScope.launch {
             sharedPreferencesRepository.switchBooleanValueByKey(key)
         }
     }
 
-    fun setUserId(id: Long){
+    private fun setUserId(id: Long){
         viewModelScope.launch {
             sharedPreferencesRepository.putLongByKey("user_id", id)
         }
     }
 
-    fun updateUserInfo(login: String, email:String){
+    private fun updateUserInfo(login: String, email:String){
         viewModelScope.launch {
             userRepository.updateUserInfo(session.requireId() , login,email)
         }
     }
 
-    fun exitProfile(){
+    private fun exitProfile(){
         setUserId(-1)
     }
+
+    // endregion
 
 
 

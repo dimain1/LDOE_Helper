@@ -1,6 +1,7 @@
 package com.example.kotlinclient.presentation.event.modal
 
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,8 +22,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,6 +40,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -58,11 +64,11 @@ import java.time.format.DateTimeFormatter
 fun EventCreateModal(
     onDismiss: () -> Unit,
     templates: List<EventTemplate>,
-    selectedTemplate: EventTemplate?,
     eventFormFields: EventFormFields,
     onFormAction: (EventFormAction) -> Unit,
 ) {
 
+    val context: Context = LocalContext.current
     val currentFields by rememberUpdatedState(eventFormFields)
 
     LaunchedEffect(Unit) {
@@ -82,12 +88,11 @@ fun EventCreateModal(
     EventTemplatePicker(
         showTemplateModal = showTemplateModal,
         templates = templates,
-        selectedTemplate = selectedTemplate,
+        selectedTemplate = eventFormFields.template,
         onDismiss = { showTemplateModal = false },
-        onConfirm = { onFormAction(EventFormAction.SelectTemplateInModal) },
         onClick = { template ->
             onFormAction(
-                EventFormAction.SelectTemplateInPicker(template)
+                EventFormAction.SelectTemplate(template)
             )
             Log.d("DEBUG", "SELECTED ID IN MAIN MODAL ${eventFormFields.template?.id ?: "выфвфв"}")
         }
@@ -143,7 +148,6 @@ fun EventCreateModal(
                                 .size(32.dp)
                                 .clickable(onClick = {
                                     showTemplateModal = true
-                                    onFormAction(EventFormAction.SyncFormTemplateAndSelectedTemplate)
                                 }),
                             colorFilter = ColorFilter.tint(colorScheme.primary)
                         )
@@ -186,17 +190,15 @@ fun EventCreateModal(
                             )
 
                         }
-                        Image(
-                            painter = painterResource(R.drawable.pencil),
+                        Icon(
+                            imageVector = Icons.Default.Clear,
                             contentDescription = "Select Template",
                             modifier = Modifier
                                 .size(32.dp)
                                 .clickable(onClick = {
-                                    showTemplateModal = true
-                                    onFormAction(EventFormAction.SyncFormTemplateAndSelectedTemplate)
-
+                                    onFormAction(EventFormAction.SelectTemplate(template = null))
                                 }),
-                            colorFilter = ColorFilter.tint(colorScheme.primary)
+                            tint = colorScheme.primary
                         )
                     }
                 }
@@ -232,7 +234,7 @@ fun EventCreateModal(
             {
                 Button(
                     onClick = {
-                        onFormAction(EventFormAction.ValidateAndSave)
+                        onFormAction(EventFormAction.ValidateAndSave(context))
                         if (eventFormFields.id != null) onDismiss()
                     },
 
@@ -296,6 +298,7 @@ fun BasicTextFieldInModal(
                 innerTextField()
             }
         },
+        cursorBrush = SolidColor(colorScheme.primary),
         textStyle = Typography.bodyLarge.copy(color = colorScheme.primary)
     )
 }

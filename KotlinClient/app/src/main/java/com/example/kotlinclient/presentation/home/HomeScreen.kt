@@ -30,6 +30,10 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -45,6 +49,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kotlinclient.R
 import com.example.kotlinclient.presentation.LocalImage
+import com.example.kotlinclient.presentation.event.modal.EventViewDetails
+import com.example.kotlinclient.presentation.utility.AnimatedTimer
 import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.state_management.entity.GameContent
 import com.example.kotlinclient.state_management.viewModel.HomeAction
@@ -56,6 +62,7 @@ import com.example.kotlinclient.ui.theme.ServiceFloatingButtonColor
 import com.example.kotlinclient.ui.theme.TemplateIconColor
 import com.example.kotlinclient.ui.theme.Typography
 import com.example.kotlinclient.ui.theme.linearGradientEndColor
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.reflect.typeOf
 
@@ -70,6 +77,10 @@ fun HomeScreen(
 
     val scrollState = rememberScrollState()
     val content: Context = LocalContext.current
+
+    var showModalEvent by remember { mutableStateOf(false) }
+
+
 
     Column(
         Modifier
@@ -304,7 +315,7 @@ fun <T> QuickList(
     title: String,
     emptyErrorText: String,
     listOfValue: List<T>,
-    onAction: (HomeAction) -> Unit
+    onAction: (HomeAction) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -347,15 +358,10 @@ fun <T> QuickList(
                         val event: Event = listOfValue[item] as Event
                         QuickListItem(
                             event?.image ?: "", event?.name ?: "",
-                            description = "${event.start_time.dayOfMonth} ${event.start_time.month} ${
-                                event.start_time.format(
-                                    DateTimeFormatter.ofPattern("HH:mm:ss")
-                                )
-                            } - ${event.end_time.dayOfMonth} ${event.end_time.month} ${
-                                event.end_time.format(
-                                    DateTimeFormatter.ofPattern("HH:mm:ss")
-                                )
-                            }"
+                            { onAction(HomeAction.ShowEventDetails(event)) },
+                            description = {
+                                AnimatedTimer(event.end_time.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
+                            }
                         )
                         {
                             Image(
@@ -374,7 +380,18 @@ fun <T> QuickList(
                         QuickListItem(
                             content?.image ?: "",
                             content.name,
-                            content?.description ?: ""
+                            description = {
+                                Text(
+                                    text = content?.description ?: "",
+                                    style = TextStyle(
+                                        fontSize = Typography.bodySmall.fontSize,
+                                        fontWeight = FontWeight.Normal
+                                    ),
+                                    color = colorScheme.secondary,
+                                    overflow = TextOverflow.Ellipsis,
+                                    maxLines = 2
+                                )
+                            }
                         )
                         {
                             Image(
@@ -408,7 +425,8 @@ fun <T> QuickList(
 fun QuickListItem(
     fileName: String,
     name: String,
-    description: String,
+    onItemClick: () -> Unit = {},
+    description: @Composable () -> Unit,
     image: @Composable () -> Unit
 ) {
     // Контейнер события
@@ -421,6 +439,7 @@ fun QuickListItem(
                 shape = RoundedCornerShape(10)
             )
             .padding(12.dp)
+            .clickable(onClick = onItemClick)
 
     ) {
         // Изображение события !!!!!!!!!!!!!!!!
@@ -445,18 +464,11 @@ fun QuickListItem(
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 2
             )
-            // Краткое описание
-            Text(
-                text = description,
-                style = TextStyle(
-                    fontSize = Typography.bodySmall.fontSize,
-                    fontWeight = FontWeight.Normal
-                ),
-                color = colorScheme.secondary,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 2
-            )
 
+            Spacer(Modifier.height(5.dp))
+
+            // Краткое описание
+            description()
         }
         image()
     }

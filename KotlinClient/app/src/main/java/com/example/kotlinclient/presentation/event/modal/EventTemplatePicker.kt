@@ -36,8 +36,7 @@ fun EventTemplatePicker(
     templates: List<EventTemplate>,
     selectedTemplate: EventTemplate?,
     onDismiss: ()-> Unit,
-    onConfirm: ()-> Unit,
-    onClick: (EventTemplate)->Unit)
+    onClick: (EventTemplate?)->Unit)
 {
 
     val horizontalScroll: ScrollState = rememberScrollState()
@@ -99,14 +98,7 @@ fun EventTemplatePicker(
                     }
                 }
             },
-            confirmButton = {
-                Button(onClick= {
-                    onConfirm()
-                    onDismiss()
-                }) {
-                    Text("Подтвердить")
-                }
-            },
+            confirmButton = {},
             containerColor = colorScheme.secondaryContainer
         )
     }

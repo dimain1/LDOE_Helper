@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+// region EventTemplate screen
+
 data class EventTemplateUiState(
     val templates: List<EventTemplate> = emptyList()
 )
@@ -19,13 +21,19 @@ sealed interface EventTemplateAction{
     data class DeleteTemplate(val id: Long): EventTemplateAction
 }
 
+// endregion
+
 class EventTemplateViewModel(
     val eventTemplateRepository: EventTemplateRepository
 ): ViewModel() {
 
+    // region flows
+
     private val _uiState = MutableStateFlow( EventTemplateUiState())
 
     val uiState = _uiState.asStateFlow()
+
+    // endregion
 
     init{
 
@@ -35,10 +43,20 @@ class EventTemplateViewModel(
 
     }
 
-    fun deleteTemplate(id: Long){
+    fun onAction(action: EventTemplateAction){
+        when(action){
+            is EventTemplateAction.DeleteTemplate -> deleteTemplate(action.id)
+        }
+    }
+
+    // region onAction function
+
+    private fun deleteTemplate(id: Long){
         viewModelScope.launch {
             eventTemplateRepository.deleteTemplateById(id)
         }
     }
+
+    //endregion
 
 }
