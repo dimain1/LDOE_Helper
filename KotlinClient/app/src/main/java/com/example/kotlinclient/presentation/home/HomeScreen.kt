@@ -357,7 +357,7 @@ fun <T> QuickList(
                     if (listOfValue[item] is Event) {
                         val event: Event = listOfValue[item] as Event
                         QuickListItem(
-                            event?.image ?: "", event?.name ?: "",
+                            event?.image, event?.name ?: "",
                             { onAction(HomeAction.ShowEventDetails(event)) },
                             description = {
                                 AnimatedTimer(event.end_time.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
@@ -400,7 +400,7 @@ fun <T> QuickList(
                                 modifier = Modifier
                                     .size(32.dp)
                                     .clickable(onClick = {
-                                        onAction(HomeAction.TogglePin(content.id, content.pinned))
+                                        onAction(HomeAction.TogglePin(content.id, !content.pinned))
                                     }),
                                 colorFilter = if (content.pinned == false) null else ColorFilter.tint(
                                     colorScheme.tertiary
@@ -423,7 +423,7 @@ fun <T> QuickList(
 
 @Composable
 fun QuickListItem(
-    fileName: String,
+    fileName: String?,
     name: String,
     onItemClick: () -> Unit = {},
     description: @Composable () -> Unit,

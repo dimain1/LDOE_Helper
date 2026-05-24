@@ -1,4 +1,4 @@
-package com.example.kotlinclient.presentation
+package com.example.kotlinclient.presentation.utility
 
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.LinearEasing

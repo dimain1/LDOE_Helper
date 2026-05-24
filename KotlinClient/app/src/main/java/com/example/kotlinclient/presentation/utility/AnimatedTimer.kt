@@ -38,18 +38,24 @@ fun AnimatedTimer(
     targetTime: Long,
     modifier: Modifier = Modifier
 ) {
-    var remaining by remember { mutableLongStateOf(targetTime - System.currentTimeMillis()) }
+
+
+    var remaining by remember(targetTime) {
+        mutableLongStateOf(targetTime - System.currentTimeMillis())
+    }
 
     if (remaining < 0)
         remaining = 0
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(targetTime) {
         while (remaining > 0) {
-            if (remaining > 86_400_000)
-                delay(86_400_000)
-            else {
-                delay(60_000)
-            }
+            delay(
+                if (remaining > 86_400_000)
+                    86_400_000
+                else
+                    60_000
+            )
+
             remaining = targetTime - System.currentTimeMillis()
         }
     }

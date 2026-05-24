@@ -363,7 +363,7 @@ fun CustomSwitcher(checked: Boolean, onClick: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .background(
-                color = if (checked) colorScheme.tertiary else colorScheme.tertiaryContainer,
+                color = if (checked) colorScheme.tertiary else colorScheme.outline,
                 shape = RoundedCornerShape(50)
             )
             .clickable(onClick = {

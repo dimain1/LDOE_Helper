@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import com.example.kotlinclient.R
 import com.example.kotlinclient.presentation.LocalImage
 import com.example.kotlinclient.presentation.utility.DateTimePicker
+import com.example.kotlinclient.presentation.utility.getStringTimeByDuration
 import com.example.kotlinclient.state_management.entity.EventTemplate
 import com.example.kotlinclient.state_management.viewModel.EventFormAction
 import com.example.kotlinclient.state_management.viewModel.EventFormFields
@@ -179,7 +180,11 @@ fun EventCreateModal(
                             )
                             // Длительность
                             Text(
-                                text = (eventFormFields.template?.duration!! / 1000 / 60).toString() + " Minutes",
+                                text = if(eventFormFields.template.duration < 60_000L) "Меньше минуты"
+                                else if(eventFormFields.template.duration > 86_400_000L * 30) "Больше месяца"
+                                else {
+                                    getStringTimeByDuration(eventFormFields.template.duration)
+                                },
                                 style = TextStyle(
                                     fontSize = Typography.bodySmall.fontSize,
                                     fontWeight = FontWeight.Normal

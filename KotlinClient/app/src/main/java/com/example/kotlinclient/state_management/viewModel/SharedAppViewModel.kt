@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
+
+
 data class SharedUiState(
     val darkTheme: Boolean = false,
     val eventDetailsDialogUiState: EventDetailsDialogUiState = EventDetailsDialogUiState()
@@ -37,6 +39,7 @@ class SharedAppViewModel(
 
     // region flows
 
+        // region  eventDetailsDialog Flows
     val showEventViewDetailsDialog = MutableStateFlow(false)
     val eventInitialData = MutableStateFlow<Event?>(null)
 
@@ -49,7 +52,7 @@ class SharedAppViewModel(
         viewModelScope, SharingStarted.WhileSubscribed(5000),
         EventDetailsDialogUiState()
     )
-
+        // endregion
     val _uiState: StateFlow<SharedUiState> = combine(
         sharedPreferencesRepository.observeBoolean("theme", false),
         _eventDetailsDialogUiState

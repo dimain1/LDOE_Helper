@@ -49,12 +49,13 @@ fun EventScreen(
     eventFormFields: EventFormFields,
     onFormAction: (EventFormAction) -> Unit,
     currentTime: LocalDateTime,
-    paddingValues: PaddingValues){
+    paddingValues: PaddingValues
+) {
 
     var showModal by remember { mutableStateOf(false) }
 
-    when(uiState.activeDialog){
-        is EventDialogType.Create ->{
+    when (uiState.activeDialog) {
+        is EventDialogType.Create -> {
 
             EventCreateModal(
                 onDismiss = { onAction(EventAction.DismissDialog) },
@@ -87,7 +88,7 @@ fun EventScreen(
 
     // Контейнер всего экрана
     Column(
-        modifier=Modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
     )
@@ -95,7 +96,7 @@ fun EventScreen(
         HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
         // Основной контейнер экрана
         Column(
-            modifier=Modifier
+            modifier = Modifier
                 .background(color = colorScheme.secondaryContainer)
                 .fillMaxWidth()
                 .weight(1f)
@@ -107,43 +108,60 @@ fun EventScreen(
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
-                modifier= Modifier
+                modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             )
             {
                 // Заголовок экрана
-                Text(text ="Event Notifications", style= Typography.bodyLarge.copy(fontWeight = FontWeight.Bold), color= colorScheme.primary)
+                Text(
+                    text = "Event Notifications",
+                    style = Typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                    color = colorScheme.primary
+                )
                 // Кнопка экрана(Создание ивента)
                 Button(
-                    colors= ButtonDefaults.buttonColors(containerColor = colorScheme.tertiary, contentColor = Color.White),
-                    shape= RoundedCornerShape(25),
-                    modifier= Modifier,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colorScheme.tertiary,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(25),
+                    modifier = Modifier,
                     onClick = {
                         onFormAction(EventFormAction.ClearUiState)
-                        onAction(EventAction.OpenDialog(EventDialogType.Create)) }
+                        onAction(EventAction.OpenDialog(EventDialogType.Create))
+                    }
                 )
                 {
                     // Иконка внутри кнопки
                     Icon(Icons.Default.Add, "Add", tint = Color.White)
                     Spacer(Modifier.width(12.dp))
                     // Текст внутри кнопки
-                    Text(text= "Create Event",style= Typography.bodyMedium.copy(fontWeight = FontWeight.Bold), color= Color.White)
+                    Text(
+                        text = "Create Event",
+                        style = Typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                        color = Color.White
+                    )
                 }
             }
 
             Spacer(Modifier.height(16.dp))
 
-            HorizontalDivider(thickness = 1.dp, color= colorScheme.outline)
+            HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
 
             Spacer(Modifier.height(16.dp))
 
             // Список ивентов
-            EventList(uiState.events, 200, { id -> onAction(EventAction.DeleteEvent(id)) }, {
-                event -> onFormAction(EventFormAction.LoadUiState(event))
-                onAction(EventAction.OpenDialog(EventDialogType.Edit)) },
-                onEventClick = {event -> onAction(EventAction.OpenDialog(EventDialogType.View(event)))},
-                currentTime= currentTime
+            EventList(
+                uiState.events,
+                200,
+                { id -> onAction(EventAction.DeleteEvent(id)) },
+                { event ->
+                    onFormAction(EventFormAction.LoadUiState(event, { showModal = true }))
+                    onAction(EventAction.OpenDialog(EventDialogType.Edit))
+                },
+                onEventClick = { event -> onAction(EventAction.OpenDialog(EventDialogType.View(event))) },
+                currentTime = currentTime
             )
 
         }

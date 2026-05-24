@@ -59,7 +59,7 @@ fun EventViewDetails(onAction: (EventAction) -> Unit, onDismiss: () -> Unit, ini
                 modifier = Modifier.fillMaxWidth()
             ) {
                 LocalImage(
-                    null,
+                    initialData?.image,
                     Modifier
                         .size(250.dp)
                         .clip(RoundedCornerShape(20.dp))

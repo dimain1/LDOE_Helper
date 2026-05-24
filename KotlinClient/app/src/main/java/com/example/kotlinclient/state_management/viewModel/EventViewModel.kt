@@ -18,6 +18,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -70,7 +71,7 @@ data class EventFormFields(
 sealed interface EventFormAction{
     data object ClearUiState : EventFormAction
     data class SelectTemplate(val template: EventTemplate?): EventFormAction
-    data class LoadUiState(val event: Event): EventFormAction
+    data class LoadUiState(val event: Event, val onSuccess: () -> Unit): EventFormAction
     data class ValidateAndSave(val context: Context): EventFormAction
     data object UpdateEndTime: EventFormAction
 }
@@ -101,38 +102,22 @@ class EventViewModel(
     val validationEvents = _validationEvents.receiveAsFlow()
 
     // Состояние всего экрана событий
-    private val _uiState = MutableStateFlow(EventUiState())
-    val uiState = _uiState.asStateFlow()
+    // Используется combine потому что зависит от другого потока
+    // отслеживает изменение в базе + изменение через update
+    private val activeDialog = MutableStateFlow<EventDialogType?>(null)
+
+    val uiState = combine( eventRepository.getAllEventsWithTemplate(), activeDialog ){
+        events, dialog ->   EventUiState(events, dialog)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), EventUiState())
 
     // Состояние EventCreateModal
+    // Используется MSF потому что нет потоков, на основе которых можно было бы создать поток
+    // Изменение происходит через update
     private val _eventFormFields = MutableStateFlow(EventFormFields())
     val eventFormFields = _eventFormFields.asStateFlow()
 
-    // Поток выбранного шаблона, используется для TemplatePicker
-    private val _selectedTemplate = MutableStateFlow<EventTemplate?>(null)
-    // Поток id события, используется для редактирования событий
-    private val _selectedId = MutableStateFlow<Long?>(null)
-
     // endregion
 
-    // init блок запуска слушателей
-    init {
-
-        // Слушатель изменений событий
-        eventRepository.getAllEventsWithTemplate().onEach { events ->
-            _uiState.update { it.copy(events = events) }
-        }.launchIn(viewModelScope)
-
-        // Слушателель изменений id события
-        _selectedId.onEach { id ->
-            _eventFormFields.update { it.copy(id=id) }
-        }.launchIn(viewModelScope)
-
-        _selectedTemplate.onEach { template ->
-            _eventFormFields.update { it.copy(template= template) }
-        }.launchIn(viewModelScope)
-
-    }
 
     // Поток состояния текущего времени обновляющийся раз в минуту
     val currentTime = flow {
@@ -163,12 +148,12 @@ class EventViewModel(
 
     // Закрытие основных диалогов
     private fun dismissDialog(){
-        _uiState.update { it.copy(activeDialog = null) }
+        activeDialog.value = null
     }
 
     // Открытие основных диаголов
     private fun openDialog(dialog: EventDialogType){
-        _uiState.update { it.copy(activeDialog = dialog) }
+        activeDialog.value = dialog
     }
 
     // endregion
@@ -176,7 +161,7 @@ class EventViewModel(
     fun onFormAction(action: EventFormAction){
         when(action){
             is EventFormAction.ClearUiState -> clearUiState()
-            is EventFormAction.LoadUiState -> loadUiState(action.event)
+            is EventFormAction.LoadUiState -> loadUiState(action.event, action.onSuccess)
             is EventFormAction.SelectTemplate -> selectTemplate(action.template)
             is EventFormAction.UpdateEndTime -> updateEndTime()
             is EventFormAction.ValidateAndSave -> saveEvent(action.context)
@@ -192,19 +177,20 @@ class EventViewModel(
     }
 
     // Загрузка состояния события для редактирования
-    private fun loadUiState(event: Event) {
+    private fun loadUiState(event: Event, onSuccess: () -> Unit) {
         var uiState = _eventFormFields.value
 
-        _selectedId.value = event.id
-        _selectedTemplate.value = event.template
+        _eventFormFields.update { it.copy(id=event.id, template=event.template) }
         uiState.name.edit { replace(0, length, event.name.toString()) }
         uiState.description.edit { replace(0, length, event.description.toString()) }
         uiState.startTime.edit { replace(0, length, getStringByTime(event.start_time)) }
         uiState.endTime.edit { replace(0, length, getStringByTime(event.end_time)) }
+
+        onSuccess()
     }
 
     private fun selectTemplate(template: EventTemplate?){
-        _selectedTemplate.value = template
+        _eventFormFields.update { it.copy(template= template) }
         onTemplateSelect()
     }
 

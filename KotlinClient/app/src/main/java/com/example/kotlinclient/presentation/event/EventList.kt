@@ -21,6 +21,7 @@ import com.example.kotlinclient.presentation.template.TemplateItem
 import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.state_management.entity.EventTemplate
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 @Composable
 fun EventList(
@@ -33,9 +34,12 @@ fun EventList(
 ) {
     LazyColumn(Modifier.padding(horizontal = 16.dp)) {
 
+        val sortedEvents = events.sortedByDescending { event -> event.end_time }
+
+
         items(events.size) { item ->
 
-            val event: Event = events[item]
+            val event: Event = sortedEvents[item]
             // Контейнер ивента
 
             // Столбец информации
@@ -43,7 +47,7 @@ fun EventList(
                 event,
                 200,
                 onEventClick= onEventClick,
-                isNow = currentTime >= event.start_time && currentTime <= event.end_time
+                isNow = currentTime >= event.start_time && currentTime <= event.end_time,
                 )
             {
                 // Столбец Кнопок

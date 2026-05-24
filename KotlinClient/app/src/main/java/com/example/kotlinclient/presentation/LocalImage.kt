@@ -17,7 +17,7 @@ import java.io.File
 @Composable
 fun LocalImage(fileName: String?, modifier: Modifier ,fillAll: Boolean = false) {
     val context = LocalContext.current
-    val imageFile: String =  "https://zornet.ru/_fr/81/9480131.jpg"
+    val imageFile: String =  if(fileName == null) "" else "https://zornet.ru/_fr/81/9480131.jpg"
     //val imageFile = File(context.filesDir, "images/$fileName.jpg")
 
     AsyncImage(

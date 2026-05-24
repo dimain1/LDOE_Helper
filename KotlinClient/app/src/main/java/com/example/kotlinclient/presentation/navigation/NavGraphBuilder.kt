@@ -206,7 +206,7 @@ fun NavGraphBuilder.eventScreen(
                     is EventFormAction.UpdateEndTime -> eventViewModel.onFormAction(EventFormAction.UpdateEndTime)
                     is EventFormAction.LoadUiState -> eventViewModel.onFormAction(
                         EventFormAction.LoadUiState(
-                            action.event
+                            action.event, action.onSuccess
                         )
                     )
 

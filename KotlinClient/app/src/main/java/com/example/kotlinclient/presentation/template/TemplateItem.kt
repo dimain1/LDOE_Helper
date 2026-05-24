@@ -38,32 +38,44 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.kotlinclient.R
 import com.example.kotlinclient.presentation.LocalImage
+import com.example.kotlinclient.presentation.utility.getStringByDays
+import com.example.kotlinclient.presentation.utility.getStringByHours
+import com.example.kotlinclient.presentation.utility.getStringByMinutes
+import com.example.kotlinclient.presentation.utility.getStringTimeByDuration
 import com.example.kotlinclient.ui.theme.Typography
 
 @Composable
-fun TemplateItem(name: String, description: String?, duration: Long, image: String?, imageSize: Int , tempModifierConteiner: Modifier = Modifier ,rightColumn : @Composable ()->Unit = {})
-{
+fun TemplateItem(
+    name: String,
+    description: String?,
+    duration: Long,
+    image: String?,
+    imageSize: Int,
+    tempModifierConteiner: Modifier = Modifier,
+    rightColumn: @Composable () -> Unit = {}
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = tempModifierConteiner
             .fillMaxWidth()
-            .background(color=colorScheme.surface, shape = RoundedCornerShape(30.dp))
+            .background(color = colorScheme.surface, shape = RoundedCornerShape(30.dp))
             .border(2.dp, colorScheme.outline, RoundedCornerShape(30.dp))
     )
     {
 
         Box(
             contentAlignment = Alignment.Center,
-            modifier=Modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .height(imageSize.dp)
         ) {
             LocalImage(
                 image,
-                modifier=  Modifier
+                modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)),
-                true)
+                true
+            )
         }
         HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
 
@@ -80,7 +92,7 @@ fun TemplateItem(name: String, description: String?, duration: Long, image: Stri
             Spacer(Modifier.height(16.dp))
 
             Column(
-                modifier= Modifier.weight(1f)
+                modifier = Modifier.weight(1f)
             )
             {
                 // Название ивента
@@ -96,7 +108,9 @@ fun TemplateItem(name: String, description: String?, duration: Long, image: Stri
 
                 // Описание
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
                 )
                 {
                     Text(
@@ -108,7 +122,11 @@ fun TemplateItem(name: String, description: String?, duration: Long, image: Stri
                     )
                 }
 
-                Spacer(Modifier.heightIn(min = 0.dp).weight(1f))
+                Spacer(
+                    Modifier
+                        .heightIn(min = 0.dp)
+                        .weight(1f)
+                )
 
                 // Время
                 Row(
@@ -123,8 +141,15 @@ fun TemplateItem(name: String, description: String?, duration: Long, image: Stri
 
                     Spacer(Modifier.width(10.dp))
 
+
+
                     Text(
-                        text = (duration / 1000 / 60).toString() + " " + "Minutes",
+                        text =
+                            if(duration < 60_000L) "Меньше минуты"
+                            else if(duration > 86_400_000L * 30) "Больше месяца"
+                            else {
+                                getStringTimeByDuration(duration)
+                            },
                         style = Typography.bodyMedium,
                         color = colorScheme.secondary
                     )
@@ -136,3 +161,5 @@ fun TemplateItem(name: String, description: String?, duration: Long, image: Stri
 
     }
 }
+
+
