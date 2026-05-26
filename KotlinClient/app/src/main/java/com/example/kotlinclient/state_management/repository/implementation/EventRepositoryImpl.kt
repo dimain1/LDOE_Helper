@@ -1,22 +1,17 @@
 package com.example.kotlinclient.state_management.repository.implementation
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import com.example.kotlinclient.local_cache.AppDatabase
 import com.example.kotlinclient.local_cache.converters.toEntity
 import com.example.kotlinclient.local_cache.converters.toModel
 import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.state_management.repository.UserSession
 import com.example.kotlinclient.state_management.repository.interfaces.EventRepository
-import com.example.kotlinclient.state_management.repository.interfaces.SharedPreferencesRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import java.time.Instant
-import kotlin.collections.map
 
 class EventRepositoryImpl(
-    val database: AppDatabase,
+    database: AppDatabase,
     val session: UserSession
 ) : EventRepository
 {

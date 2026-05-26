@@ -56,7 +56,7 @@ fun BasicTextFieldInModal(
             ) {
                 if (state.text.isEmpty()) {
                     Text(
-                        "${placeholder}" +
+                        placeholder +
                                 "", style = Typography.bodyLarge, color = colorScheme.secondary
                     )
                 }

@@ -1,8 +1,6 @@
 package com.example.kotlinclient.state_management.entity
 
-import java.time.Instant
 import java.time.LocalDateTime
-import java.time.OffsetDateTime
 
 data class Event(
     val id: Long?,
@@ -11,6 +9,6 @@ data class Event(
     val name: String?,
     val description: String?,
     val image: String?,
-    val start_time: LocalDateTime,
-    val end_time: LocalDateTime
+    val startTime: LocalDateTime,
+    val endTime: LocalDateTime
 )

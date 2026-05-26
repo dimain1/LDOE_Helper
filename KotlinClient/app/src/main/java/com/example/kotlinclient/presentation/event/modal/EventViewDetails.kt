@@ -96,8 +96,8 @@ fun EventViewDetails(onAction: (EventAction) -> Unit, onDismiss: () -> Unit, ini
                         Spacer(Modifier.width(10.dp))
 
                         Text(
-                            text = "${initialData?.start_time?.dayOfMonth} ${initialData?.start_time?.month} ${
-                                initialData?.start_time?.format(
+                            text = "${initialData?.startTime?.dayOfMonth} ${initialData?.startTime?.month} ${
+                                initialData?.startTime?.format(
                                     DateTimeFormatter.ofPattern("HH:mm:ss")
                                 )
                             }", style = Typography.bodyMedium, color = colorScheme.secondary
@@ -118,8 +118,8 @@ fun EventViewDetails(onAction: (EventAction) -> Unit, onDismiss: () -> Unit, ini
                         Spacer(Modifier.width(10.dp))
 
                         Text(
-                            text = "${initialData?.end_time?.dayOfMonth} ${initialData?.end_time?.month} ${
-                                initialData?.end_time?.format(
+                            text = "${initialData?.endTime?.dayOfMonth} ${initialData?.endTime?.month} ${
+                                initialData?.endTime?.format(
                                     DateTimeFormatter.ofPattern("HH:mm:ss")
                                 )
                             }", style = Typography.bodyMedium, color = colorScheme.secondary

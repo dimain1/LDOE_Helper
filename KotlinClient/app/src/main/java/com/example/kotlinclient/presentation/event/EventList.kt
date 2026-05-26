@@ -1,6 +1,5 @@
 package com.example.kotlinclient.presentation.event
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
@@ -17,11 +16,8 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.kotlinclient.R
-import com.example.kotlinclient.presentation.template.TemplateItem
 import com.example.kotlinclient.state_management.entity.Event
-import com.example.kotlinclient.state_management.entity.EventTemplate
 import java.time.LocalDateTime
-import java.time.ZoneId
 
 @Composable
 fun EventList(
@@ -34,7 +30,7 @@ fun EventList(
 ) {
     LazyColumn(Modifier.padding(horizontal = 16.dp)) {
 
-        val sortedEvents = events.sortedByDescending { event -> event.end_time }
+        val sortedEvents = events.sortedByDescending { event -> event.endTime }
 
 
         items(events.size) { item ->
@@ -47,7 +43,7 @@ fun EventList(
                 event,
                 200,
                 onEventClick= onEventClick,
-                isNow = currentTime >= event.start_time && currentTime <= event.end_time,
+                isNow = currentTime >= event.startTime && currentTime <= event.endTime,
                 )
             {
                 // Столбец Кнопок

@@ -8,7 +8,6 @@ import androidx.room.Transaction
 import androidx.room.Update
 import com.example.kotlinclient.local_cache.entity.EventTemplateEntity
 import com.example.kotlinclient.local_cache.entity.relationExtension.EventTemplateWithUser
-import com.example.kotlinclient.state_management.entity.EventTemplate
 import kotlinx.coroutines.flow.Flow
 
 @Dao

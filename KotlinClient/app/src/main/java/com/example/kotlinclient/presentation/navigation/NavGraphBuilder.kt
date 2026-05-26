@@ -1,7 +1,6 @@
 package com.example.kotlinclient.presentation.navigation
 
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -17,9 +16,6 @@ import com.example.kotlinclient.presentation.settings.SettingsScreen
 import com.example.kotlinclient.presentation.template.TemplateScreen
 import com.example.kotlinclient.state_management.viewModel.DialogType
 import com.example.kotlinclient.state_management.viewModel.EventAction
-import com.example.kotlinclient.state_management.viewModel.EventFormAction
-import com.example.kotlinclient.state_management.viewModel.EventFormValidationEvent
-import com.example.kotlinclient.state_management.viewModel.EventTemplateAction
 import com.example.kotlinclient.state_management.viewModel.EventTemplateViewModel
 import com.example.kotlinclient.state_management.viewModel.EventViewModel
 import com.example.kotlinclient.state_management.viewModel.HomeAction
@@ -104,15 +100,13 @@ fun NavGraphBuilder.eventScreen(
 ) {
     composable(route = Routes.EventsPage.route) {
 
-        val context = LocalContext.current
-
         LaunchedEffect(Unit) {
             eventViewModel.validationEvents.collect { event -> eventViewModel.onValidation(event)}
         }
 
         val eventUiState = eventViewModel.uiState.collectAsStateWithLifecycle()
         val templateUiState = eventTemplateViewModel.uiState.collectAsStateWithLifecycle()
-        val sharedAppUiState = shareAppViewModel._uiState.collectAsStateWithLifecycle()
+        val sharedAppUiState = shareAppViewModel.uiState.collectAsStateWithLifecycle()
 
         val formFields = eventViewModel.eventFormFields.collectAsStateWithLifecycle()
         val currentTime = eventViewModel.currentTime.collectAsStateWithLifecycle()

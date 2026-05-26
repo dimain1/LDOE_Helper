@@ -6,7 +6,6 @@ import com.example.kotlinclient.state_management.entity.ContentType
 import com.example.kotlinclient.state_management.repository.interfaces.ContentTypeRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlin.reflect.typeOf
 
 class ContentTypeRepositoryImpl(
     private val database: AppDatabase

@@ -1,7 +1,6 @@
 package com.example.kotlinclient.state_management.repository.interfaces
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
 
 interface SharedPreferencesRepository {
 

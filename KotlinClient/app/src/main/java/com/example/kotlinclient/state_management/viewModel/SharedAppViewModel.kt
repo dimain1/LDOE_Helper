@@ -1,6 +1,5 @@
 package com.example.kotlinclient.state_management.viewModel
 
-import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.kotlinclient.state_management.entity.Event
@@ -8,11 +7,8 @@ import com.example.kotlinclient.state_management.repository.interfaces.SharedPre
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
-
 
 
 data class SharedUiState(
@@ -34,7 +30,7 @@ sealed interface SharedAction {
 }
 
 class SharedAppViewModel(
-    val sharedPreferencesRepository: SharedPreferencesRepository
+    sharedPreferencesRepository: SharedPreferencesRepository
 ) : ViewModel() {
 
     // region flows
@@ -43,7 +39,7 @@ class SharedAppViewModel(
     val showEventViewDetailsDialog = MutableStateFlow(false)
     val eventInitialData = MutableStateFlow<Event?>(null)
 
-    val _eventDetailsDialogUiState: StateFlow<EventDetailsDialogUiState> = combine(
+    val eventDetailsDialogUiState: StateFlow<EventDetailsDialogUiState> = combine(
         showEventViewDetailsDialog,
         eventInitialData
     ) { visible, initialData ->
@@ -53,9 +49,9 @@ class SharedAppViewModel(
         EventDetailsDialogUiState()
     )
         // endregion
-    val _uiState: StateFlow<SharedUiState> = combine(
+    val uiState: StateFlow<SharedUiState> = combine(
         sharedPreferencesRepository.observeBoolean("theme", false),
-        _eventDetailsDialogUiState
+        eventDetailsDialogUiState
     )
     { theme, eventDetailsDialogUiState ->
         SharedUiState(theme, eventDetailsDialogUiState)

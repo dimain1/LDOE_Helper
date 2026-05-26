@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class GameContentRepositoryImpl(
-    val database: AppDatabase,
+    database: AppDatabase,
     val session: UserSession
 ) : GameContentRepository
 {

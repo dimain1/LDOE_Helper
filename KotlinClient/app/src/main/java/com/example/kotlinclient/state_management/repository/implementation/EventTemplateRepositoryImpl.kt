@@ -6,14 +6,11 @@ import com.example.kotlinclient.local_cache.converters.toModel
 import com.example.kotlinclient.state_management.entity.EventTemplate
 import com.example.kotlinclient.state_management.repository.UserSession
 import com.example.kotlinclient.state_management.repository.interfaces.EventTemplateRepository
-import com.example.kotlinclient.state_management.repository.interfaces.SharedPreferencesRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 class EventTemplateRepositoryImpl(
-    val database: AppDatabase,
+    database: AppDatabase,
     val session: UserSession
 ): EventTemplateRepository {
 

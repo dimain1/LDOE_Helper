@@ -8,6 +8,4 @@ data class GameContent(
     val pinned: Boolean,
     val types: Set<ContentType>?,
     val attributes: Map<String, Any>?
-
-) {
-}
+)

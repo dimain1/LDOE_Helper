@@ -1,25 +1,18 @@
 package com.example.kotlinclient.state_management.viewModel
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.room.util.query
-import com.example.kotlinclient.di.viewModelModule
 import com.example.kotlinclient.state_management.entity.ContentType
 import com.example.kotlinclient.state_management.entity.GameContent
 import com.example.kotlinclient.state_management.repository.interfaces.ContentTypeRepository
 import com.example.kotlinclient.state_management.repository.interfaces.GameContentRepository
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -42,7 +35,7 @@ sealed interface InfoAction{
 // endregion
 
 class InfoViewModel(
-    val contentTypeRepository: ContentTypeRepository,
+    contentTypeRepository: ContentTypeRepository,
     val gameContentRepository: GameContentRepository
 ): ViewModel() {
 

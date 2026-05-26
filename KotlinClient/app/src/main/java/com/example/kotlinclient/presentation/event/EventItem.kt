@@ -147,8 +147,8 @@ fun EventItem(
 //                }
 
                 AnimatedTimer(
-                    event.start_time.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
-                    event.end_time.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    event.startTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                    event.endTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
                 )
 

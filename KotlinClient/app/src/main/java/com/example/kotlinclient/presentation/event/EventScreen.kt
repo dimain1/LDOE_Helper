@@ -31,7 +31,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.kotlinclient.presentation.event.modal.EventCreateModal
-import com.example.kotlinclient.presentation.event.modal.EventViewDetails
 import com.example.kotlinclient.state_management.entity.EventTemplate
 import com.example.kotlinclient.state_management.viewModel.DialogType
 import com.example.kotlinclient.state_management.viewModel.EventAction
@@ -56,8 +55,6 @@ fun EventScreen(
     currentTime: LocalDateTime,
     paddingValues: PaddingValues
 ) {
-
-    var showModal by remember { mutableStateOf(false) }
 
     when (uiState.activeDialog) {
         is EventDialogType.Create -> {
@@ -158,7 +155,7 @@ fun EventScreen(
                 200,
                 { id -> onAction(EventAction.DeleteEvent(id)) },
                 { event ->
-                    onFormAction(EventFormAction.LoadUiState(event, { showModal = true }))
+                    onFormAction(EventFormAction.LoadUiState(event))
                     onAction(EventAction.OpenDialog(EventDialogType.Edit))
                 },
                 onEventClick = { event -> onAction(EventAction.OpenDialog(EventDialogType.View(event))) },

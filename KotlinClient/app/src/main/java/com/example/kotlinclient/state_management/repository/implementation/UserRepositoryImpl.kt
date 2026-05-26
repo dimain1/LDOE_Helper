@@ -4,14 +4,12 @@ import com.example.kotlinclient.local_cache.AppDatabase
 import com.example.kotlinclient.local_cache.converters.toModel
 import com.example.kotlinclient.local_cache.entity.UserEntity
 import com.example.kotlinclient.state_management.entity.User
-import com.example.kotlinclient.state_management.repository.UserSession
 import com.example.kotlinclient.state_management.repository.interfaces.UserRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlin.math.log
 
 class UserRepositoryImpl(
-    val database: AppDatabase,
+    database: AppDatabase,
 ): UserRepository
 {
     val userDao = database.UserDao()

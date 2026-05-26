@@ -15,8 +15,8 @@ fun Event.toEntity(): EventEntity{
         name = this.name,
         description = this.description,
         imageUrl = this.image,
-        startTime = this.start_time.atZone(ZoneId.systemDefault()).toInstant(),
-        endTime = this.end_time.atZone(ZoneId.systemDefault()).toInstant()
+        startTime = this.startTime.atZone(ZoneId.systemDefault()).toInstant(),
+        endTime = this.endTime.atZone(ZoneId.systemDefault()).toInstant()
 
     )
 }
@@ -29,8 +29,8 @@ fun EventEntity.toModel() : Event{
         name = this.name,
         description = this.description,
         image = this.imageUrl,
-        start_time = LocalDateTime.ofInstant(this.startTime, ZoneId.systemDefault()),
-        end_time = LocalDateTime.ofInstant(this.endTime, ZoneId.systemDefault()),
+        startTime = LocalDateTime.ofInstant(this.startTime, ZoneId.systemDefault()),
+        endTime = LocalDateTime.ofInstant(this.endTime, ZoneId.systemDefault()),
     )
 }
 
@@ -42,7 +42,7 @@ fun EventWithUserAndTemplate.toModel(): Event{
         name = this.event.name,
         description = this.event.description,
         image = this.event.imageUrl,
-        start_time = LocalDateTime.ofInstant(this.event.startTime, ZoneId.systemDefault()),
-        end_time = LocalDateTime.ofInstant(this.event.endTime, ZoneId.systemDefault())
+        startTime = LocalDateTime.ofInstant(this.event.startTime, ZoneId.systemDefault()),
+        endTime = LocalDateTime.ofInstant(this.event.endTime, ZoneId.systemDefault())
     )
 }

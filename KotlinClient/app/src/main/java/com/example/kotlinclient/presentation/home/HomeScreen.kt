@@ -357,7 +357,7 @@ fun <T> QuickList(
                             event?.image, event?.name ?: "",
                             { onAction(HomeAction.ShowEventDetails(event)) },
                             description = {
-                                AnimatedTimer(event.start_time.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),event.end_time.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
+                                AnimatedTimer(event.startTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),event.endTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
                             }
                         )
                         {

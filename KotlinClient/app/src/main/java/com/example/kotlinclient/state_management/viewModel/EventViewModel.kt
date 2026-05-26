@@ -6,7 +6,6 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.kotlinclient.state_management.entity.Event
@@ -20,8 +19,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -71,7 +68,7 @@ data class EventFormFields(
 sealed interface EventFormAction{
     data object ClearUiState : EventFormAction
     data class SelectTemplate(val template: EventTemplate?): EventFormAction
-    data class LoadUiState(val event: Event, val onSuccess: () -> Unit): EventFormAction
+    data class LoadUiState(val event: Event): EventFormAction
     data class ValidateAndSave(val context: Context): EventFormAction
     data object UpdateEndTime: EventFormAction
 }
@@ -93,7 +90,7 @@ class EventViewModel(
 ) : ViewModel() {
 
     // Формат представления даты и времени
-    final val dateTimeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy - HH:mm")
+    val dateTimeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy - HH:mm")
 
     // region flows
 
@@ -161,7 +158,7 @@ class EventViewModel(
     fun onFormAction(action: EventFormAction){
         when(action){
             is EventFormAction.ClearUiState -> clearUiState()
-            is EventFormAction.LoadUiState -> loadUiState(action.event, action.onSuccess)
+            is EventFormAction.LoadUiState -> loadUiState(action.event)
             is EventFormAction.SelectTemplate -> selectTemplate(action.template)
             is EventFormAction.UpdateEndTime -> updateEndTime()
             is EventFormAction.ValidateAndSave -> saveEvent(action.context)
@@ -177,16 +174,14 @@ class EventViewModel(
     }
 
     // Загрузка состояния события для редактирования
-    private fun loadUiState(event: Event, onSuccess: () -> Unit) {
-        var uiState = _eventFormFields.value
+    private fun loadUiState(event: Event) {
+        val uiState = _eventFormFields.value
 
         _eventFormFields.update { it.copy(id=event.id, template=event.template) }
         uiState.name.edit { replace(0, length, event.name.toString()) }
         uiState.description.edit { replace(0, length, event.description.toString()) }
-        uiState.startTime.edit { replace(0, length, getStringByTime(event.start_time)) }
-        uiState.endTime.edit { replace(0, length, getStringByTime(event.end_time)) }
-
-        onSuccess()
+        uiState.startTime.edit { replace(0, length, getStringByTime(event.startTime)) }
+        uiState.endTime.edit { replace(0, length, getStringByTime(event.endTime)) }
     }
 
     private fun selectTemplate(template: EventTemplate?){
@@ -239,8 +234,8 @@ class EventViewModel(
                     name = state.name.text.toString(),
                     description = if(state.description.text == "") null else state.description.text.toString(),
                     image = state.template?.image,
-                    start_time = getTimeByString(state.startTime.text.toString()),
-                    end_time = getTimeByString(state.endTime.text.toString())
+                    startTime = getTimeByString(state.startTime.text.toString()),
+                    endTime = getTimeByString(state.endTime.text.toString())
                 )
                 if (state.id == null) {
                     eventRepository.addEvent(event)
@@ -279,7 +274,7 @@ class EventViewModel(
         val startTime = getTimeByString(_eventFormFields.value.startTime.text.toString())
         val endTime = getTimeByString(_eventFormFields.value.endTime.text.toString())
 
-        return startTime.compareTo(endTime) < 0
+        return startTime < endTime
     }
 
     // endregion
@@ -343,7 +338,7 @@ class EventViewModel(
 
     // Добавление длительности к начальному времение, используется для end_time
     private fun addDuration(startTime: String, duration: Long): String {
-        var startTimeInTime =
+        val startTimeInTime =
             getTimeByString(startTime)
 
         return startTimeInTime.plusSeconds(duration / 1000)

@@ -10,7 +10,6 @@ import com.example.kotlinclient.R
 
 @Composable
 fun LocalImage(fileName: String?, modifier: Modifier ,fillAll: Boolean = true) {
-    val context = LocalContext.current
     val imageFile: String =  if(fileName == null) "" else fileName
     //val imageFile = File(context.filesDir, "images/$fileName.jpg")
 

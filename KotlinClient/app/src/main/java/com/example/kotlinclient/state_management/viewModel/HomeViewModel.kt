@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 
 data class HomeUiState(
     val upcomingEvents: List<Event> = emptyList(),
@@ -32,8 +31,8 @@ sealed interface HomeAction{
 
 
 class HomeViewModel(
-    val gameContentRepository: GameContentRepository,
-    val eventRepository: EventRepository
+    gameContentRepository: GameContentRepository,
+    eventRepository: EventRepository
 ) : ViewModel()
 {
 
@@ -64,7 +63,7 @@ class HomeViewModel(
     // region onAction function
 
     private fun launchOverlay(context: Context){
-        Toast.makeText(context,"Launch Overlay", Toast.LENGTH_SHORT)
+        Toast.makeText(context,"Launch Overlay", Toast.LENGTH_SHORT).show()
     }
 
     // endregion
