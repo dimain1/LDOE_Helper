@@ -1,4 +1,4 @@
-package com.example.kotlinclient.presentation.utility
+package com.example.kotlinclient.presentation.utility.uiComponent
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -7,13 +7,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,16 +19,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.kotlinclient.ui.theme.Typography
 import kotlinx.coroutines.delay
 
 @Composable
 fun AnimatedTimer(
+    startTime: Long,
     targetTime: Long,
     modifier: Modifier = Modifier
 ) {
@@ -91,16 +81,18 @@ fun AnimatedTimer(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = if (remaining == 0L) "Закончено" else "Закончится через: ${
-                if (days == 0L) String.format(
-                    "%2d:%02d",
-                    hours,
-                    minutes
-                ) else {
-                    String.format("%2d дня", days)
-                }
-            }",
-            color = animatedColor,
+            text =
+                if(startTime > System.currentTimeMillis()) { "Событие ещё не началось" } else {
+                    if (remaining == 0L) "Закончено" else "Закончится через: ${
+                        if (days == 0L) String.format(
+                            "%2d:%02d",
+                            hours,
+                            minutes
+                        ) else {
+                            String.format("%2d дня", days)
+                        }
+                    }"
+                }     ,       color = animatedColor,
             style = Typography.bodyMedium
         )
     }

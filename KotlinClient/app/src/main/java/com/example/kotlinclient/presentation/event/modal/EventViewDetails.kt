@@ -14,7 +14,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
@@ -24,12 +23,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.kotlinclient.presentation.LocalImage
+import com.example.kotlinclient.presentation.utility.uiComponent.LocalImage
 import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.state_management.viewModel.EventAction
 import com.example.kotlinclient.ui.theme.Typography
 import java.time.format.DateTimeFormatter
-import kotlin.math.max
 
 @Composable
 fun EventViewDetails(onAction: (EventAction) -> Unit, onDismiss: () -> Unit, initialData: Event?) {

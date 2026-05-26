@@ -48,9 +48,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kotlinclient.R
-import com.example.kotlinclient.presentation.LocalImage
-import com.example.kotlinclient.presentation.event.modal.EventViewDetails
-import com.example.kotlinclient.presentation.utility.AnimatedTimer
+import com.example.kotlinclient.presentation.utility.uiComponent.LocalImage
+import com.example.kotlinclient.presentation.utility.uiComponent.AnimatedTimer
 import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.state_management.entity.GameContent
 import com.example.kotlinclient.state_management.viewModel.HomeAction
@@ -63,8 +62,6 @@ import com.example.kotlinclient.ui.theme.TemplateIconColor
 import com.example.kotlinclient.ui.theme.Typography
 import com.example.kotlinclient.ui.theme.linearGradientEndColor
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import kotlin.reflect.typeOf
 
 
 //Главный экран приложения
@@ -360,7 +357,7 @@ fun <T> QuickList(
                             event?.image, event?.name ?: "",
                             { onAction(HomeAction.ShowEventDetails(event)) },
                             description = {
-                                AnimatedTimer(event.end_time.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
+                                AnimatedTimer(event.start_time.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),event.end_time.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
                             }
                         )
                         {

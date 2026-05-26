@@ -77,12 +77,12 @@ sealed interface EventFormAction{
 }
 
 // Запечатанный интерфейс событий валидации
-sealed interface ValidationEvent {
-    data class EmptyName(val context: Context) : ValidationEvent
-    data class EmptyTime(val context: Context) : ValidationEvent
-    data class InvalidTime(val context: Context) : ValidationEvent
-    data class SuccessCreate(val context: Context) : ValidationEvent
-    data class SuccessUpdate(val context: Context): ValidationEvent
+sealed interface EventFormValidationEvent {
+    data class EmptyName(val context: Context) : EventFormValidationEvent
+    data class EmptyTime(val context: Context) : EventFormValidationEvent
+    data class InvalidTime(val context: Context) : EventFormValidationEvent
+    data class SuccessCreate(val context: Context) : EventFormValidationEvent
+    data class SuccessUpdate(val context: Context): EventFormValidationEvent
 }
 
 // endregion
@@ -98,7 +98,7 @@ class EventViewModel(
     // region flows
 
     // Канал валидации формы создания(изменения) событий
-    private val _validationEvents = Channel<ValidationEvent>()
+    private val _validationEvents = Channel<EventFormValidationEvent>()
     val validationEvents = _validationEvents.receiveAsFlow()
 
     // Состояние всего экрана событий
@@ -244,10 +244,10 @@ class EventViewModel(
                 )
                 if (state.id == null) {
                     eventRepository.addEvent(event)
-                    _validationEvents.send(ValidationEvent.SuccessCreate(context))
+                    _validationEvents.send(EventFormValidationEvent.SuccessCreate(context))
                 } else {
                     eventRepository.updateEvent(event)
-                    _validationEvents.send(ValidationEvent.SuccessUpdate(context))
+                    _validationEvents.send(EventFormValidationEvent.SuccessUpdate(context))
                 }
             }
         }
@@ -257,17 +257,17 @@ class EventViewModel(
     private suspend fun isDataValid(context: Context ,state: EventFormFields): Boolean {
         return when {
             state.name.text.isEmpty() -> {
-                _validationEvents.send(ValidationEvent.EmptyName(context))
+                _validationEvents.send(EventFormValidationEvent.EmptyName(context))
                 false
             }
 
             _eventFormFields.value.startTime.text.isEmpty() || _eventFormFields.value.endTime.text.isEmpty() -> {
-                _validationEvents.send(ValidationEvent.EmptyTime(context))
+                _validationEvents.send(EventFormValidationEvent.EmptyTime(context))
                 false
             }
 
             !validateTime() -> {
-                _validationEvents.send(ValidationEvent.InvalidTime(context))
+                _validationEvents.send(EventFormValidationEvent.InvalidTime(context))
                 false
             }
             else -> true
@@ -286,9 +286,9 @@ class EventViewModel(
 
     // region form validation
 
-    fun onValidation(event: ValidationEvent){
+    fun onValidation(event: EventFormValidationEvent){
         when(event){
-            is ValidationEvent.EmptyName -> {
+            is EventFormValidationEvent.EmptyName -> {
                 Toast.makeText(
                     event.context,
                     "Имя события должно быть заполнено",
@@ -296,28 +296,28 @@ class EventViewModel(
                 ).show()
             }
 
-            is ValidationEvent.EmptyTime -> {
+            is EventFormValidationEvent.EmptyTime -> {
                 Toast.makeText(
                     event.context,
                     "Время не заполнено",
                     Toast.LENGTH_SHORT
                 ).show()
             }
-            is ValidationEvent.InvalidTime -> {
+            is EventFormValidationEvent.InvalidTime -> {
                 Toast.makeText(
                     event.context,
                     "Время начала должно быть раньше чем время окончания",
                     Toast.LENGTH_SHORT
                 ).show()
             }
-            is ValidationEvent.SuccessCreate -> {
+            is EventFormValidationEvent.SuccessCreate -> {
                 Toast.makeText(
                     event.context,
                     "Успешно создано!",
                     Toast.LENGTH_SHORT
                 ).show()
             }
-            is ValidationEvent.SuccessUpdate -> {
+            is EventFormValidationEvent.SuccessUpdate -> {
                 Toast.makeText(
                     event.context,
                     "Успешно изменено!",

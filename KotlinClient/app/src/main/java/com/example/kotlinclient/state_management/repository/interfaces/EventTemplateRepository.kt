@@ -9,4 +9,7 @@ interface EventTemplateRepository {
 
     suspend fun deleteTemplateById(id: Long)
 
+    suspend fun createTemplate(template: EventTemplate)
+
+    suspend fun updateTemplate(template: EventTemplate)
 }

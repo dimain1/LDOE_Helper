@@ -23,9 +23,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.kotlinclient.presentation.LocalImage
-import com.example.kotlinclient.presentation.utility.NowIndicator
-import com.example.kotlinclient.presentation.utility.AnimatedTimer
+import com.example.kotlinclient.presentation.utility.uiComponent.LocalImage
+import com.example.kotlinclient.presentation.utility.uiComponent.NowIndicator
+import com.example.kotlinclient.presentation.utility.uiComponent.AnimatedTimer
 import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.ui.theme.Typography
 import java.time.ZoneId
@@ -147,7 +147,9 @@ fun EventItem(
 //                }
 
                 AnimatedTimer(
+                    event.start_time.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
                     event.end_time.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
                 )
 
                 Spacer(Modifier.height(16.dp))

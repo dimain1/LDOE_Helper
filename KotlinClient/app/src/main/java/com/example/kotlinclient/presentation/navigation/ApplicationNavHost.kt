@@ -65,6 +65,7 @@ fun ApplicationNavHost(
         eventScreen(
             eventViewModel,
             eventTemplateViewModel,
+            sharedAppViewModel,
             paddingValues
         )
 

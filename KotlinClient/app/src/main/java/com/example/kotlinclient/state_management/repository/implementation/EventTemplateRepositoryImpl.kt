@@ -1,6 +1,7 @@
 package com.example.kotlinclient.state_management.repository.implementation
 
 import com.example.kotlinclient.local_cache.AppDatabase
+import com.example.kotlinclient.local_cache.converters.toEntity
 import com.example.kotlinclient.local_cache.converters.toModel
 import com.example.kotlinclient.state_management.entity.EventTemplate
 import com.example.kotlinclient.state_management.repository.UserSession
@@ -26,4 +27,14 @@ class EventTemplateRepositoryImpl(
 
         eventTemplateDao.deleteTemplateById(session.requireId(), id)
     }
+
+    override suspend fun createTemplate(template: EventTemplate) {
+        eventTemplateDao.createTemplate(template = template.toEntity())
+    }
+
+    override suspend fun updateTemplate(template: EventTemplate) {
+        eventTemplateDao.updateTemplate(template=template.toEntity())
+    }
+
+
 }

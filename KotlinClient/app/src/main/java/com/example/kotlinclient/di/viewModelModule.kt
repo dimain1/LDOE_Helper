@@ -24,7 +24,7 @@ val viewModelModule = module {
     }
 
     viewModel {
-        EventTemplateViewModel(get())
+        EventTemplateViewModel(get(), get())
     }
 
     viewModel {

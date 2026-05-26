@@ -18,6 +18,7 @@ import com.example.kotlinclient.presentation.template.TemplateScreen
 import com.example.kotlinclient.state_management.viewModel.DialogType
 import com.example.kotlinclient.state_management.viewModel.EventAction
 import com.example.kotlinclient.state_management.viewModel.EventFormAction
+import com.example.kotlinclient.state_management.viewModel.EventFormValidationEvent
 import com.example.kotlinclient.state_management.viewModel.EventTemplateAction
 import com.example.kotlinclient.state_management.viewModel.EventTemplateViewModel
 import com.example.kotlinclient.state_management.viewModel.EventViewModel
@@ -29,7 +30,6 @@ import com.example.kotlinclient.state_management.viewModel.SettingsAction
 import com.example.kotlinclient.state_management.viewModel.SettingsViewModel
 import com.example.kotlinclient.state_management.viewModel.SharedAction
 import com.example.kotlinclient.state_management.viewModel.SharedAppViewModel
-import com.example.kotlinclient.state_management.viewModel.ValidationEvent
 
 fun NavGraphBuilder.homeScreen(
     homeViewModel: HomeViewModel,
@@ -90,30 +90,7 @@ fun NavGraphBuilder.infoScreen(
 
         InfoScreen(
             uiState = uiState.value,
-            onAction = { action ->
-                when (action) {
-                    is InfoAction.SelectType -> {
-                        infoViewModel.onAction(InfoAction.SelectType(action.id))
-                    }
-
-                    is InfoAction.ChangeSearchQuery -> {
-                        infoViewModel.onAction(InfoAction.ChangeSearchQuery(action.query))
-                    }
-
-                    is InfoAction.ClearQuery -> {
-                        infoViewModel.onAction(InfoAction.ClearQuery)
-                    }
-
-                    is InfoAction.UpdateContentPin -> {
-                        infoViewModel.onAction(
-                            InfoAction.UpdateContentPin(
-                                action.id,
-                                action.pinStatus
-                            )
-                        )
-                    }
-                }
-            },
+            onAction = { action -> infoViewModel.onAction(action) },
             paddingValues
         )
     }
@@ -122,6 +99,7 @@ fun NavGraphBuilder.infoScreen(
 fun NavGraphBuilder.eventScreen(
     eventViewModel: EventViewModel,
     eventTemplateViewModel: EventTemplateViewModel,
+    shareAppViewModel: SharedAppViewModel,
     paddingValues: PaddingValues
 ) {
     composable(route = Routes.EventsPage.route) {
@@ -129,43 +107,12 @@ fun NavGraphBuilder.eventScreen(
         val context = LocalContext.current
 
         LaunchedEffect(Unit) {
-            eventViewModel.validationEvents.collect { event ->
-                when (event) {
-                    is ValidationEvent.EmptyName -> eventViewModel.onValidation(
-                        ValidationEvent.EmptyName(
-                            context
-                        )
-                    )
-
-                    is ValidationEvent.EmptyTime -> eventViewModel.onValidation(
-                        ValidationEvent.EmptyTime(
-                            context
-                        )
-                    )
-
-                    is ValidationEvent.InvalidTime -> eventViewModel.onValidation(
-                        ValidationEvent.InvalidTime(
-                            context
-                        )
-                    )
-
-                    is ValidationEvent.SuccessCreate -> eventViewModel.onValidation(
-                        ValidationEvent.SuccessCreate(
-                            context
-                        )
-                    )
-
-                    is ValidationEvent.SuccessUpdate -> eventViewModel.onValidation(
-                        ValidationEvent.SuccessUpdate(
-                            context
-                        )
-                    )
-                }
-            }
+            eventViewModel.validationEvents.collect { event -> eventViewModel.onValidation(event)}
         }
 
         val eventUiState = eventViewModel.uiState.collectAsStateWithLifecycle()
         val templateUiState = eventTemplateViewModel.uiState.collectAsStateWithLifecycle()
+        val sharedAppUiState = shareAppViewModel._uiState.collectAsStateWithLifecycle()
 
         val formFields = eventViewModel.eventFormFields.collectAsStateWithLifecycle()
         val currentTime = eventViewModel.currentTime.collectAsStateWithLifecycle()
@@ -174,46 +121,12 @@ fun NavGraphBuilder.eventScreen(
         EventScreen(
             uiState = eventUiState.value,
             templates = templateUiState.value.templates,
-            onAction = { action ->
-                when (action) {
-                    is EventAction.DeleteEvent -> eventViewModel.onAction(
-                        EventAction.DeleteEvent(
-                            action.id
-                        )
-                    )
-
-                    is EventAction.DismissDialog -> eventViewModel.onAction(EventAction.DismissDialog)
-                    is EventAction.OpenDialog -> eventViewModel.onAction(
-                        EventAction.OpenDialog(
-                            action.dialog
-                        )
-                    )
-                }
-            },
+            onAction = { action -> eventViewModel.onAction(action) },
             eventFormFields = formFields.value,
-            onFormAction = { action ->
-                when (action) {
-                    is EventFormAction.SelectTemplate -> eventViewModel.onFormAction(
-                        EventFormAction.SelectTemplate(
-                            action.template
-                        )
-                    )
-
-                    is EventFormAction.ValidateAndSave -> eventViewModel.onFormAction(
-                        EventFormAction.ValidateAndSave(action.context)
-                    )
-
-                    is EventFormAction.UpdateEndTime -> eventViewModel.onFormAction(EventFormAction.UpdateEndTime)
-                    is EventFormAction.LoadUiState -> eventViewModel.onFormAction(
-                        EventFormAction.LoadUiState(
-                            action.event, action.onSuccess
-                        )
-                    )
-
-                    is EventFormAction.ClearUiState -> eventViewModel.onFormAction(EventFormAction.ClearUiState)
-                }
-            },
+            onFormAction = { action -> eventViewModel.onFormAction(action) },
             currentTime = currentTime.value,
+            sharedAppUiState = sharedAppUiState.value,
+            onSharedAction = {action -> shareAppViewModel.onAction(action)},
             paddingValues = paddingValues
         )
     }
@@ -226,16 +139,18 @@ fun NavGraphBuilder.templateScreen(
     composable(route = Routes.TemplatePage.route) {
 
         val uiState = eventTemplateViewModel.uiState.collectAsState()
+        val formUiState = eventTemplateViewModel.formUiState.collectAsState()
 
-        TemplateScreen(templates = uiState.value.templates, onAction = { action ->
-            when (action) {
-                is EventTemplateAction.DeleteTemplate -> eventTemplateViewModel.onAction(
-                    EventTemplateAction.DeleteTemplate(
-                        action.id
-                    )
-                )
-            }
-        }, paddingValues = paddingValues)
+        LaunchedEffect(Unit) {
+            eventTemplateViewModel.validationEvent.collect { event -> eventTemplateViewModel.onValidation(event)}
+        }
+
+        TemplateScreen(
+            uiState = uiState.value,
+            onAction = { action -> eventTemplateViewModel.onAction(action)},
+            formUiState= formUiState.value,
+            onFormAction = { action -> eventTemplateViewModel.onFormAction(action) },
+            paddingValues = paddingValues)
     }
 }
 

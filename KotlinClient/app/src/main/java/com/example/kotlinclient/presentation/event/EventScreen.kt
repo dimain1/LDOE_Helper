@@ -33,11 +33,14 @@ import androidx.compose.ui.unit.dp
 import com.example.kotlinclient.presentation.event.modal.EventCreateModal
 import com.example.kotlinclient.presentation.event.modal.EventViewDetails
 import com.example.kotlinclient.state_management.entity.EventTemplate
+import com.example.kotlinclient.state_management.viewModel.DialogType
 import com.example.kotlinclient.state_management.viewModel.EventAction
 import com.example.kotlinclient.state_management.viewModel.EventDialogType
 import com.example.kotlinclient.state_management.viewModel.EventFormAction
 import com.example.kotlinclient.state_management.viewModel.EventFormFields
 import com.example.kotlinclient.state_management.viewModel.EventUiState
+import com.example.kotlinclient.state_management.viewModel.SharedAction
+import com.example.kotlinclient.state_management.viewModel.SharedUiState
 import com.example.kotlinclient.ui.theme.Typography
 import java.time.LocalDateTime
 
@@ -48,6 +51,8 @@ fun EventScreen(
     templates: List<EventTemplate>,
     eventFormFields: EventFormFields,
     onFormAction: (EventFormAction) -> Unit,
+    sharedAppUiState: SharedUiState,
+    onSharedAction: (SharedAction) -> Unit,
     currentTime: LocalDateTime,
     paddingValues: PaddingValues
 ) {
@@ -76,11 +81,7 @@ fun EventScreen(
         }
 
         is EventDialogType.View -> {
-            EventViewDetails(
-                onAction = onAction,
-                onDismiss = { onAction(EventAction.DismissDialog) },
-                initialData = uiState.activeDialog.eventData
-            )
+            onSharedAction(SharedAction.ChangeDialogVisibility(true ,DialogType.EventViewDetailsDialog(uiState.activeDialog.eventData)))
         }
 
         else -> {}
