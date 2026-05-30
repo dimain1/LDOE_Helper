@@ -4,14 +4,14 @@ import com.example.kotlinclient.local_cache.AppDatabase
 import com.example.kotlinclient.local_cache.converters.toEntity
 import com.example.kotlinclient.local_cache.converters.toModel
 import com.example.kotlinclient.state_management.entity.EventTemplate
-import com.example.kotlinclient.state_management.repository.UserSession
+import com.example.kotlinclient.state_management.repository.UserSessionProvider
 import com.example.kotlinclient.state_management.repository.interfaces.EventTemplateRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class EventTemplateRepositoryImpl(
     database: AppDatabase,
-    val session: UserSession
+    val session: UserSessionProvider
 ): EventTemplateRepository {
 
     val eventTemplateDao = database.EventTemplateDao()

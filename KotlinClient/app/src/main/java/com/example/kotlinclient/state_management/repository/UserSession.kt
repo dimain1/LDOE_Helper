@@ -11,18 +11,18 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 
-class UserSession(private val sharedPrefs: SharedPreferencesRepository, private val userRepository: UserRepository, externalScope: CoroutineScope) {
+class UserSession(private val sharedPrefs: SharedPreferencesRepository, private val userRepository: UserRepository, externalScope: CoroutineScope) : UserSessionProvider{
     val idFlow: Flow<Long> = sharedPrefs.observeLong("user_id", -1)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val user: StateFlow<User?> = idFlow.flatMapLatest { id ->
+    override val user: StateFlow<User?> = idFlow.flatMapLatest { id ->
         userRepository.getUserById(id)
     }.stateIn(externalScope, SharingStarted.Eagerly, null)
 
-    suspend fun requireId(): Long = sharedPrefs.getLongByKey("user_id")
+    override suspend fun requireId(): Long = sharedPrefs.getLongByKey("user_id")
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun <T> pipe(block: (Long) -> Flow<T>): Flow<T> {
+    override fun <T> pipe(block: (Long) -> Flow<T>): Flow<T> {
         return idFlow.flatMapLatest { id ->
             block(id)
         }

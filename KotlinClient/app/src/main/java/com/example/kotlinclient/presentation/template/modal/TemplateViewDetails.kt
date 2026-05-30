@@ -1,4 +1,5 @@
-package com.example.kotlinclient.presentation.event.modal
+package com.example.kotlinclient.presentation.template.modal
+
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -30,18 +32,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.kotlinclient.presentation.utility.getStringTimeByDuration
 import com.example.kotlinclient.presentation.utility.uiComponent.LocalImage
-import com.example.kotlinclient.state_management.entity.Event
-import com.example.kotlinclient.state_management.viewModel.EventAction
+import com.example.kotlinclient.state_management.entity.EventTemplate
+import com.example.kotlinclient.state_management.viewModel.EventTemplateAction
 import com.example.kotlinclient.ui.theme.Typography
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun EventViewDetails(onAction: (EventAction) -> Unit, onDismiss: () -> Unit, initialData: Event?) {
+fun TemplateViewDetails(
+    onAction: (EventTemplateAction) -> Unit,
+    onDismiss: () -> Unit,
+    initialData: EventTemplate?
+) {
 
     val titleVS = rememberScrollState()
     val descVS = rememberScrollState()
@@ -94,11 +100,9 @@ fun EventViewDetails(onAction: (EventAction) -> Unit, onDismiss: () -> Unit, ini
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Spacer(Modifier.height(16.dp))
 
-                    Box(
-                        Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 90.dp)
-                    ) {
+                    Box(Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 90.dp)) {
                         Text(
                             text = initialData?.description ?: "Описание отсутствует",
                             color = colorScheme.primary,
@@ -106,46 +110,29 @@ fun EventViewDetails(onAction: (EventAction) -> Unit, onDismiss: () -> Unit, ini
                             modifier = Modifier.verticalScroll(descVS)
                         )
                     }
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(16.dp))
 
-                    Row {
-
-                        Text(
-                            "Начнётся:",
-                            style = Typography.bodyMedium,
-                            color = colorScheme.secondary
+                    Row(Modifier.fillMaxWidth()) {
+                        Icon(
+                            Icons.Default.Star,
+                            "Time",
+                            modifier = Modifier.size(16.dp),
+                            tint = colorScheme.secondary
                         )
 
                         Spacer(Modifier.width(10.dp))
 
-                        Text(
-                            text = "${initialData?.startTime?.dayOfMonth} ${initialData?.startTime?.month} ${
-                                initialData?.startTime?.format(
-                                    DateTimeFormatter.ofPattern("HH:mm:ss")
-                                )
-                            }", style = Typography.bodyMedium, color = colorScheme.secondary
-                        )
-                    }
-
-                    Spacer(Modifier.height(12.dp))
-
-
-                    Row {
+                        val duration = initialData?.duration ?: 0
 
                         Text(
-                            "Закончится:",
+                            text =
+                                if (duration < 60_000L) "Меньше минуты"
+                                else if (duration > 86_400_000L * 30) "Больше месяца"
+                                else {
+                                    getStringTimeByDuration(duration)
+                                },
                             style = Typography.bodyMedium,
                             color = colorScheme.secondary
-                        )
-
-                        Spacer(Modifier.width(10.dp))
-
-                        Text(
-                            text = "${initialData?.endTime?.dayOfMonth} ${initialData?.endTime?.month} ${
-                                initialData?.endTime?.format(
-                                    DateTimeFormatter.ofPattern("HH:mm:ss")
-                                )
-                            }", style = Typography.bodyMedium, color = colorScheme.secondary
                         )
                     }
 
@@ -160,10 +147,7 @@ fun EventViewDetails(onAction: (EventAction) -> Unit, onDismiss: () -> Unit, ini
                 onClick = onDismiss,
                 modifier = Modifier
                     .fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colorScheme.tertiary,
-                    contentColor = Color.White
-                )
+                colors= ButtonDefaults.buttonColors(containerColor = colorScheme.tertiary, contentColor = Color.White)
             ) {
                 Text(
                     text = "Закрыть",

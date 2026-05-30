@@ -27,6 +27,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.kotlinclient.presentation.template.modal.TemplateCreateModal
+import com.example.kotlinclient.presentation.template.modal.TemplateViewDetails
+import com.example.kotlinclient.state_management.viewModel.EventFormAction
 import com.example.kotlinclient.state_management.viewModel.EventTemplateAction
 import com.example.kotlinclient.state_management.viewModel.EventTemplateUiState
 import com.example.kotlinclient.state_management.viewModel.EventTemplateDialogType
@@ -50,16 +52,29 @@ fun TemplateScreen(
             TemplateCreateModal(
             formUiState,
             onFormAction,
-            { onAction(EventTemplateAction.DismissDialog) })
+            {
+                onAction(EventTemplateAction.DismissDialog)
+                    onFormAction(EventTemplateFormAction.ClearUiState)
+            })
         }
         is EventTemplateDialogType.Edit -> {
 
             TemplateCreateModal(
             formUiState,
             onFormAction,
-            { onAction(EventTemplateAction.DismissDialog) })
+            { onAction(EventTemplateAction.DismissDialog)
+                onFormAction(EventTemplateFormAction.ClearUiState)
+            })
         }
-        is EventTemplateDialogType.View -> {}
+        is EventTemplateDialogType.View -> {
+
+            TemplateViewDetails(
+                onAction,
+                onDismiss = {onAction(EventTemplateAction.DismissDialog)},
+                initialData = uiState.activeDialog.initialData
+            )
+
+        }
         else -> {}
     }
 
@@ -134,11 +149,8 @@ fun TemplateScreen(
             TemplateList(
                 uiState.templates,
                 200,
-                onDeleteClick = { id -> onAction(EventTemplateAction.DeleteTemplate(id)) },
-                onEditClick = { template ->
-                    onFormAction(EventTemplateFormAction.LoadUiState(template))
-                    onAction(EventTemplateAction.OpenDialog(EventTemplateDialogType.Edit))
-                })
+                onAction
+            )
 
         }
 

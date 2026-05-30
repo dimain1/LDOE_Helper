@@ -22,8 +22,9 @@ import com.example.kotlinclient.presentation.navigation.navigateToHome
 import com.example.kotlinclient.presentation.navigation.navigateToInfo
 import com.example.kotlinclient.presentation.navigation.navigateToSettings
 import com.example.kotlinclient.presentation.navigation.navigateToTemplate
-import com.example.kotlinclient.state_management.repository.UserSession
+import com.example.kotlinclient.state_management.repository.UserSessionProvider
 import com.example.kotlinclient.state_management.viewModel.DialogType
+import com.example.kotlinclient.state_management.viewModel.EventAction
 import com.example.kotlinclient.state_management.viewModel.EventViewModel
 import com.example.kotlinclient.state_management.viewModel.SharedAction
 import com.example.kotlinclient.state_management.viewModel.SharedAppViewModel
@@ -33,7 +34,7 @@ import org.koin.compose.koinInject
 
 class MainActivity : ComponentActivity() {
 
-    val LocalUserSession = staticCompositionLocalOf<UserSession> {
+    val LocalUserSession = staticCompositionLocalOf<UserSessionProvider> {
         error("UserSession not provided")
     }
 
@@ -43,12 +44,11 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
 
-            val userSession: UserSession = koinInject()
+            val userSession: UserSessionProvider = koinInject()
             val sharedAppViewModel: SharedAppViewModel = koinViewModel()
             val eventViewModel: EventViewModel = koinViewModel()
 
             val sharedUiState = sharedAppViewModel.uiState.collectAsState()
-            val eventDetailsDialogUiState = sharedAppViewModel.eventDetailsDialogUiState.collectAsState()
 
             // Глобальное состояние для userSession
             CompositionLocalProvider(LocalUserSession provides userSession){
@@ -78,11 +78,12 @@ class MainActivity : ComponentActivity() {
                         }
                     ) { paddingValues ->
 
-                        if(eventDetailsDialogUiState.value.showDialog) {
+                        if(sharedUiState.value.eventDetailsDialogUiState.showDialog) {
                             EventViewDetails(onAction = { action -> eventViewModel.onAction(action) }, onDismiss = {
+                                eventViewModel.onAction(EventAction.DismissDialog)
                                 sharedAppViewModel.onAction(SharedAction.ChangeDialogVisibility(false,
                                     DialogType.EventViewDetailsDialog(null)))
-                            }, eventDetailsDialogUiState.value.initialData)
+                            }, sharedUiState.value.eventDetailsDialogUiState.initialData)
                         }
                         ApplicationNavHost(navController, startDestination,paddingValues, sharedAppViewModel)
                     }

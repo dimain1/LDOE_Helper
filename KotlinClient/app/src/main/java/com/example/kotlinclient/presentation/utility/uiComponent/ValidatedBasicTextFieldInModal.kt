@@ -13,25 +13,33 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
 import com.example.kotlinclient.ui.theme.Typography
 
 @Composable
-fun BasicTextFieldInModal(
+fun ValidatedBasicTextFieldInModal(
     state: TextFieldState,
+    errorText: String? = null,
+    onFocusLost: () -> Unit,
+    onFocused: () -> Unit,
     placeholder: String,
     readOnly: Boolean = false,
     keyboardOption: KeyboardOptions = KeyboardOptions.Default,
+    maxlines: Long = 2,
     onClick: () -> Unit = {}
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -42,6 +50,13 @@ fun BasicTextFieldInModal(
             onClick()
         }
     }
+
+    val isError = errorText != null
+
+    var previousFocus by remember(state) { mutableStateOf(false) }
+
+    val errorColor = if(isError) colorScheme.tertiary else colorScheme.outline
+
     Column() {
 
         Text(
@@ -59,7 +74,18 @@ fun BasicTextFieldInModal(
             modifier = Modifier
                 .heightIn(48.dp, 96.dp)
                 .fillMaxWidth()
-                .border(2.dp, colorScheme.outline, shape = RoundedCornerShape(10)),
+                .border(2.dp, errorColor, shape = RoundedCornerShape(10))
+                .onFocusChanged {focusState ->
+                    if(focusState.isFocused){
+                        previousFocus = true
+                        onFocused()
+                    }
+                    else if(previousFocus && !focusState.isFocused){
+                        previousFocus = false
+                        onFocusLost()
+                    }
+                }
+            ,
             decorator = { innerTextField ->
                 Box(
                     contentAlignment = Alignment.CenterStart,
@@ -78,7 +104,15 @@ fun BasicTextFieldInModal(
             },
             keyboardOptions = keyboardOption,
             cursorBrush = SolidColor(colorScheme.primary),
-            textStyle = Typography.bodyLarge.copy(color = colorScheme.primary)
+            textStyle = Typography.bodyLarge.copy(color = colorScheme.primary),
+            lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 1, maxHeightInLines = maxlines.toInt())
         )
+
+        Spacer(Modifier.height(5.dp))
+
+        if(isError){
+            Text(text= errorText, color=errorColor, style =  Typography.bodyMedium, modifier = Modifier.padding(start = 8.dp))
+        }
+
     }
 }

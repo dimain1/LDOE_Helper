@@ -7,7 +7,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.kotlinclient.state_management.entity.EventTemplate
-import com.example.kotlinclient.state_management.repository.UserSession
+import com.example.kotlinclient.state_management.repository.UserSessionProvider
 import com.example.kotlinclient.state_management.repository.interfaces.EventTemplateRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,16 +29,18 @@ data class EventTemplateUiState(
     val activeDialog: EventTemplateDialogType? = null
 )
 
-sealed interface EventTemplateDialogType{
-    data object Create: EventTemplateDialogType
-    data object Edit: EventTemplateDialogType
-    data class View(val initialData: EventTemplate?): EventTemplateDialogType
+sealed interface EventTemplateDialogType {
+    data object Create : EventTemplateDialogType
+    data object Edit : EventTemplateDialogType
+    data class View(val initialData: EventTemplate?) : EventTemplateDialogType
 }
 
 sealed interface EventTemplateAction {
     data class DeleteTemplate(val id: Long) : EventTemplateAction
     data class OpenDialog(val dialog: EventTemplateDialogType) : EventTemplateAction
     data object DismissDialog : EventTemplateAction
+
+    data class OnFormAction(val action: EventTemplateFormAction) : EventTemplateAction
 }
 
 data class EventTemplateFormUiState(
@@ -47,6 +49,7 @@ data class EventTemplateFormUiState(
     val name: TextFieldState = TextFieldState(""),
     val description: TextFieldState = TextFieldState(""),
     val duration: TextFieldState = TextFieldState(""),
+    val errors: EventTemplateFormErrors = EventTemplateFormErrors()
 )
 
 
@@ -55,32 +58,45 @@ sealed interface EventTemplateFormAction {
     data class SaveImageInLocal(val context: Context, val uri: Uri?) : EventTemplateFormAction
     data object ClearUiState : EventTemplateFormAction
     data class LoadUiState(val template: EventTemplate) : EventTemplateFormAction
+
+    data class OnFormValidation(val action: EventTemplateFormValidation) : EventTemplateFormAction
 }
 
-sealed interface EventTemplateFormValidationEvent {
-    data class ImageLoadError(val context: Context) : EventTemplateFormValidationEvent
-    data class EmptyName(val context: Context) : EventTemplateFormValidationEvent
-    data class EmptyDuration(val context: Context) : EventTemplateFormValidationEvent
-    data class SuccessCreate(val context: Context) : EventTemplateFormValidationEvent
-    data class SuccesssUpdate(val context: Context) : EventTemplateFormValidationEvent
+data class EventTemplateFormErrors(
+    val nameError: String? = null,
+    val durationError: String? = null
+)
 
+sealed interface EventTemplateFormValidation {
+    data object ValidateName : EventTemplateFormValidation
+    data object ClearNameError : EventTemplateFormValidation
+    data object ValidateDuration : EventTemplateFormValidation
+    data object ClearDurationError : EventTemplateFormValidation
+}
+
+sealed interface EventTemplateFormNotificationEvent {
+    data class ImageLoadError(val context: Context) : EventTemplateFormNotificationEvent
+    data class SuccessCreate(val context: Context) : EventTemplateFormNotificationEvent
+    data class SuccesssUpdate(val context: Context) : EventTemplateFormNotificationEvent
 }
 
 // endregion
 
 class EventTemplateViewModel(
     val eventTemplateRepository: EventTemplateRepository,
-    val session: UserSession
+    val session: UserSessionProvider
 ) : ViewModel() {
 
     // region flows
 
     private val activeDialog = MutableStateFlow<EventTemplateDialogType?>(null)
 
-    val uiState = combine(eventTemplateRepository.getAllTemplateWithUser(), activeDialog) { templates, dialog ->
+    val uiState = combine(
+        eventTemplateRepository.getAllTemplateWithUser(),
+        activeDialog
+    ) { templates, dialog ->
         EventTemplateUiState(templates, dialog)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), EventTemplateUiState())
-
 
 
     private val _formUiState = MutableStateFlow(EventTemplateFormUiState())
@@ -88,11 +104,9 @@ class EventTemplateViewModel(
     val formUiState = _formUiState.asStateFlow()
 
 
+    private val _notificationEvent = Channel<EventTemplateFormNotificationEvent>()
 
-    private val _validationEvent = Channel<EventTemplateFormValidationEvent>()
-
-    val validationEvent = _validationEvent.receiveAsFlow()
-
+    val notificationEvent = _notificationEvent.receiveAsFlow()
 
 
     // endregion
@@ -102,6 +116,7 @@ class EventTemplateViewModel(
             is EventTemplateAction.DeleteTemplate -> deleteTemplate(action.id)
             is EventTemplateAction.OpenDialog -> openDialog(action.dialog)
             is EventTemplateAction.DismissDialog -> dismissDialog()
+            is EventTemplateAction.OnFormAction -> onFormAction(action.action)
         }
     }
 
@@ -113,11 +128,11 @@ class EventTemplateViewModel(
         }
     }
 
-    private fun openDialog(dialog: EventTemplateDialogType){
+    private fun openDialog(dialog: EventTemplateDialogType) {
         activeDialog.value = dialog
     }
 
-    private fun dismissDialog(){
+    private fun dismissDialog() {
         activeDialog.value = null
     }
 
@@ -126,21 +141,24 @@ class EventTemplateViewModel(
     fun onFormAction(action: EventTemplateFormAction) {
         when (action) {
             is EventTemplateFormAction.CreateEventTemplate -> saveTemplate(action.context)
-            is EventTemplateFormAction.SaveImageInLocal -> saveImageInLocal(action.context, action.uri)
+            is EventTemplateFormAction.SaveImageInLocal -> saveImageInLocal(
+                action.context,
+                action.uri
+            )
+
             is EventTemplateFormAction.ClearUiState -> clearFormUiState()
             is EventTemplateFormAction.LoadUiState -> loadFormUiState(action.template)
+            is EventTemplateFormAction.OnFormValidation -> onFormValidation(action.action)
         }
     }
 
     // region onFormAction function
 
-    private suspend fun isDataValid(context: Context): Boolean {
-        if (_formUiState.value.name.text.isEmpty()) {
-            _validationEvent.send(EventTemplateFormValidationEvent.EmptyName(context))
+    private suspend fun isDataValid(): Boolean {
+        if (!validateName()) {
             return false
         }
-        if (_formUiState.value.duration.text.isEmpty()) {
-            _validationEvent.send(EventTemplateFormValidationEvent.EmptyDuration(context))
+        if (!validateDuration()) {
             return false
         }
         return true
@@ -151,7 +169,7 @@ class EventTemplateViewModel(
 
         viewModelScope.launch {
 
-            if (isDataValid(context)) {
+            if (isDataValid()) {
 
                 val template = EventTemplate(
                     id = state.id,
@@ -161,13 +179,17 @@ class EventTemplateViewModel(
                     image = state.image,
                     duration = state.duration.text.toString().toLong()
                 )
-                if(state.id == null){
+                if (state.id == null) {
                     eventTemplateRepository.createTemplate(template)
-                    _validationEvent.send(EventTemplateFormValidationEvent.SuccessCreate(context))
-                }
-                else{
+                    _notificationEvent.send(EventTemplateFormNotificationEvent.SuccessCreate(context))
+                } else {
                     eventTemplateRepository.updateTemplate(template)
-                    _validationEvent.send(EventTemplateFormValidationEvent.SuccesssUpdate(context))
+                    onAction(EventTemplateAction.DismissDialog)
+                    _notificationEvent.send(
+                        EventTemplateFormNotificationEvent.SuccesssUpdate(
+                            context
+                        )
+                    )
                 }
 
             }
@@ -201,7 +223,7 @@ class EventTemplateViewModel(
         } catch (e: Exception) {
             e.printStackTrace()
             viewModelScope.launch {
-                _validationEvent.send(EventTemplateFormValidationEvent.ImageLoadError(context))
+                _notificationEvent.send(EventTemplateFormNotificationEvent.ImageLoadError(context))
             }
             null
         }
@@ -212,7 +234,7 @@ class EventTemplateViewModel(
     }
 
     private fun loadFormUiState(template: EventTemplate) {
-        _formUiState.update { it.copy(id = template.id, image = template.image) }
+        _formUiState.update { it.copy(id = template.id, image = template.image, errors = EventTemplateFormErrors()) }
         _formUiState.value.name.edit { replace(0, length, template.name) }
         _formUiState.value.description.edit { replace(0, length, template.description ?: "") }
         _formUiState.value.duration.edit { replace(0, length, template.duration.toString()) }
@@ -220,33 +242,74 @@ class EventTemplateViewModel(
 
     // endregion
 
-    fun onValidation(action: EventTemplateFormValidationEvent) {
+    fun onFormValidation(action: EventTemplateFormValidation) {
         when (action) {
-            is EventTemplateFormValidationEvent.EmptyName -> Toast.makeText(
-                action.context,
-                "Имя шаблона не заполнено",
-                Toast.LENGTH_SHORT
-            ).show()
+            is EventTemplateFormValidation.ValidateName -> validateName()
+            is EventTemplateFormValidation.ClearNameError -> clearNameError()
+            is EventTemplateFormValidation.ValidateDuration -> validateDuration()
+            is EventTemplateFormValidation.ClearDurationError -> clearDurationError()
+        }
+    }
 
-            is EventTemplateFormValidationEvent.EmptyDuration -> Toast.makeText(
-                action.context,
-                "Длительность не указана",
-                Toast.LENGTH_SHORT
-            ).show()
+    // region onFormValidationFunction
 
-            is EventTemplateFormValidationEvent.ImageLoadError -> Toast.makeText(
+    private fun validateName(): Boolean {
+        val text = _formUiState.value.name.text
+        val error = when {
+            text.isBlank() -> "Имя шаблона не заполнено"
+            text.toString().length > 60 -> "Имя шаблона слишком длинное"
+            else -> null
+        }
+
+        _formUiState.update { it.copy(errors = it.errors.copy(nameError = error)) }
+
+        return error == null
+    }
+
+    private fun clearNameError() {
+        if (_formUiState.value.errors.nameError != null) {
+            _formUiState.update { it.copy(errors = it.errors.copy(nameError = null)) }
+        }
+    }
+
+    private fun validateDuration(): Boolean {
+        val text = _formUiState.value.duration.text
+        val error = when {
+            text.isBlank() -> "Длительность не указана"
+            text.toString().toLongOrNull() == null -> "Некорректный формат длительности"
+            else -> null
+        }
+
+        _formUiState.update { it.copy(errors = it.errors.copy(durationError = error)) }
+
+        return error == null
+    }
+
+    private fun clearDurationError() {
+        if (_formUiState.value.errors.durationError != null) {
+            _formUiState.update { it.copy(errors = it.errors.copy(durationError = null)) }
+        }
+    }
+
+    // endregion
+
+    // region NotificationUser
+
+    fun onNotification(action: EventTemplateFormNotificationEvent) {
+        when (action) {
+            is EventTemplateFormNotificationEvent.ImageLoadError -> Toast.makeText(
                 action.context,
                 "Во время выбора изображения произошла ошибка, попробуйте снова",
                 Toast.LENGTH_SHORT
             ).show()
 
-            is EventTemplateFormValidationEvent.SuccessCreate -> Toast.makeText(
+            is EventTemplateFormNotificationEvent.SuccessCreate -> Toast.makeText(
                 action.context,
                 "Шаблон успешно создан",
                 Toast.LENGTH_SHORT
             ).show()
 
-            is EventTemplateFormValidationEvent.SuccesssUpdate -> Toast.makeText(
+            is EventTemplateFormNotificationEvent.SuccesssUpdate -> Toast.makeText(
                 action.context,
                 "Шаблон успешно изменён",
                 Toast.LENGTH_SHORT
@@ -254,6 +317,8 @@ class EventTemplateViewModel(
         }
 
     }
+
+    // endregion
 
 
 }

@@ -90,15 +90,19 @@ fun EventItem(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                // Название ивента
-                Text(
-                    text = event?.name ?: "",
-                    style = Typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                    color = colorScheme.primary,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-
+                Row(modifier=Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Box(modifier=Modifier.weight(1f)) {
+                        // Название ивента
+                        Text(
+                            text = event?.name ?: "",
+                            style = Typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                            color = colorScheme.primary,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    rightColumn()
+                }
                 Spacer(Modifier.height(16.dp))
 
 //                // Дата
@@ -156,7 +160,7 @@ fun EventItem(
 
             }
             // Столбец Кнопок
-            rightColumn()
+
         }
 
     }

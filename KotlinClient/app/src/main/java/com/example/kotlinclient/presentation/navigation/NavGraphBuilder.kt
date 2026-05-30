@@ -101,14 +101,14 @@ fun NavGraphBuilder.eventScreen(
     composable(route = Routes.EventsPage.route) {
 
         LaunchedEffect(Unit) {
-            eventViewModel.validationEvents.collect { event -> eventViewModel.onValidation(event)}
+            eventViewModel.notificationEvent.collect { event -> eventViewModel.onNotification(event)}
         }
 
         val eventUiState = eventViewModel.uiState.collectAsStateWithLifecycle()
         val templateUiState = eventTemplateViewModel.uiState.collectAsStateWithLifecycle()
         val sharedAppUiState = shareAppViewModel.uiState.collectAsStateWithLifecycle()
 
-        val formFields = eventViewModel.eventFormFields.collectAsStateWithLifecycle()
+        val formFields = eventViewModel.formUiState.collectAsStateWithLifecycle()
         val currentTime = eventViewModel.currentTime.collectAsStateWithLifecycle()
 
 
@@ -136,7 +136,7 @@ fun NavGraphBuilder.templateScreen(
         val formUiState = eventTemplateViewModel.formUiState.collectAsState()
 
         LaunchedEffect(Unit) {
-            eventTemplateViewModel.validationEvent.collect { event -> eventTemplateViewModel.onValidation(event)}
+            eventTemplateViewModel.notificationEvent.collect { event -> eventTemplateViewModel.onNotification(event)}
         }
 
         TemplateScreen(

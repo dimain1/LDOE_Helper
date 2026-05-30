@@ -4,14 +4,14 @@ import com.example.kotlinclient.local_cache.AppDatabase
 import com.example.kotlinclient.local_cache.converters.toModel
 import com.example.kotlinclient.local_cache.entity.UserPinnedGameContentCrossRef
 import com.example.kotlinclient.state_management.entity.GameContent
-import com.example.kotlinclient.state_management.repository.UserSession
+import com.example.kotlinclient.state_management.repository.UserSessionProvider
 import com.example.kotlinclient.state_management.repository.interfaces.GameContentRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class GameContentRepositoryImpl(
     database: AppDatabase,
-    val session: UserSession
+    val session: UserSessionProvider
 ) : GameContentRepository
 {
     val gameContentDao = database.GameContentDao()

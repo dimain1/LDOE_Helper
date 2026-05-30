@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.example.kotlinclient.R
 import com.example.kotlinclient.state_management.entity.Event
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 @Composable
 fun EventList(

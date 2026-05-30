@@ -17,13 +17,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.kotlinclient.R
 import com.example.kotlinclient.state_management.entity.EventTemplate
+import com.example.kotlinclient.state_management.viewModel.EventTemplateAction
+import com.example.kotlinclient.state_management.viewModel.EventTemplateDialogType
+import com.example.kotlinclient.state_management.viewModel.EventTemplateFormAction
 
 @Composable
 fun TemplateList(
     templates: List<EventTemplate>,
     imageSize: Int,
-    onDeleteClick: (Long) -> Unit,
-    onEditClick: (EventTemplate) -> Unit,
+    onAction: (EventTemplateAction) -> Unit
 ) {
     LazyColumn(Modifier.padding(horizontal = 16.dp)) {
 
@@ -34,22 +36,36 @@ fun TemplateList(
 
             // Столбец информации
             TemplateItem(
-                template.name,
-                template.description,
-                template.duration,
-                template.image,
-                imageSize
+                template,
+                onAction,
+                imageSize,
+                onClick = { template ->
+                    onAction(EventTemplateAction.OpenDialog(EventTemplateDialogType.View(template)))
+                },
             )
             {
                 // Столбец Кнопок
-                Row(
-                )
+                Row()
                 {
                     Image(
                         painterResource(R.drawable.pencil),
                         contentDescription = "Edit Event",
-                        modifier = Modifier.size(16.dp)
-                            .clickable(onClick = { onEditClick(template) }),
+                        modifier = Modifier
+                            .size(16.dp)
+                            .clickable(onClick = {
+                                onAction(
+                                    EventTemplateAction.OnFormAction(
+                                        EventTemplateFormAction.LoadUiState(
+                                            template
+                                        )
+                                    )
+                                )
+                                onAction(
+                                    EventTemplateAction.OpenDialog(
+                                        EventTemplateDialogType.Edit
+                                    )
+                                )
+                            }),
                         colorFilter = ColorFilter.tint(colorScheme.secondary)
                     )
 
@@ -58,8 +74,15 @@ fun TemplateList(
                     Image(
                         painterResource(R.drawable.trash_event),
                         contentDescription = "Delete Event",
-                        modifier = Modifier.size(16.dp)
-                            .clickable(onClick = { onDeleteClick(template.id!!) }),
+                        modifier = Modifier
+                            .size(16.dp)
+                            .clickable(onClick = {
+                                onAction(
+                                    EventTemplateAction.DeleteTemplate(
+                                        template.id!!
+                                    )
+                                )
+                            }),
                         colorFilter = ColorFilter.tint(colorScheme.secondary)
                     )
                 }

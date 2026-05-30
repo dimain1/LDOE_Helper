@@ -2,6 +2,7 @@ package com.example.kotlinclient.presentation.template
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,17 +31,20 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.kotlinclient.presentation.utility.uiComponent.LocalImage
 import com.example.kotlinclient.presentation.utility.getStringTimeByDuration
+import com.example.kotlinclient.state_management.entity.EventTemplate
+import com.example.kotlinclient.state_management.viewModel.EventTemplateAction
+import com.example.kotlinclient.state_management.viewModel.EventTemplateDialogType
 import com.example.kotlinclient.ui.theme.Typography
 
 @Composable
 fun TemplateItem(
-    name: String,
-    description: String?,
-    duration: Long,
-    image: String?,
+    template: EventTemplate?,
+    onAction: (EventTemplateAction) -> Unit,
     imageSize: Int,
     tempModifierConteiner: Modifier = Modifier,
+    onClick: (EventTemplate?) -> Unit,
     rightColumn: @Composable () -> Unit = {}
+
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -48,6 +52,7 @@ fun TemplateItem(
             .fillMaxWidth()
             .background(color = colorScheme.surface, shape = RoundedCornerShape(30.dp))
             .border(2.dp, colorScheme.outline, RoundedCornerShape(30.dp))
+            .clickable(onClick = { onClick(template) })
     )
     {
 
@@ -58,7 +63,7 @@ fun TemplateItem(
                 .height(imageSize.dp)
         ) {
             LocalImage(
-                image,
+                template?.image,
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)),
@@ -83,32 +88,42 @@ fun TemplateItem(
                 modifier = Modifier.weight(1f)
             )
             {
-                // Название ивента
-                Text(
-                    text = name,
-                    style = Typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                    color = colorScheme.primary,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Название ивента
+                    Box(modifier=Modifier.weight(1f)) {
+                        Text(
+                            text = template?.name ?: "",
+                            style = Typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                            color = colorScheme.primary,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
 
+                    rightColumn()
+
+                }
                 Spacer(Modifier.height(12.dp))
 
-                // Описание
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                )
-                {
-                    Text(
-                        text = description ?: "",
-                        style = Typography.bodyMedium,
-                        color = colorScheme.secondary,
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
+//                // Описание
+//                Row(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(bottom = 16.dp)
+//                )
+//                {
+//                    Text(
+//                        text = description ?: "",
+//                        style = Typography.bodyMedium,
+//                        color = colorScheme.secondary,
+//                        maxLines = 3,
+//                        overflow = TextOverflow.Ellipsis,
+//                    )
+//                }
 
                 Spacer(
                     Modifier
@@ -129,7 +144,7 @@ fun TemplateItem(
 
                     Spacer(Modifier.width(10.dp))
 
-
+                    val duration = template?.duration ?: 0
 
                     Text(
                         text =
@@ -144,7 +159,7 @@ fun TemplateItem(
                 }
                 Spacer(Modifier.height(16.dp))
             }
-            rightColumn()
+
         }
 
     }

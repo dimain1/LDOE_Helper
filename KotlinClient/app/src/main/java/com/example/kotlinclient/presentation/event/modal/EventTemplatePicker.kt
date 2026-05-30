@@ -81,14 +81,13 @@ fun EventTemplatePicker(
                             )
                         ) {
                             TemplateItem(
-                                template.name,
-                                template.description,
-                                template.duration,
-                                template.image,
+                                template,
+                                {},
                                 160,
                                 Modifier
                                     .width(200.dp)
-                                    .fillMaxHeight()
+                                    .fillMaxHeight(),
+                                onClick = onClick
                                 )
                         }
                         if(item != templates.size -1){

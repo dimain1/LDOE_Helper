@@ -1,29 +1,18 @@
 package com.example.kotlinclient.state_management.viewModel
 
-import android.content.Context
-import android.content.SharedPreferences
-import android.util.Log
-import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.kotlinclient.state_management.entity.User
-import com.example.kotlinclient.state_management.repository.UserSession
+import com.example.kotlinclient.state_management.repository.UserSessionProvider
 import com.example.kotlinclient.state_management.repository.interfaces.SharedPreferencesRepository
 import com.example.kotlinclient.state_management.repository.interfaces.UserRepository
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.math.log
 
 // region Settings screen
 
@@ -45,7 +34,7 @@ sealed interface SettingsAction{
 
 class SettingsViewModel(
     val sharedPreferencesRepository: SharedPreferencesRepository,
-    val session: UserSession,
+    val session: UserSessionProvider,
     val userRepository: UserRepository,
 ): ViewModel() {
 

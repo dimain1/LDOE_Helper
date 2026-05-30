@@ -435,6 +435,7 @@ fun QuickListItem(
                 color = colorScheme.tertiaryContainer,
                 shape = RoundedCornerShape(10)
             )
+            .border(2.dp,colorScheme.outline, RoundedCornerShape(10))
             .padding(12.dp)
             .clickable(onClick = onItemClick)
 

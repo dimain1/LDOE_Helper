@@ -4,7 +4,7 @@ import com.example.kotlinclient.local_cache.AppDatabase
 import com.example.kotlinclient.local_cache.converters.toEntity
 import com.example.kotlinclient.local_cache.converters.toModel
 import com.example.kotlinclient.state_management.entity.Event
-import com.example.kotlinclient.state_management.repository.UserSession
+import com.example.kotlinclient.state_management.repository.UserSessionProvider
 import com.example.kotlinclient.state_management.repository.interfaces.EventRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -12,7 +12,7 @@ import java.time.Instant
 
 class EventRepositoryImpl(
     database: AppDatabase,
-    val session: UserSession
+    val session: UserSessionProvider
 ) : EventRepository
 {
 

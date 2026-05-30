@@ -10,12 +10,12 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import com.example.kotlinclient.state_management.entity.UserRole
-import com.example.kotlinclient.state_management.repository.UserSession
+import com.example.kotlinclient.state_management.repository.UserSessionProvider
 import org.koin.compose.koinInject
 
 @Composable
 fun Modifier.roleBound(allowedRoles: List<UserRole>): Modifier {
-    val userSession: UserSession = koinInject()
+    val userSession: UserSessionProvider = koinInject()
     val user by userSession.user.collectAsState()
     val currentRole = if(user == null) UserRole.GUEST else UserRole.USER
 

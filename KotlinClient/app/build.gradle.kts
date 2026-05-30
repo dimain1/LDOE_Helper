@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+    id("jacoco")
 }
 
 android {
@@ -47,6 +48,45 @@ android {
     }
 }
 
+tasks.register<JacocoReport>("jacocoTestReport") {
+
+    dependsOn("testDebugUnitTest")
+
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+    }
+
+    val excludes = listOf(
+        "**/R.class",
+        "**/R$*.class",
+        "**/BuildConfig.*",
+        "**/Manifest*.*",
+        "**/*Test*.*",
+        "**/*presentation*/*",
+        "**/*presentation*/*.*",
+        "android/**/*.*"
+    )
+
+    val kotlinClasses = fileTree(
+        layout.buildDirectory.dir("tmp/kotlin-classes/debug")
+    ) {
+        exclude(excludes)
+    }
+
+    classDirectories.setFrom(kotlinClasses)
+
+    sourceDirectories.setFrom(
+        files("src/main/java", "src/main/kotlin")
+    )
+
+    executionData.setFrom(
+        fileTree(layout.buildDirectory).include(
+            "jacoco/testDebugUnitTest.exec"
+        )
+    )
+}
+
 dependencies {
 
 
@@ -64,6 +104,7 @@ dependencies {
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.room)
     implementation(libs.androidx.room.ktx)
+    testImplementation("io.mockk:mockk:1.13.12")
     implementation(libs.google.gson)
     implementation(libs.koin.android)
     implementation(libs.koin.compose)
@@ -77,4 +118,5 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    testImplementation(kotlin("test"))
 }

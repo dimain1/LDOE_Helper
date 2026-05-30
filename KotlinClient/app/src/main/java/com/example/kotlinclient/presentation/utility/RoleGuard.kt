@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.example.kotlinclient.state_management.entity.UserRole
-import com.example.kotlinclient.state_management.repository.UserSession
+import com.example.kotlinclient.state_management.repository.UserSessionProvider
 import org.koin.compose.koinInject
 
 @Composable
@@ -12,7 +12,7 @@ fun RoleGuard(
     allowedRoles: List<UserRole>,
     content: @Composable () -> Unit
 ) {
-    val userSession: UserSession = koinInject()
+    val userSession: UserSessionProvider = koinInject()
     val user by userSession.user.collectAsState()
     val currentRole = if(user == null) UserRole.GUEST else UserRole.USER
 
