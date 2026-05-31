@@ -29,7 +29,7 @@ import com.example.kotlinclient.local_cache.entity.UserPinnedGameContentCrossRef
         GameContentTypeCrossRef::class,
         UserPinnedGameContentCrossRef::class
     ],
-    version = 15
+    version = 16
 )
 @TypeConverters(MapConverter::class, DateTimeConverter::class)
 abstract class AppDatabase : RoomDatabase() {

@@ -13,8 +13,9 @@ import androidx.room.PrimaryKey
 )
 data class UserEntity(
     @PrimaryKey
-    val id: Long,
+    val id: Long? = null,
     val login: String,
     val email: String,
+    val password: String
 
 )

@@ -13,10 +13,13 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface UserDao {
 
-    @Insert(entity= UserEntity::class, onConflict= OnConflictStrategy.REPLACE) // По логике при каждом логине пользователя будет проверяться есть ли такой пользователь в базе и если нет, то создавать на основе данных полученных с сервера(id) и данных с клиента(login, email)
+    @Query("SELECT * FROM users")
+    fun getAllUsers(): Flow<List<UserEntity>>
+
+    @Insert(entity= UserEntity::class, onConflict= OnConflictStrategy.REPLACE)
     fun addNewUser(user: UserEntity)
 
-    @Query("SELECT * FROM users WHERE id = :id") // Получение информации о пользователе по его id, по логике будет вызываться только для id = id текущего активного пользоватея
+    @Query("SELECT * FROM users WHERE id = :id")
     fun getUserById(id:Long): Flow<UserEntity?>
 
     @Delete(entity= UserEntity::class)

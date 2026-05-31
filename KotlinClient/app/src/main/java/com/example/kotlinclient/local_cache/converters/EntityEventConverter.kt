@@ -11,7 +11,7 @@ fun Event.toEntity(): EventEntity{
     return EventEntity(
         id = this.id,
         templateId = this.template?.id,
-        userId = this.user!!.id,
+        userId = this.user!!.id!!,
         name = this.name,
         description = this.description,
         imageUrl = this.image,

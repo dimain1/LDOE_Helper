@@ -22,7 +22,6 @@ import com.example.kotlinclient.state_management.viewModel.HomeAction
 import com.example.kotlinclient.state_management.viewModel.HomeViewModel
 import com.example.kotlinclient.state_management.viewModel.InfoAction
 import com.example.kotlinclient.state_management.viewModel.InfoViewModel
-import com.example.kotlinclient.state_management.viewModel.SettingsAction
 import com.example.kotlinclient.state_management.viewModel.SettingsViewModel
 import com.example.kotlinclient.state_management.viewModel.SharedAction
 import com.example.kotlinclient.state_management.viewModel.SharedAppViewModel
@@ -155,30 +154,16 @@ fun NavGraphBuilder.settingsScreen(
     composable(route = Routes.SettingsPage.route) {
 
         val uiState = settingsViewModel.uiState.collectAsState()
+        val formUiState = settingsViewModel.formUiState.collectAsState()
+
+        LaunchedEffect(Unit) {
+            settingsViewModel.notificationEvent.collect { event -> settingsViewModel.onNotification(event)}
+        }
 
         SettingsScreen(
             uiState = uiState.value,
-            onAction = { action ->
-                when (action) {
-                    is SettingsAction.SwitchPreference -> settingsViewModel.onAction(
-                        SettingsAction.SwitchPreference(
-                            action.key
-                        )
-                    )
-                    is SettingsAction.SetUserId -> settingsViewModel.onAction(
-                        SettingsAction.SetUserId(
-                            action.id
-                        )
-                    )
-                    is SettingsAction.EditUserInfo -> settingsViewModel.onAction(
-                        SettingsAction.EditUserInfo(
-                            action.login,
-                            action.email
-                        )
-                    )
-                    is SettingsAction.ExitProfile -> settingsViewModel.onAction(SettingsAction.ExitProfile)
-                }
-            },
+            onAction = { action -> settingsViewModel.onAction(action) },
+            formUiState = formUiState.value,
             paddingValues = paddingValues
         )
     }

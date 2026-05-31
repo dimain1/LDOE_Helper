@@ -7,7 +7,8 @@ fun User.toEntity(): UserEntity{
     return UserEntity(
         id = this.id,
         login = this.login,
-        email = this.email
+        email = this.email,
+        password = this.password
     )
 }
 
@@ -15,7 +16,8 @@ fun UserEntity.toModel(): User{
     return User(
         id = this.id,
         login = this.login,
-        email = this.email
+        email = this.email,
+        password = this.password
     )
 
 }

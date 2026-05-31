@@ -1,10 +1,6 @@
 package com.example.kotlinclient.presentation.settings
 
-import android.content.Context
-import android.content.SharedPreferences
-import android.text.Layout
-import android.util.Log
-import androidx.compose.animation.core.Spring.StiffnessLow
+import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ScrollState
@@ -32,35 +28,27 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchColors
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.core.content.edit
-import com.example.kotlinclient.state_management.entity.User
 import com.example.kotlinclient.state_management.viewModel.SettingsAction
+import com.example.kotlinclient.state_management.viewModel.SettingsDialogType
+import com.example.kotlinclient.state_management.viewModel.SettingsFormAction
+import com.example.kotlinclient.state_management.viewModel.SettingsFormUiState
 import com.example.kotlinclient.state_management.viewModel.SettingsUiState
 import com.example.kotlinclient.ui.theme.Typography
 
@@ -69,20 +57,28 @@ import com.example.kotlinclient.ui.theme.Typography
 fun SettingsScreen(
     uiState: SettingsUiState,
     onAction: (SettingsAction) -> Unit,
+    formUiState: SettingsFormUiState,
     paddingValues: PaddingValues
 ) {
 
     val scrollState: ScrollState = rememberScrollState()
     val textFieldState = rememberTextFieldState("")
-    var showModal by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
 
+    val dialog = uiState.activeDialog
 
-    EditProfileModal(
-        showModal,
-        uiState.user,
-        { showModal = false },
-        { login, email -> onAction(SettingsAction.EditUserInfo(login, email)) })
+    if (dialog != null) {
+        SettingsModalDialog(
+            uiState,
+            formUiState,
+            {
+                onAction(SettingsAction.OnFormAction(SettingsFormAction.ClearUiState))
+                onAction(SettingsAction.DismissDialog)
+            },
+            onAction
+        )
+    }
 
     // Контейнер всего экрана
     Column(
@@ -138,26 +134,31 @@ fun SettingsScreen(
                         .fillMaxWidth()
                 ) {
                     if (uiState.user == null) {
-                        TextField(
-                            value = textFieldState.text.toString(),
-                            onValueChange = { text: String ->
-                                textFieldState.edit {
-                                    replace(
-                                        0,
-                                        length,
-                                        text
-                                    )
-                                }
-                            }
-                        )
                         Button(
                             onClick = {
-                                onAction(SettingsAction.SetUserId(textFieldState.text.toString().toLong()))
-                                Log.e("UserName", "${uiState.user.toString()}")
-                            }
-                        )
-                        {
-                            Text("Auth")
+                                onAction(SettingsAction.OnFormAction(SettingsFormAction.ClearUiState))
+                                onAction(SettingsAction.OpenDialog(SettingsDialogType.Authorization))
+                            }, colors = ButtonDefaults.buttonColors(
+                                containerColor = colorScheme.tertiary,
+                                contentColor = Color.White
+                            ), modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Войти", color = Color.White)
+                        }
+
+                        Spacer(Modifier.height(12.dp))
+
+                        Button(
+                            onClick = {
+                                onAction(SettingsAction.OnFormAction(SettingsFormAction.ClearUiState))
+                                onAction(SettingsAction.OpenDialog(SettingsDialogType.Registration))
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorScheme.tertiary,
+                                contentColor = Color.White
+                            ), modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Зарегистрироваться", color = Color.White)
                         }
 
                     } else {
@@ -185,10 +186,17 @@ fun SettingsScreen(
                     "Edit Profile",
                     onRowClick = {
                         if (uiState.user == null) {
+                            Toast.makeText(
+                                context,
+                                "Сначала нужно войти в аккаунт",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         } else {
-                            showModal = !showModal
+                            onAction(SettingsAction.OnFormAction(SettingsFormAction.LoadUiState))
+                            onAction(SettingsAction.OpenDialog(SettingsDialogType.EditProfile))
                         }
-                    })
+                    }
+                )
                 {
                     Icon(
                         Icons.Default.KeyboardArrowRight,
@@ -214,12 +222,16 @@ fun SettingsScreen(
             {
                 SettingsBlockRow(Icons.Default.Clear, "Push Notifications")
                 {
-                    CustomSwitcher(uiState.notification, { onAction(SettingsAction.SwitchPreference("notification")) })
+                    CustomSwitcher(
+                        uiState.notification,
+                        { onAction(SettingsAction.SwitchPreference("notification")) })
                 }
                 HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
                 SettingsBlockRow(Icons.Default.Clear, "Sound Effects")
                 {
-                    CustomSwitcher(uiState.sound, { onAction(SettingsAction.SwitchPreference("sound")) })
+                    CustomSwitcher(
+                        uiState.sound,
+                        { onAction(SettingsAction.SwitchPreference("sound")) })
                 }
                 HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
                 SettingsBlockRow(Icons.Default.Clear, "Language")
@@ -244,7 +256,9 @@ fun SettingsScreen(
                 HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
                 SettingsBlockRow(Icons.Default.Clear, "Dark Theme")
                 {
-                    CustomSwitcher(uiState.theme, { onAction(SettingsAction.SwitchPreference("theme")) })
+                    CustomSwitcher(
+                        uiState.theme,
+                        { onAction(SettingsAction.SwitchPreference("theme")) })
                 }
             }
 
