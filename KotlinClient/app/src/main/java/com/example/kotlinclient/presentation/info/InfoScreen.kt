@@ -1,7 +1,5 @@
-package com.example.kotlinclient.presentation.Info
+package com.example.kotlinclient.presentation.info
 
-import android.R
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.input.TextFieldLineLimits
@@ -26,39 +23,27 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.kotlinclient.state_management.entity.ContentType
-import com.example.kotlinclient.state_management.entity.GameContent
 import com.example.kotlinclient.state_management.viewModel.InfoAction
 import com.example.kotlinclient.state_management.viewModel.InfoUiState
 import com.example.kotlinclient.ui.theme.Typography
-import kotlinx.coroutines.flow.debounce
-import kotlin.text.clear
 
 @Composable
 fun InfoScreen(
     uiState: InfoUiState,
     onAction: (InfoAction) -> Unit,
     paddingValues: PaddingValues,
-){
+) {
     var textField: TextFieldState = rememberTextFieldState("")
 
     LaunchedEffect(textField) {
@@ -68,10 +53,10 @@ fun InfoScreen(
             }
     }
 
-
-    Column(modifier= Modifier
-        .fillMaxSize()
-        .padding(paddingValues)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
     ) {
         HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
 
@@ -89,14 +74,20 @@ fun InfoScreen(
             //Поле поиска
 
 
-
             // Само базовое поле ввода
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
-                    .background(color = colorScheme.surface, shape = RoundedCornerShape(8.dp,8.dp,8.dp,8.dp))
-                    .border(2.dp, colorScheme.outline, shape = RoundedCornerShape(8.dp,8.dp,8.dp,8.dp) ),
+                    .background(
+                        color = colorScheme.surface,
+                        shape = RoundedCornerShape(8.dp, 8.dp, 8.dp, 8.dp)
+                    )
+                    .border(
+                        2.dp,
+                        colorScheme.outline,
+                        shape = RoundedCornerShape(8.dp, 8.dp, 8.dp, 8.dp)
+                    ),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Иконка лупы
@@ -112,16 +103,15 @@ fun InfoScreen(
 
                 BasicTextField(
                     state = textField,
-                    textStyle = Typography.bodyLarge.copy(color= colorScheme.primary),
+                    textStyle = Typography.bodyLarge.copy(color = colorScheme.primary),
                     modifier = Modifier
                         .height(19.dp)
                         .padding(start = 8.dp)
-                        .weight(1f)
-    //                    .focusRequester(focusRequester)
-    //                    .onFocusChanged({ focusState ->
-    //                        onFocusChanged(focusState.isFocused)
-    //                    }),
-                            ,
+                        .weight(1f),
+                    //                    .focusRequester(focusRequester)
+                    //                    .onFocusChanged({ focusState ->
+                    //                        onFocusChanged(focusState.isFocused)
+                    //                    }),
                     // декоратор ответственный за placeholder и изменение видимости крестика очистки
                     decorator = { innerTextField ->
                         Box(
@@ -129,8 +119,12 @@ fun InfoScreen(
 
                         ) {
                             if (textField.text.isEmpty()) {
-                                Text("Search entities..." +
-                                        "", style=Typography.bodyLarge, color= colorScheme.secondary)
+                                Text(
+                                    "Search entities..." +
+                                            "",
+                                    style = Typography.bodyLarge,
+                                    color = colorScheme.secondary
+                                )
                             }
                             innerTextField()
                         }
@@ -139,7 +133,9 @@ fun InfoScreen(
                 )
                 // Крестик очистки поля ввода
                 Box(
-                    modifier = Modifier.fillMaxHeight().width(40.dp),
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .width(40.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -161,13 +157,17 @@ fun InfoScreen(
             Spacer(Modifier.height(16.dp))
 
             // Категории
-            CategoryList(uiState.types, uiState.selectedType, { id -> onAction(InfoAction.SelectType(id)) })
+            CategoryList(
+                uiState.types,
+                uiState.selectedType,
+                { id -> onAction(InfoAction.SelectType(id)) })
 
             Spacer(Modifier.height(24.dp))
 
-            ItemList(uiState.gameContent, { id, status -> onAction(InfoAction.UpdateContentPin(id, status)) } )
-
-
+            ItemList(
+                uiState,
+                onAction = onAction
+            )
         }
 
 

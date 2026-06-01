@@ -46,8 +46,6 @@ fun EventScreen(
     templates: List<EventTemplate>,
     eventFormFields: EventFormUiState,
     onFormAction: (EventFormAction) -> Unit,
-    sharedAppUiState: SharedUiState,
-    onSharedAction: (SharedAction) -> Unit,
     currentTime: LocalDateTime,
     paddingValues: PaddingValues
 ) {
@@ -58,7 +56,8 @@ fun EventScreen(
             EventCreateModal(
                 onDismiss = {
                     onAction(EventAction.DismissDialog)
-                    onFormAction(EventFormAction.ClearUiState) },
+                    onFormAction(EventFormAction.ClearUiState)
+                },
                 templates = templates,
                 eventFormFields = eventFormFields,
                 onFormAction = onFormAction,
@@ -68,16 +67,14 @@ fun EventScreen(
 
         is EventDialogType.Edit -> {
             EventCreateModal(
-                onDismiss = { onAction(EventAction.DismissDialog)
-                    onFormAction(EventFormAction.ClearUiState)},
+                onDismiss = {
+                    onAction(EventAction.DismissDialog)
+                    onFormAction(EventFormAction.ClearUiState)
+                },
                 templates = templates,
                 eventFormFields = eventFormFields,
                 onFormAction = onFormAction,
             )
-        }
-
-        is EventDialogType.View -> {
-            onSharedAction(SharedAction.ChangeDialogVisibility(true ,DialogType.EventViewDetailsDialog(uiState.activeDialog.eventData)))
         }
 
         else -> {}

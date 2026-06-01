@@ -52,6 +52,7 @@ import com.example.kotlinclient.presentation.utility.uiComponent.LocalImage
 import com.example.kotlinclient.presentation.utility.uiComponent.AnimatedTimer
 import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.state_management.entity.GameContent
+import com.example.kotlinclient.state_management.viewModel.DialogType
 import com.example.kotlinclient.state_management.viewModel.HomeAction
 import com.example.kotlinclient.state_management.viewModel.HomeUiState
 import com.example.kotlinclient.ui.theme.InfoIconColor
@@ -355,7 +356,7 @@ fun <T> QuickList(
                         val event: Event = listOfValue[item] as Event
                         QuickListItem(
                             event?.image, event?.name ?: "",
-                            { onAction(HomeAction.ShowEventDetails(event)) },
+                            { onAction(HomeAction.OpenDialog(DialogType.EventViewDetailsDialog(event))) },
                             description = {
                                 AnimatedTimer(event.startTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),event.endTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
                             }
@@ -377,6 +378,7 @@ fun <T> QuickList(
                         QuickListItem(
                             content?.image ?: "",
                             content.name,
+                            onItemClick = {onAction(HomeAction.OpenDialog(DialogType.GameContentViewDetailsDialog(content)))},
                             description = {
                                 Text(
                                     text = content?.description ?: "",

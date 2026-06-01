@@ -3,9 +3,14 @@ package com.example.kotlinclient.local_cache.converters
 import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.google.gson.GsonBuilder
+import com.google.gson.ToNumberPolicy
 
 class MapConverter {
-    private val gson = Gson()
+    // Настраиваем Gson для корректного чтения целых чисел
+    private val gson = GsonBuilder()
+        .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
+        .create()
 
     @TypeConverter
     fun fromMap(map: Map<String, Any>?): String? {
@@ -14,10 +19,15 @@ class MapConverter {
 
     @TypeConverter
     fun toMap(value: String?): Map<String, Any>? {
-        if (value == null) return null
+        // Защита от null, пустых строк и строк из одних пробелов
+        if (value.isNullOrBlank()) return null
 
-        // Используем TypeToken, чтобы Gson знал, в какой тип данных десериализовать
-        val mapType = object : TypeToken<Map<String, Any>>() {}.type
-        return gson.fromJson(value, mapType)
+        return try {
+            val mapType = object : TypeToken<Map<String, Any>>() {}.type
+            gson.fromJson(value, mapType)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null // Или верните emptyMap(), чтобы не ломать логику приложения
+        }
     }
 }

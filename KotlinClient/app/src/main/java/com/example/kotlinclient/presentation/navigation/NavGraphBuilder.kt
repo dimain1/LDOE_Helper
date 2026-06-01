@@ -9,18 +9,20 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.example.kotlinclient.presentation.Info.InfoScreen
+import com.example.kotlinclient.presentation.info.InfoScreen
 import com.example.kotlinclient.presentation.event.EventScreen
 import com.example.kotlinclient.presentation.home.HomeScreen
 import com.example.kotlinclient.presentation.settings.SettingsScreen
 import com.example.kotlinclient.presentation.template.TemplateScreen
 import com.example.kotlinclient.state_management.viewModel.DialogType
 import com.example.kotlinclient.state_management.viewModel.EventAction
+import com.example.kotlinclient.state_management.viewModel.EventDialogType
 import com.example.kotlinclient.state_management.viewModel.EventTemplateViewModel
 import com.example.kotlinclient.state_management.viewModel.EventViewModel
 import com.example.kotlinclient.state_management.viewModel.HomeAction
 import com.example.kotlinclient.state_management.viewModel.HomeViewModel
 import com.example.kotlinclient.state_management.viewModel.InfoAction
+import com.example.kotlinclient.state_management.viewModel.InfoDialogType
 import com.example.kotlinclient.state_management.viewModel.InfoViewModel
 import com.example.kotlinclient.state_management.viewModel.SettingsViewModel
 import com.example.kotlinclient.state_management.viewModel.SharedAction
@@ -66,8 +68,12 @@ fun NavGraphBuilder.homeScreen(
                     is HomeAction.ToInfo -> navigateToInfo(navController)
                     is HomeAction.ToTemplate -> navigateToTemplate(navController)
                     is HomeAction.ToSettings -> navigateToSettings(navController)
-                    is HomeAction.ShowEventDetails -> sharedAppViewModel.onAction(SharedAction.ChangeDialogVisibility(true,
-                        DialogType.EventViewDetailsDialog(action.initialData)))
+                    is HomeAction.OpenDialog -> sharedAppViewModel.onAction(
+                        SharedAction.ChangeDialogVisibility(
+                            true,
+                            action.dialog!!
+                        )
+                    )
                 }
             },
             paddingValues = paddingValues
@@ -77,6 +83,7 @@ fun NavGraphBuilder.homeScreen(
 
 fun NavGraphBuilder.infoScreen(
     infoViewModel: InfoViewModel,
+    sharedAppViewModel: SharedAppViewModel,
     paddingValues: PaddingValues
 ) {
     composable(route = Routes.InfoPage.route) {
@@ -85,7 +92,26 @@ fun NavGraphBuilder.infoScreen(
 
         InfoScreen(
             uiState = uiState.value,
-            onAction = { action -> infoViewModel.onAction(action) },
+            onAction = { action ->
+                when (action) {
+                    is InfoAction.OpenDialog -> {
+                        infoViewModel.onAction(action)
+                        when (action.dialog) {
+                            is InfoDialogType.View -> sharedAppViewModel.onAction(
+                                SharedAction.ChangeDialogVisibility(
+                                    true,
+                                    DialogType.GameContentViewDetailsDialog(action.dialog.initialData)
+                                )
+                            )
+
+                            else -> infoViewModel.onAction(InfoAction.OpenDialog(action.dialog))
+
+                        }
+                    }
+
+                    else -> infoViewModel.onAction(action)
+                }
+            },
             paddingValues
         )
     }
@@ -100,12 +126,11 @@ fun NavGraphBuilder.eventScreen(
     composable(route = Routes.EventsPage.route) {
 
         LaunchedEffect(Unit) {
-            eventViewModel.notificationEvent.collect { event -> eventViewModel.onNotification(event)}
+            eventViewModel.notificationEvent.collect { event -> eventViewModel.onNotification(event) }
         }
 
         val eventUiState = eventViewModel.uiState.collectAsStateWithLifecycle()
         val templateUiState = eventTemplateViewModel.uiState.collectAsStateWithLifecycle()
-        val sharedAppUiState = shareAppViewModel.uiState.collectAsStateWithLifecycle()
 
         val formFields = eventViewModel.formUiState.collectAsStateWithLifecycle()
         val currentTime = eventViewModel.currentTime.collectAsStateWithLifecycle()
@@ -114,12 +139,31 @@ fun NavGraphBuilder.eventScreen(
         EventScreen(
             uiState = eventUiState.value,
             templates = templateUiState.value.templates,
-            onAction = { action -> eventViewModel.onAction(action) },
+            onAction = { action ->
+                when (action) {
+                    is EventAction.OpenDialog -> {
+                        when (action.dialog) {
+                            is EventDialogType.View -> {
+                                shareAppViewModel.onAction(
+                                    SharedAction.ChangeDialogVisibility(
+                                        true,
+                                        dialogType = DialogType.EventViewDetailsDialog(action.dialog.eventData)
+                                    )
+                                )
+                                eventViewModel.onAction(EventAction.OpenDialog(action.dialog))
+                            }
+
+                            else -> eventViewModel.onAction(EventAction.OpenDialog(action.dialog))
+                        }
+
+                    }
+
+                    else -> eventViewModel.onAction(action)
+                }
+            },
             eventFormFields = formFields.value,
             onFormAction = { action -> eventViewModel.onFormAction(action) },
             currentTime = currentTime.value,
-            sharedAppUiState = sharedAppUiState.value,
-            onSharedAction = {action -> shareAppViewModel.onAction(action)},
             paddingValues = paddingValues
         )
     }
@@ -135,15 +179,20 @@ fun NavGraphBuilder.templateScreen(
         val formUiState = eventTemplateViewModel.formUiState.collectAsState()
 
         LaunchedEffect(Unit) {
-            eventTemplateViewModel.notificationEvent.collect { event -> eventTemplateViewModel.onNotification(event)}
+            eventTemplateViewModel.notificationEvent.collect { event ->
+                eventTemplateViewModel.onNotification(
+                    event
+                )
+            }
         }
 
         TemplateScreen(
             uiState = uiState.value,
-            onAction = { action -> eventTemplateViewModel.onAction(action)},
-            formUiState= formUiState.value,
+            onAction = { action -> eventTemplateViewModel.onAction(action) },
+            formUiState = formUiState.value,
             onFormAction = { action -> eventTemplateViewModel.onFormAction(action) },
-            paddingValues = paddingValues)
+            paddingValues = paddingValues
+        )
     }
 }
 
@@ -157,7 +206,11 @@ fun NavGraphBuilder.settingsScreen(
         val formUiState = settingsViewModel.formUiState.collectAsState()
 
         LaunchedEffect(Unit) {
-            settingsViewModel.notificationEvent.collect { event -> settingsViewModel.onNotification(event)}
+            settingsViewModel.notificationEvent.collect { event ->
+                settingsViewModel.onNotification(
+                    event
+                )
+            }
         }
 
         SettingsScreen(

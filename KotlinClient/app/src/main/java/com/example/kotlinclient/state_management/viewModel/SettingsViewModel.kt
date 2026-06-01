@@ -209,25 +209,28 @@ class SettingsViewModel(
 
         viewModelScope.launch {
 
-            if (isDataValid()) {
 
-                val user = User(
-                    id = uiState.user?.id,
-                    login = formUiState.login.text.toString(),
-                    email = formUiState.email.text.toString(),
-                    password = PasswordHasher.hashPassword(formUiState.password.text.toString())
-                )
+            val user = User(
+                id = uiState.user?.id,
+                login = formUiState.login.text.toString(),
+                email = formUiState.email.text.toString(),
+                password = PasswordHasher.hashPassword(formUiState.password.text.toString())
+            )
 
-                if (user.id == null) {
-                    userRepository.createUser(user)
-                    _notificationEvent.send(SettingsFormNotificationEvent.SuccessRegistration(context))
-                    dismissDialog()
-                } else {
+            if (user.id == null) {
+                if(isDataValid()){
+                userRepository.createUser(user)
+                _notificationEvent.send(SettingsFormNotificationEvent.SuccessRegistration(context))
+                dismissDialog()
+                }
+            } else {
+                if(validateLogin() && validateEmail()){
                     userRepository.updateUserInfo(user)
                     _notificationEvent.send(SettingsFormNotificationEvent.SuccessUpdate(context))
                     dismissDialog()
                 }
             }
+
 
         }
     }
@@ -282,12 +285,12 @@ class SettingsViewModel(
     }
 
     private fun validateLogin(): Boolean {
-        val text = _formUiState.value.login.text.toString()
+        val text = _formUiState.value.login.text.toString().trim()
         val error: String? = when {
             text.isBlank() -> "Имя пользователя не должно быть пустым"
             text.length <= 6 -> "Имя пользователя должно содержать больше 6 символов"
             text.length >= 40 -> "Имя пользователя слишком длинное"
-            _users.value.find { user -> user.login == text } != null -> "Имя пользователя занято"
+            _users.value.find { user -> user.login == text } != null && _activeDialog.value == SettingsDialogType.Registration -> "Имя пользователя занято"
             else -> null
         }
 
@@ -297,9 +300,9 @@ class SettingsViewModel(
     }
 
     private fun validateEmail(): Boolean {
-        val emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}\$".toRegex()
+        val emailRegex = """^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$""".toRegex()
 
-        val text = _formUiState.value.email.text.toString().lowercase()
+        val text = _formUiState.value.email.text.toString().lowercase().trim()
         val error: String? = when {
             text.isBlank() -> "Эл. почта должна быть заполнена"
             _users.value.find { user -> user.email == text } != null -> "Пользователь с такой Эл. почтой уже существует"
@@ -313,7 +316,7 @@ class SettingsViewModel(
     }
 
     private fun validatePassword(): Boolean {
-        val text = _formUiState.value.password.text.toString()
+        val text = _formUiState.value.password.text.toString().trim()
         val error: String? = when {
             text.isBlank() -> "Пароль не может быть пустым"
             text.length < 8 -> "Длина пароля должна быть не меньше 8 символов"
@@ -326,7 +329,7 @@ class SettingsViewModel(
     }
 
     private fun validateConfirmPassword(): Boolean {
-        val text = _formUiState.value.confirmPassword.text.toString()
+        val text = _formUiState.value.confirmPassword.text.toString().trim()
         val error: String? = when {
             text != _formUiState.value.password.text.toString() -> "Пароли не совпадают"
             else -> null

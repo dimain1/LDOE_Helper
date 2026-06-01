@@ -1,5 +1,7 @@
 package com.example.kotlinclient.presentation.settings
 
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -12,10 +14,15 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -40,11 +47,25 @@ fun SettingsModalDialog(
 
     val context = LocalContext.current
 
+    val focusManager = LocalFocusManager.current
+    val modalFocusRequester = remember { FocusRequester() }
+
+    val clearFocusModifier = Modifier.pointerInput(Unit) {
+        detectTapGestures(onTap = {
+            modalFocusRequester.requestFocus()
+            focusManager.clearFocus()
+        })
+    }
+
     AlertDialog(
         onDismissRequest = { onDismiss() },
         title = {
             Box(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(modalFocusRequester)
+                    .focusable()
+                    .then(clearFocusModifier),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -61,34 +82,168 @@ fun SettingsModalDialog(
             }
         },
         text = {
-            Column() {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(modalFocusRequester)
+                    .focusable()
+                    .then(clearFocusModifier)
+            ) {
                 when (uiState.activeDialog) {
                     is SettingsDialogType.EditProfile -> {
-
-
-                        BasicTextFieldInModal(
-                            formUiState.login,
-                            "Имя пользователя",
+                        ValidatedBasicTextFieldInModal(
+                            state = formUiState.login,
+                            errorText = formUiState.errors.loginError,
+                            onFocused = {
+                                onAction(
+                                    SettingsAction.OnFormAction(
+                                        SettingsFormAction.OnFormValidation(
+                                            SettingsFormValidation.ClearLoginError
+                                        )
+                                    )
+                                )
+                            },
+                            onFocusLost = {
+                                onAction(
+                                    SettingsAction.OnFormAction(
+                                        SettingsFormAction.OnFormValidation(
+                                            SettingsFormValidation.ValidateLogin
+                                        )
+                                    )
+                                )
+                            },
+                            placeholder = "Имя пользователя",
                             readOnly = true
                         )
                         Spacer(Modifier.height(16.dp))
-                        BasicTextFieldInModal(formUiState.email, "Электронная почта")
+                        ValidatedBasicTextFieldInModal(
+                            state = formUiState.email,
+                            errorText = formUiState.errors.emailError,
+                            onFocused = {
+                                onAction(
+                                    SettingsAction.OnFormAction(
+                                        SettingsFormAction.OnFormValidation(
+                                            SettingsFormValidation.ClearEmailError
+                                        )
+                                    )
+                                )
+                            },
+                            onFocusLost = {
+                                onAction(
+                                    SettingsAction.OnFormAction(
+                                        SettingsFormAction.OnFormValidation(
+                                            SettingsFormValidation.ValidateEmail
+                                        )
+                                    )
+                                )
+                            },
+                            placeholder = "Электронная почта",
+                        )
                     }
 
                     is SettingsDialogType.Registration -> {
-                        BasicTextFieldInModal(formUiState.login, "Имя пользователя")
+                        ValidatedBasicTextFieldInModal(
+                            state = formUiState.login,
+                            errorText = formUiState.errors.loginError,
+                            onFocused = {
+                                onAction(
+                                    SettingsAction.OnFormAction(
+                                        SettingsFormAction.OnFormValidation(
+                                            SettingsFormValidation.ClearLoginError
+                                        )
+                                    )
+                                )
+                            },
+                            onFocusLost = {
+                                onAction(
+                                    SettingsAction.OnFormAction(
+                                        SettingsFormAction.OnFormValidation(
+                                            SettingsFormValidation.ValidateLogin
+                                        )
+                                    )
+                                )
+                            },
+                            placeholder = "Имя пользователя",
+                        )
                         Spacer(Modifier.height(16.dp))
-                        BasicTextFieldInModal(formUiState.email, "Электронная почта")
+                        ValidatedBasicTextFieldInModal(
+                            state = formUiState.email,
+                            errorText = formUiState.errors.emailError,
+                            onFocused = {
+                                onAction(
+                                    SettingsAction.OnFormAction(
+                                        SettingsFormAction.OnFormValidation(
+                                            SettingsFormValidation.ClearEmailError
+                                        )
+                                    )
+                                )
+                            },
+                            onFocusLost = {
+                                onAction(
+                                    SettingsAction.OnFormAction(
+                                        SettingsFormAction.OnFormValidation(
+                                            SettingsFormValidation.ValidateEmail
+                                        )
+                                    )
+                                )
+                            },
+                            placeholder = "Электронная почта",
+                        )
                         Spacer(Modifier.height(16.dp))
-                        BasicTextFieldInModal(
-                            formUiState.password,
-                            "Пароль",
+                        ValidatedBasicTextFieldInModal(
+                            state = formUiState.password,
+                            errorText = formUiState.errors.passwordError,
+                            onFocused = {
+                                onAction(
+                                    SettingsAction.OnFormAction(
+                                        SettingsFormAction.OnFormValidation(
+                                            SettingsFormValidation.ClearPasswordError
+                                        )
+                                    )
+                                )
+                            },
+                            onFocusLost = {
+                                onAction(
+                                    SettingsAction.OnFormAction(
+                                        SettingsFormAction.OnFormValidation(
+                                            SettingsFormValidation.ValidatePassword
+                                        )
+                                    )
+                                )
+                                onAction(
+                                    SettingsAction.OnFormAction(
+                                        SettingsFormAction.OnFormValidation(
+                                            SettingsFormValidation.ValidateConfirmPassword
+                                        )
+                                    )
+                                )
+                            },
+                            placeholder = "Пароль",
                             keyboardOption = KeyboardOptions(keyboardType = KeyboardType.Password)
                         )
                         Spacer(Modifier.height(16.dp))
-                        BasicTextFieldInModal(
-                            formUiState.confirmPassword,
-                            "Подтвердите пароль",
+                        ValidatedBasicTextFieldInModal(
+                            state = formUiState.confirmPassword,
+                            errorText = formUiState.errors.passwordConfirmError,
+                            onFocused = {
+                                onAction(
+                                    SettingsAction.OnFormAction(
+                                        SettingsFormAction.OnFormValidation(
+                                            SettingsFormValidation.ClearConfirmPasswordError
+                                        )
+                                    )
+                                )
+                            },
+                            onFocusLost = {
+                                onAction(
+                                    SettingsAction.OnFormAction(
+                                        SettingsFormAction.OnFormValidation(
+                                            SettingsFormValidation.ValidateConfirmPassword
+                                        )
+                                    )
+                                )
+                            },
+                            placeholder = "Подтвердите пароль",
                             keyboardOption = KeyboardOptions(keyboardType = KeyboardType.Password)
                         )
                     }
@@ -151,7 +306,7 @@ fun SettingsModalDialog(
             Button(
                 onClick = {
                     onDismiss()
-                          },
+                },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = colorScheme.tertiary,
                     contentColor = Color.White

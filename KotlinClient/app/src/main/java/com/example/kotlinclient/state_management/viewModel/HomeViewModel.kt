@@ -26,7 +26,7 @@ sealed interface HomeAction{
     data object ToInfo: HomeAction
     data object ToSettings: HomeAction
     data class LaunchOverlay(val context: Context) : HomeAction
-    data class ShowEventDetails(val initialData: Event?) : HomeAction
+    data class OpenDialog(val dialog: DialogType?) : HomeAction
 }
 
 
@@ -56,7 +56,7 @@ class HomeViewModel(
             is HomeAction.ToSettings -> TODO()
             is HomeAction.ToTemplate -> TODO()
             is HomeAction.TogglePin -> TODO()
-            is HomeAction.ShowEventDetails -> TODO()// Обрабатываються в GraphBuilder
+            is HomeAction.OpenDialog -> TODO()// Обрабатываються в GraphBuilder
         }
     }
 

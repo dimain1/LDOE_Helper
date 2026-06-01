@@ -3,6 +3,7 @@ package com.example.kotlinclient.state_management.viewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.kotlinclient.state_management.entity.Event
+import com.example.kotlinclient.state_management.entity.GameContent
 import com.example.kotlinclient.state_management.repository.interfaces.SharedPreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,7 +14,8 @@ import kotlinx.coroutines.flow.stateIn
 
 data class SharedUiState(
     val darkTheme: Boolean = false,
-    val eventDetailsDialogUiState: EventDetailsDialogUiState = EventDetailsDialogUiState()
+    val eventDetailsDialogUiState: EventDetailsDialogUiState = EventDetailsDialogUiState(),
+    val gameContentDetailsDialogUiState: GameContentDialogUiState = GameContentDialogUiState()
 )
 
 data class EventDetailsDialogUiState(
@@ -21,8 +23,14 @@ data class EventDetailsDialogUiState(
     val initialData: Event? = null
 )
 
+data class GameContentDialogUiState(
+    val showDialog: Boolean = false,
+    val initialData: GameContent? = null
+)
+
 sealed interface DialogType {
     data class EventViewDetailsDialog(val initialData: Event?) : DialogType
+    data class GameContentViewDetailsDialog(val initialData: GameContent?): DialogType
 }
 
 sealed interface SharedAction {
@@ -49,12 +57,28 @@ class SharedAppViewModel(
         EventDetailsDialogUiState()
     )
         // endregion
+
+        // region gameContentDetailsDialog Flows
+
+    val showGameContentViewDetailsDialog = MutableStateFlow(false)
+    val gameContentInitialData = MutableStateFlow<GameContent?>(null)
+
+    val gameContentDetailsDialogUiState: StateFlow<GameContentDialogUiState> = combine(
+        showGameContentViewDetailsDialog,
+        gameContentInitialData,
+    ) { visible, initialData ->
+        GameContentDialogUiState(visible,initialData)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), GameContentDialogUiState())
+
+        // endregion
+
     val uiState: StateFlow<SharedUiState> = combine(
         sharedPreferencesRepository.observeBoolean("theme", false),
-        eventDetailsDialogUiState
+        eventDetailsDialogUiState,
+        gameContentDetailsDialogUiState
     )
-    { theme, eventDetailsDialogUiState ->
-        SharedUiState(theme, eventDetailsDialogUiState)
+    { theme, eventDetailsDialogUiState, gameContentDetailsDialogUiState ->
+        SharedUiState(theme, eventDetailsDialogUiState, gameContentDetailsDialogUiState)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SharedUiState())
 
     // endregion
@@ -73,8 +97,14 @@ class SharedAppViewModel(
     private fun changeDialogVisibility(visible: Boolean, dialogType: DialogType) {
         when(dialogType){
             is DialogType.EventViewDetailsDialog -> {
-                showEventViewDetailsDialog.value = visible
                 eventInitialData.value = dialogType.initialData
+                showEventViewDetailsDialog.value = visible
+
+            }
+            is DialogType.GameContentViewDetailsDialog ->{
+                gameContentInitialData.value= dialogType.initialData
+                showGameContentViewDetailsDialog.value = visible
+
             }
         }
 

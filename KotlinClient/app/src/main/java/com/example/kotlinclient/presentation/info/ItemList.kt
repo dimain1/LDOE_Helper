@@ -1,4 +1,4 @@
-package com.example.kotlinclient.presentation.Info
+package com.example.kotlinclient.presentation.info
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -29,59 +29,82 @@ import com.example.kotlinclient.R
 import com.example.kotlinclient.presentation.utility.uiComponent.LocalImage
 import com.example.kotlinclient.presentation.utility.Authorized
 import com.example.kotlinclient.state_management.entity.GameContent
+import com.example.kotlinclient.state_management.viewModel.InfoAction
+import com.example.kotlinclient.state_management.viewModel.InfoDialogType
+import com.example.kotlinclient.state_management.viewModel.InfoUiState
 import com.example.kotlinclient.ui.theme.Typography
 
 
 // Список предметов(Сущностей игры)
 @Composable
 fun ItemList(
-    Items: List<GameContent> = listOf(),
-    onPinClick: (Long, Boolean) -> Unit
-)
-{
+    uiState: InfoUiState,
+    onAction: (InfoAction) -> Unit
+) {
 
-    LazyColumn(modifier=Modifier
-        .fillMaxWidth()
+    val Items = uiState.gameContent
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
 
     )
     {
-        items(Items.size) {item ->
+        items(Items.size) { item ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier=Modifier
+                modifier = Modifier
                     .fillMaxWidth()
                     .background(colorScheme.surface, shape = RoundedCornerShape(10))
                     .border(2.dp, colorScheme.outline, RoundedCornerShape(10))
                     .padding(all = 12.dp)
-            ){
+                    .clickable(onClick = { onAction(InfoAction.OpenDialog(InfoDialogType.View(Items[item]))) })
+            ) {
                 // Картинка предмета(Замениться на Image)
-                LocalImage(Items[item].image,Modifier.size(48.dp))
+                LocalImage(Items[item].image, Modifier.size(48.dp))
 
                 Spacer(Modifier.width(16.dp))
                 // Описание предмета
                 Column(
                     verticalArrangement = Arrangement.Center,
-                    modifier= Modifier.weight(1f)
+                    modifier = Modifier.weight(1f)
                 )
 
                 {
-                    Text(text= Items[item].name, style = Typography.bodyLarge.copy(fontWeight = FontWeight.Bold), color= colorScheme.primary)
+                    Text(
+                        text = Items[item].name,
+                        style = Typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                        color = colorScheme.primary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
                     Spacer(Modifier.height(8.dp))
-                    Text(text= Items[item].description ?: "Описание отсутствует", style = Typography.bodySmall, color=colorScheme.secondary, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(
+                        text = Items[item].description ?: "Описание отсутствует",
+                        style = Typography.bodySmall,
+                        color = colorScheme.secondary,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
 
                 Spacer(Modifier.width(8.dp))
 
                 Image(
-                    painter= painterResource ( if(Items[item].pinned == false) R.drawable.pinned_off else R.drawable.pinned_on),
+                    painter = painterResource(if (Items[item].pinned == false) R.drawable.pinned_off else R.drawable.pinned_on),
                     contentDescription = "Pinned Image",
-                    modifier= Modifier.Authorized().size(32.dp).clickable(onClick = { onPinClick(Items[item].id, !Items[item].pinned) }),
-                    colorFilter= if(Items[item].pinned == false) null else ColorFilter.tint(colorScheme.tertiary)
+                    modifier = Modifier
+                        .Authorized()
+                        .size(32.dp)
+                        .clickable(onClick = {onAction(InfoAction.UpdateContentPin(Items[item].id, !Items[item].pinned))}),
+                    colorFilter = if (Items[item].pinned == false) null else ColorFilter.tint(
+                        colorScheme.tertiary
+                    )
                 )
 
             }
             // Между последним элементом и краем экрана отступ не добавляем
-            if(item != Items.size - 1){
+            if (item != Items.size - 1) {
                 Spacer(Modifier.height(16.dp))
             }
 

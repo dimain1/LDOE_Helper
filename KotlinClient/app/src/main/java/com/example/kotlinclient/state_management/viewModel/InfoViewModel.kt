@@ -22,14 +22,21 @@ data class InfoUiState(
     val types: List<ContentType> = emptyList(),
     val searchQuery: String = "",
     val selectedType: Long = 0,
-    val gameContent: List<GameContent> = emptyList()
+    val gameContent: List<GameContent> = emptyList(),
+    val activeDialog: InfoDialogType? = null
 )
+
+sealed interface InfoDialogType{
+    data class View(val initialData: GameContent?) : InfoDialogType
+}
 
 sealed interface InfoAction{
     data class SelectType(val id: Long): InfoAction
     data class ChangeSearchQuery(val query: String): InfoAction
     data object ClearQuery : InfoAction
     data class UpdateContentPin(val id: Long, val pinStatus: Boolean) : InfoAction
+    data class OpenDialog(val dialog: InfoDialogType): InfoAction
+    data object DismissDialog : InfoAction
 }
 
 // endregion
@@ -81,6 +88,8 @@ class InfoViewModel(
             is InfoAction.ClearQuery -> clearQuery()
             is InfoAction.SelectType -> selectType(action.id)
             is InfoAction.UpdateContentPin -> updateContentPin(action.id,action.pinStatus)
+            is InfoAction.OpenDialog -> openDialog(action.dialog)
+            is InfoAction.DismissDialog -> dismissDialog()
         }
     }
 
@@ -107,6 +116,14 @@ class InfoViewModel(
                 gameContentRepository.unpinContent(id)
             }
         }
+    }
+
+    private fun openDialog(dialog: InfoDialogType){
+        _uiState.update { it.copy(activeDialog = dialog) }
+    }
+
+    private fun dismissDialog(){
+        _uiState.update { it.copy(activeDialog = null) }
     }
 
     // endregion

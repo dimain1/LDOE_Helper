@@ -1,4 +1,4 @@
-package com.example.kotlinclient.presentation.Info
+package com.example.kotlinclient.presentation.info
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

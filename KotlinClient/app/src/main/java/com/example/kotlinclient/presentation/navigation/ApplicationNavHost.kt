@@ -42,6 +42,7 @@ fun ApplicationNavHost(
 
         infoScreen(
             infoViewModel,
+            sharedAppViewModel,
             paddingValues
         )
 

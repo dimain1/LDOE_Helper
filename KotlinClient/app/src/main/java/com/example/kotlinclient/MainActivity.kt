@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.kotlinclient.presentation.AppHeader
 import com.example.kotlinclient.presentation.MyBottomAppBar
 import com.example.kotlinclient.presentation.event.modal.EventViewDetails
+import com.example.kotlinclient.presentation.info.GameContentViewDetails
 import com.example.kotlinclient.presentation.navigation.ApplicationNavHost
 import com.example.kotlinclient.presentation.navigation.Routes
 import com.example.kotlinclient.presentation.navigation.navigateToEvent
@@ -26,6 +27,8 @@ import com.example.kotlinclient.state_management.repository.UserSessionProvider
 import com.example.kotlinclient.state_management.viewModel.DialogType
 import com.example.kotlinclient.state_management.viewModel.EventAction
 import com.example.kotlinclient.state_management.viewModel.EventViewModel
+import com.example.kotlinclient.state_management.viewModel.InfoAction
+import com.example.kotlinclient.state_management.viewModel.InfoViewModel
 import com.example.kotlinclient.state_management.viewModel.SharedAction
 import com.example.kotlinclient.state_management.viewModel.SharedAppViewModel
 import com.example.kotlinclient.ui.theme.KotlinClientTheme
@@ -47,11 +50,12 @@ class MainActivity : ComponentActivity() {
             val userSession: UserSessionProvider = koinInject()
             val sharedAppViewModel: SharedAppViewModel = koinViewModel()
             val eventViewModel: EventViewModel = koinViewModel()
+            val infoViewModel: InfoViewModel = koinViewModel()
 
             val sharedUiState = sharedAppViewModel.uiState.collectAsState()
 
             // Глобальное состояние для userSession
-            CompositionLocalProvider(LocalUserSession provides userSession){
+            CompositionLocalProvider(LocalUserSession provides userSession) {
                 // Основная тема приложения определяющая типографию и Цветовые схемы
                 KotlinClientTheme(sharedUiState.value.darkTheme) {
 
@@ -78,14 +82,46 @@ class MainActivity : ComponentActivity() {
                         }
                     ) { paddingValues ->
 
-                        if(sharedUiState.value.eventDetailsDialogUiState.showDialog) {
-                            EventViewDetails(onAction = { action -> eventViewModel.onAction(action) }, onDismiss = {
-                                eventViewModel.onAction(EventAction.DismissDialog)
-                                sharedAppViewModel.onAction(SharedAction.ChangeDialogVisibility(false,
-                                    DialogType.EventViewDetailsDialog(null)))
-                            }, sharedUiState.value.eventDetailsDialogUiState.initialData)
+                        if (sharedUiState.value.eventDetailsDialogUiState.initialData != null
+                            && sharedUiState.value.eventDetailsDialogUiState.showDialog
+                        ) {
+                            EventViewDetails(
+                                onAction = { action -> eventViewModel.onAction(action) },
+                                onDismiss = {
+                                    eventViewModel.onAction(EventAction.DismissDialog)
+                                    sharedAppViewModel.onAction(
+                                        SharedAction.ChangeDialogVisibility(
+                                            false,
+                                            DialogType.EventViewDetailsDialog(null)
+                                        )
+                                    )
+                                },
+                                sharedUiState.value.eventDetailsDialogUiState.initialData
+                            )
                         }
-                        ApplicationNavHost(navController, startDestination,paddingValues, sharedAppViewModel)
+
+                        if (sharedUiState.value.gameContentDetailsDialogUiState.initialData != null
+                            && sharedUiState.value.gameContentDetailsDialogUiState.showDialog
+                        ) {
+                            GameContentViewDetails(
+                                onDismiss = {
+                                    sharedAppViewModel.onAction(
+                                        SharedAction.ChangeDialogVisibility(
+                                            false,
+                                            DialogType.GameContentViewDetailsDialog(null)
+                                        )
+                                    )
+                                    infoViewModel.onAction(InfoAction.DismissDialog)
+                                },
+                                initialData = sharedUiState.value.gameContentDetailsDialogUiState.initialData
+                            )
+                        }
+                        ApplicationNavHost(
+                            navController,
+                            startDestination,
+                            paddingValues,
+                            sharedAppViewModel
+                        )
                     }
                 }
             }
