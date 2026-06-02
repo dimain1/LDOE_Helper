@@ -42,7 +42,7 @@ val repositoryModule = module {
     }
 
     single<ContentTypeRepository> {
-        ContentTypeRepositoryImpl(get())
+        ContentTypeRepositoryImpl(get(), get<ApiService>())
     }
 
     single<GameContentRepository> {

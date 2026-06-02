@@ -29,7 +29,7 @@ import com.example.kotlinclient.local_cache.entity.UserPinnedGameContentCrossRef
         GameContentTypeCrossRef::class,
         UserPinnedGameContentCrossRef::class
     ],
-    version = 17   // +serverId/syncStatus в Event и EventTemplate; server IDs в GameContent/ContentType
+    version = 18   // +local_image_path в EventTemplate для двухфазной загрузки изображений
 )
 @TypeConverters(MapConverter::class, DateTimeConverter::class)
 abstract class AppDatabase : RoomDatabase() {

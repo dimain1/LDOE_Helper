@@ -45,10 +45,6 @@
             android:enabled="true"
             android:exported="false" />
 
-        <!--
-            Восстанавливает аларм-таймеры после перезагрузки телефона.
-            exported=true обязателен — Intent приходит от системы, не от нашего приложения.
-        -->
         <receiver
             android:name=".presentation.utility.BootReceiver"
             android:enabled="true"

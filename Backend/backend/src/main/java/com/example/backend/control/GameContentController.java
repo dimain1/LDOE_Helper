@@ -1,5 +1,6 @@
 package com.example.backend.control;
 
+import com.example.backend.dto.gameContent.ContentTypeDto;
 import com.example.backend.dto.gameContent.GameContentDto;
 import com.example.backend.dto.gameContent.GameContentRequest;
 import com.example.backend.mediator.GameContentService;
@@ -35,6 +36,26 @@ public class GameContentController {
             @RequestPart GameContentRequest request,
             @RequestPart(required = false) MultipartFile file) {
         return gameContentService.create(request, file);
+    }
+
+    /** Все доступные типы контента. */
+    @GetMapping("/types")
+    public List<ContentTypeDto> getAllTypes() {
+        return gameContentService.getAllTypes();
+    }
+
+    /** Создать тип контента (только ADMIN). */
+    @PostMapping("/types")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ContentTypeDto createType(@RequestBody ContentTypeDto request) {
+        return gameContentService.createType(request.getName());
+    }
+
+    /** Удалить тип контента (только ADMIN). Нельзя удалить "All". */
+    @DeleteMapping("/types/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteType(@PathVariable Long id) {
+        gameContentService.deleteType(id);
     }
 
     /** Закрепить контент для текущего пользователя. */

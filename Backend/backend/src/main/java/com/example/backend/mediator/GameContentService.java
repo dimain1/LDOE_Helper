@@ -11,6 +11,7 @@ import com.example.backend.foundation.repository.ContentTypeRepository;
 import com.example.backend.foundation.repository.GameContentRepository;
 import com.example.backend.foundation.repository.UserPinnedContentRepository;
 import com.example.backend.foundation.repository.UserRepository;
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,6 +41,47 @@ public class GameContentService {
         this.userRepository = userRepository;
     }
 
+    /** Гарантирует существование типа "All" при старте сервера. */
+    @PostConstruct
+    @Transactional
+    public void ensureAllTypeExists() {
+        contentTypeRepository.findByName("All").orElseGet(() -> {
+            ContentType allType = new ContentType();
+            allType.setName("All");
+            return contentTypeRepository.save(allType);
+        });
+    }
+
+    /** Все типы контента. */
+    public List<ContentTypeDto> getAllTypes() {
+        return contentTypeRepository.findAll().stream()
+                .map(t -> new ContentTypeDto(t.getId(), t.getName()))
+                .collect(Collectors.toList());
+    }
+
+    /** Создать новый тип контента. */
+    @Transactional
+    public ContentTypeDto createType(String name) {
+        if (contentTypeRepository.findByName(name).isPresent()) {
+            throw new RuntimeException("Тип с именем '" + name + "' уже существует");
+        }
+        ContentType type = new ContentType();
+        type.setName(name);
+        ContentType saved = contentTypeRepository.save(type);
+        return new ContentTypeDto(saved.getId(), saved.getName());
+    }
+
+    /** Удалить тип контента. Тип "All" защищён от удаления. */
+    @Transactional
+    public void deleteType(Long id) {
+        ContentType type = contentTypeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Тип не найден: " + id));
+        if ("All".equals(type.getName())) {
+            throw new RuntimeException("Тип 'All' нельзя удалить");
+        }
+        contentTypeRepository.deleteById(id);
+    }
+
     /** Весь контент с флагом pinned для текущего пользователя. */
     public List<GameContentDto> getAll(String login) {
         User user = findUser(login);
@@ -60,13 +102,24 @@ public class GameContentService {
         content.setImageUrl(imagePath);
         content.setAttributes(request.getAttributes());
 
+        // Группа "All" всегда присутствует — находим или создаём
+        ContentType allType = contentTypeRepository.findByName("All")
+                .orElseGet(() -> {
+                    ContentType newAll = new ContentType();
+                    newAll.setName("All");
+                    return contentTypeRepository.save(newAll);
+                });
+
+        Set<ContentType> types = new java.util.HashSet<>();
+        types.add(allType);
+
         if (request.getTypeIds() != null) {
-            Set<ContentType> types = request.getTypeIds().stream()
+            request.getTypeIds().stream()
                     .map(id -> contentTypeRepository.findById(id)
                             .orElseThrow(() -> new RuntimeException("Type not found: " + id)))
-                    .collect(Collectors.toSet());
-            content.setTypes(types);
+                    .forEach(types::add);
         }
+        content.setTypes(types);
 
         return toDto(gameContentRepository.save(content), false);
     }

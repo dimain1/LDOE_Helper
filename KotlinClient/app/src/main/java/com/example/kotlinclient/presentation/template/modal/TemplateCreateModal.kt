@@ -213,7 +213,7 @@ fun TemplateCreateModal(
                                 )
                             )
                         },
-                        placeholder = "Длительность",
+                        placeholder = "Длительность в минутах",
                         keyboardOption = KeyboardOptions(
                             keyboardType = KeyboardType.Number
                         ),

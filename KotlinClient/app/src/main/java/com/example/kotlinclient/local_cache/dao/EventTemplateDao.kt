@@ -5,7 +5,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
-import androidx.room.Update
 import com.example.kotlinclient.local_cache.entity.EventTemplateEntity
 import com.example.kotlinclient.local_cache.entity.SyncStatus
 import com.example.kotlinclient.local_cache.entity.relationExtension.EventTemplateWithUser
@@ -13,8 +12,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface EventTemplateDao {
-
-    // ── Queries для UI ────────────────────────────────────────────────────────
 
     @Transaction
     @Query("""
@@ -24,21 +21,39 @@ interface EventTemplateDao {
     """)
     fun getAllEventTemplateWithUser(userId: Long): Flow<List<EventTemplateWithUser>>
 
-    // ── Мутации ───────────────────────────────────────────────────────────────
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun createTemplate(template: EventTemplateEntity): Long
 
-    @Update(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun updateTemplate(template: EventTemplateEntity)
+    @Query("""
+        UPDATE event_template
+        SET name = :name, description = :description, image = :imageUrl,
+            local_image_path = :localImagePath, duration = :duration, sync_status = 'PENDING_UPDATE'
+        WHERE id = :id
+    """)
+    suspend fun updateTemplate(id: Long, name: String, description: String?, imageUrl: String?, localImagePath: String?, duration: Long)
+
+    @Query("SELECT server_id FROM event_template WHERE id = :localId LIMIT 1")
+    suspend fun getServerIdByLocalId(localId: Long): Long?
+
+    /** Шаблоны, у которых ещё не загружено изображение на сервер. */
+    @Query("""
+        SELECT * FROM event_template
+        WHERE sync_status = 'SYNCED'
+          AND local_image_path IS NOT NULL
+          AND server_id IS NOT NULL
+          AND creator_id = :userId
+    """)
+    suspend fun getSyncedWithLocalImage(userId: Long): List<EventTemplateEntity>
+
+    /** Вызывается после успешной загрузки изображения: фиксирует серверный URL и очищает локальный путь. */
+    @Query("UPDATE event_template SET image = :imageUrl, local_image_path = NULL WHERE id = :localId")
+    suspend fun confirmImageUploaded(localId: Long, imageUrl: String?)
 
     @Query("UPDATE event_template SET sync_status = 'PENDING_DELETE' WHERE id = :localId AND creator_id = :userId")
     suspend fun markDeleted(userId: Long, localId: Long)
 
     @Query("DELETE FROM event_template WHERE id = :localId")
     suspend fun deleteById(localId: Long)
-
-    // ── Sync helpers ──────────────────────────────────────────────────────────
 
     @Query("UPDATE event_template SET server_id = :serverId, sync_status = 'SYNCED' WHERE id = :localId")
     suspend fun confirmCreated(localId: Long, serverId: Long)
@@ -61,7 +76,7 @@ interface EventTemplateDao {
     @Query("""
         UPDATE event_template
         SET name = :name, description = :description, image = :imageUrl,
-            duration = :duration, sync_status = 'SYNCED'
+            local_image_path = NULL, duration = :duration, sync_status = 'SYNCED'
         WHERE server_id = :serverId AND creator_id = :userId
     """)
     suspend fun updateByServerId(

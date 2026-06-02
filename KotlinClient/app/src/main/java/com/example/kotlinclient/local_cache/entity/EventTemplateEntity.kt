@@ -40,8 +40,13 @@ data class EventTemplateEntity(
     val name: String,
     val description: String?,
 
+    /** Серверный URL изображения (/images/xxx.jpg). Null до успешной загрузки на сервер. */
     @ColumnInfo(name = "image")
     val imageUrl: String?,
+
+    /** Абсолютный путь к локальному файлу. Null после успешной загрузки на сервер. */
+    @ColumnInfo(name = "local_image_path")
+    val localImagePath: String? = null,
 
     val duration: Long
 )

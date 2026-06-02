@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 val LinearGradientStartColor = Color(0xF0FF0022) // Цвет начала градиента
 val linearGradientEndColor = Color(0xFF500005) // Цвет конца градиента
 val ServiceFloatingButtonColor = Color(0xFCe1333d) // Цвет
+val ServiceStopButtonColor = Color(0xFFDC2626)    // Цвет кнопки "Закрыть оверлей"
 
 val NotificationIconColor = Color(0xFFFFD329)
 

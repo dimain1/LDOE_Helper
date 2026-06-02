@@ -1,8 +1,15 @@
 package com.example.kotlinclient.state_management.viewModel
 
+import android.app.Application
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import com.example.kotlinclient.sync.SyncWorker
 import com.example.kotlinclient.state_management.entity.User
 import com.example.kotlinclient.state_management.repository.UserSessionProvider
 import com.example.kotlinclient.state_management.repository.interfaces.AuthRepository
@@ -103,8 +110,22 @@ class SettingsViewModel(
     private val sharedPreferencesRepository: SharedPreferencesRepository,
     private val session: UserSessionProvider,
     private val userRepository: UserRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val application: Application
 ) : ViewModel() {
+
+    private fun triggerSync() {
+        val request = OneTimeWorkRequestBuilder<SyncWorker>()
+            .setConstraints(
+                Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
+            )
+            .build()
+        WorkManager.getInstance(application).enqueueUniqueWork(
+            SyncWorker.WORK_NAME_ONE_SHOT,
+            ExistingWorkPolicy.REPLACE,
+            request
+        )
+    }
 
     // ── Events ────────────────────────────────────────────────────────────────
 
@@ -173,6 +194,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             authRepository.login(login, password)
                 .onSuccess {
+                    triggerSync()
                     _notificationEvent.send(SettingsFormNotificationEvent.SuccessAuth)
                     dismissDialog()
                 }
@@ -208,6 +230,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             authRepository.register(login, email, password)
                 .onSuccess {
+                    triggerSync()
                     _notificationEvent.send(SettingsFormNotificationEvent.SuccessRegistration)
                     dismissDialog()
                 }

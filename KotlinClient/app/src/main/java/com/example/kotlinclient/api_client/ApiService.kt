@@ -73,6 +73,15 @@ interface ApiService {
     @GET("content")
     suspend fun getContent(): List<GameContentDto>
 
+    @GET("content/types")
+    suspend fun getContentTypes(): List<ContentTypeDto>
+
+    @POST("content/types")
+    suspend fun createContentType(@Body request: ContentTypeDto): ContentTypeDto
+
+    @DELETE("content/types/{id}")
+    suspend fun deleteContentType(@Path("id") id: Long)
+
     @POST("content/{id}/pin")
     suspend fun pinContent(@Path("id") id: Long)
 

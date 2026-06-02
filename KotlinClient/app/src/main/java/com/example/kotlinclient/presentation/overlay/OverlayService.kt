@@ -54,11 +54,18 @@ import com.example.kotlinclient.state_management.repository.interfaces.EventRepo
 import com.example.kotlinclient.state_management.repository.interfaces.EventTemplateRepository
 import com.example.kotlinclient.ui.theme.KotlinClientTheme
 import com.example.kotlinclient.ui.theme.ServiceFloatingButtonColor
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.math.roundToInt
 
 class OverlayService : LifecycleService(), KoinComponent, SavedStateRegistryOwner {
+
+    companion object {
+        private val _isRunning = MutableStateFlow(false)
+        val isRunning: StateFlow<Boolean> = _isRunning
+    }
 
     // ── SavedState ────────────────────────────────────────────────────────────
 
@@ -92,6 +99,7 @@ class OverlayService : LifecycleService(), KoinComponent, SavedStateRegistryOwne
         startForeground(1, createNotification())
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         controller = OverlayController(repository, templateRepository, alarmScheduler, session)
+        _isRunning.value = true
         showFloatingButton()
     }
 
@@ -101,6 +109,7 @@ class OverlayService : LifecycleService(), KoinComponent, SavedStateRegistryOwne
     }
 
     override fun onDestroy() {
+        _isRunning.value = false
         if (::composeView.isInitialized && composeView.parent != null)
             windowManager.removeView(composeView)
         overlayView?.let { if (it.parent != null) windowManager.removeView(it) }

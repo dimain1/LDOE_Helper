@@ -49,6 +49,7 @@ class App : Application() {
         }
 
         schedulePeriodSync()
+        triggerOneTimeSync()   // немедленный sync при старте, если сеть уже подключена
         registerNetworkCallback()
     }
 

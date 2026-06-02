@@ -14,8 +14,11 @@ import com.example.kotlinclient.state_management.repository.interfaces.EventTemp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import com.google.gson.Gson
+import java.io.File
 
 class EventTemplateRepositoryImpl(
     database: AppDatabase,
@@ -26,7 +29,34 @@ class EventTemplateRepositoryImpl(
     private val templateDao = database.EventTemplateDao()
     private val gson = Gson()
 
-    // ── UI ────────────────────────────────────────────────────────────────────
+    private fun buildImagePart(localPath: String?): MultipartBody.Part? {
+        if (localPath.isNullOrBlank()) return null
+        val file = File(localPath)
+        if (!file.exists()) return null
+        val requestFile = file.asRequestBody("image/*".toMediaType())
+        return MultipartBody.Part.createFormData("image", file.name, requestFile)
+    }
+
+    private suspend fun uploadImageIfPresent(
+        localId: Long,
+        serverId: Long,
+        localImagePath: String?,
+        name: String,
+        description: String?,
+        duration: Long
+    ) {
+        val imagePart = buildImagePart(localImagePath) ?: run {
+            if (localImagePath != null) templateDao.confirmImageUploaded(localId, null)
+            return
+        }
+        try {
+            val body = gson.toJson(
+                EventTemplateUpdateRequest(name, description, duration)
+            ).toRequestBody("application/json".toMediaType())
+            val dto = api.updateTemplate(serverId, body, imagePart)
+            templateDao.confirmImageUploaded(localId, dto.imageUrl)
+        } catch (_: Exception) { }
+    }
 
     override fun getAllTemplateWithUser(): Flow<List<EventTemplate>> =
         session.pipe { id ->
@@ -34,7 +64,6 @@ class EventTemplateRepositoryImpl(
                 .map { list -> list.map { it.toModel() } }
         }
 
-    // ── Мутации ───────────────────────────────────────────────────────────────
 
     override suspend fun createTemplate(template: EventTemplate) {
         val userId = session.requireId()
@@ -53,20 +82,24 @@ class EventTemplateRepositoryImpl(
                 )
             ).toRequestBody("application/json".toMediaType())
 
-            val dto = api.createTemplate(requestBody, null)  // image upload отдельно
+            // Phase 1: отправляем данные без картинки — шаблон сразу появляется в UI
+            val dto = api.createTemplate(requestBody, null)
             templateDao.confirmCreated(localId, dto.id)
+
+            // Phase 2: загружаем картинку отдельно (не блокирует появление шаблона)
+            uploadImageIfPresent(localId, dto.id, entity.localImagePath, entity.name, entity.description, entity.duration)
         } catch (_: Exception) { }
     }
 
     override suspend fun updateTemplate(template: EventTemplate) {
         val userId = session.requireId()
-        val entity = template.toEntity().copy(
-            creatorId = userId,
-            syncStatus = SyncStatus.PENDING_UPDATE
-        )
-        templateDao.updateTemplate(entity)
+        val entity = template.toEntity().copy(creatorId = userId)
 
-        val serverId = entity.serverId ?: return
+        // Сохраняем изменения локально, не трогая server_id в БД
+        templateDao.updateTemplate(entity.id!!, entity.name, entity.description, entity.imageUrl, entity.localImagePath, entity.duration)
+
+        // Получаем serverId из БД (toEntity() его не несёт)
+        val serverId = templateDao.getServerIdByLocalId(entity.id!!) ?: return
         try {
             val requestBody = gson.toJson(
                 EventTemplateUpdateRequest(
@@ -76,8 +109,12 @@ class EventTemplateRepositoryImpl(
                 )
             ).toRequestBody("application/json".toMediaType())
 
+            // Phase 1: данные без картинки
             api.updateTemplate(serverId, requestBody, null)
             templateDao.confirmUpdated(entity.id!!)
+
+            // Phase 2: картинка отдельно
+            uploadImageIfPresent(entity.id!!, serverId, entity.localImagePath, entity.name, entity.description, entity.duration)
         } catch (_: Exception) { }
     }
 
@@ -95,11 +132,10 @@ class EventTemplateRepositoryImpl(
             }
     }
 
-    // ── Синхронизация ─────────────────────────────────────────────────────────
-
     override suspend fun pushPendingChanges() {
         val userId = session.requireId()
 
+        // Phase 1: отправляем все данные без картинок — шаблоны появляются в UI немедленно
         templateDao.getPendingCreate(userId).forEach { entity ->
             try {
                 val body = gson.toJson(
@@ -119,6 +155,11 @@ class EventTemplateRepositoryImpl(
                 api.updateTemplate(serverId, body, null)
                 templateDao.confirmUpdated(entity.id!!)
             } catch (_: Exception) { }
+        }
+
+        // Phase 2: загружаем картинки для всех SYNCED-шаблонов с ожидающим локальным файлом
+        templateDao.getSyncedWithLocalImage(userId).forEach { entity ->
+            uploadImageIfPresent(entity.id!!, entity.serverId!!, entity.localImagePath, entity.name, entity.description, entity.duration)
         }
 
         templateDao.getPendingDelete(userId).forEach { entity ->

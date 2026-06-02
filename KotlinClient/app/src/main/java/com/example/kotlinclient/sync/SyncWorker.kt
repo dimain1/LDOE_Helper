@@ -6,6 +6,9 @@ import androidx.work.WorkerParameters
 import com.example.kotlinclient.state_management.repository.interfaces.EventRepository
 import com.example.kotlinclient.state_management.repository.interfaces.EventTemplateRepository
 import com.example.kotlinclient.state_management.repository.interfaces.GameContentRepository
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -27,14 +30,16 @@ class SyncWorker(
     private val gameContentRepository: GameContentRepository by inject()
 
     override suspend fun doWork(): Result = try {
-        // ── Push: локальные изменения → сервер ───────────────────────────────
+        // Push: порядок важен — шаблоны раньше событий (события ссылаются на server_id шаблонов)
         templateRepository.pushPendingChanges()
         eventRepository.pushPendingChanges()
 
-        // ── Pull: сервер → Room ───────────────────────────────────────────────
-        templateRepository.syncFromServer()
-        eventRepository.syncFromServer()
-        gameContentRepository.syncFromServer()
+        // Pull: независимые источники параллельно; supervisorScope — сбой одного не отменяет другие
+        supervisorScope {
+            launch { runCatching { templateRepository.syncFromServer() } }
+            launch { runCatching { eventRepository.syncFromServer() } }
+            launch { runCatching { gameContentRepository.syncFromServer() } }
+        }
 
         Result.success()
     } catch (e: Exception) {

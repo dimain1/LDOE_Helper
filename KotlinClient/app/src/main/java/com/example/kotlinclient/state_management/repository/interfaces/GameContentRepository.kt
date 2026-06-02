@@ -5,19 +5,15 @@ import kotlinx.coroutines.flow.Flow
 
 interface GameContentRepository {
 
-    // ── UI (Room-first) ───────────────────────────────────────────────────────
 
     fun getPinnedContent(): Flow<List<GameContent>>
 
     fun getFilteredContent(query: String, typeId: Long?): Flow<List<GameContent>>
 
-    // ── Мутации ───────────────────────────────────────────────────────────────
 
     suspend fun pinContent(contentId: Long)
 
     suspend fun unpinContent(contentId: Long)
-
-    // ── Синхронизация ─────────────────────────────────────────────────────────
 
     /**
      * Загружает весь контент с сервера, выполняет upsert в Room.

@@ -13,7 +13,6 @@ import com.example.kotlinclient.state_management.repository.interfaces.EventRepo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.Instant
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 class EventRepositoryImpl(
@@ -23,9 +22,8 @@ class EventRepositoryImpl(
 ) : EventRepository {
 
     private val eventDao = database.EventDao()
+    private val templateDao = database.EventTemplateDao()
     private val fmt = DateTimeFormatter.ISO_INSTANT
-
-    // ── UI ────────────────────────────────────────────────────────────────────
 
     override fun getAllEventsUpcomingWithTemplate(): Flow<List<Event>> =
         session.pipe { id ->
@@ -39,8 +37,6 @@ class EventRepositoryImpl(
                 .map { list -> list.map { it.toModel() } }
         }
 
-    // ── Мутации (optimistic: сначала Room, потом сервер) ─────────────────────
-
     override suspend fun addEvent(event: Event): Long {
         val userId = session.requireId()
         val entity = event.toEntity().copy(
@@ -50,7 +46,8 @@ class EventRepositoryImpl(
         val localId = eventDao.addEvent(entity)
 
         try {
-            val dto = api.createEvent(entity.toCreateRequest())
+            val templateServerId = entity.templateId?.let { templateDao.getServerIdByLocalId(it) }
+            val dto = api.createEvent(entity.toCreateRequest(templateServerId))
             eventDao.confirmCreated(localId, dto.id)
         } catch (_: Exception) {
             // Остаётся PENDING_CREATE — SyncWorker отправит при следующем подключении
@@ -60,13 +57,20 @@ class EventRepositoryImpl(
 
     override suspend fun updateEvent(event: Event) {
         val userId = session.requireId()
-        val entity = event.toEntity().copy(
-            userId = userId,
-            syncStatus = SyncStatus.PENDING_UPDATE
-        )
-        eventDao.updateEvent(entity)
+        val entity = event.toEntity().copy(userId = userId)
 
-        val serverId = entity.serverId ?: return
+        // Сохраняем локально, не трогая server_id в БД
+        eventDao.updateEvent(
+            id = entity.id!!,
+            name = entity.name,
+            description = entity.description,
+            imageUrl = entity.imageUrl,
+            startTime = entity.startTime.toEpochMilli(),
+            endTime = entity.endTime.toEpochMilli()
+        )
+
+        // Получаем serverId из БД (toEntity() его не несёт)
+        val serverId = eventDao.getServerIdByLocalId(entity.id!!) ?: return
         try {
             api.updateEvent(serverId, entity.toUpdateRequest())
             eventDao.confirmUpdated(entity.id!!)
@@ -89,15 +93,14 @@ class EventRepositoryImpl(
         }
     }
 
-    // ── Синхронизация ─────────────────────────────────────────────────────────
-
     override suspend fun pushPendingChanges() {
         val userId = session.requireId()
 
         // CREATE
         eventDao.getPendingCreate(userId).forEach { entity ->
             try {
-                val dto = api.createEvent(entity.toCreateRequest())
+                val templateServerId = entity.templateId?.let { templateDao.getServerIdByLocalId(it) }
+                val dto = api.createEvent(entity.toCreateRequest(templateServerId))
                 eventDao.confirmCreated(entity.id!!, dto.id)
             } catch (_: Exception) { }
         }
@@ -129,9 +132,8 @@ class EventRepositoryImpl(
             val localId = eventDao.getLocalIdByServerId(dto.id, userId)
             if (localId == null) {
                 // Новое событие с сервера — вставляем
-                val templateLocalId = dto.templateId?.let { serverId ->
-                    // templateId из сервера может отличаться от localId — ищем по serverId
-                    null  // заглушка; реальный маппинг делается в EventWithUserAndTemplate
+                val templateLocalId = dto.templateId?.let { templateServerId ->
+                    templateDao.getLocalIdByServerId(templateServerId, userId)
                 }
                 eventDao.addEvent(
                     com.example.kotlinclient.local_cache.entity.EventEntity(
@@ -161,11 +163,9 @@ class EventRepositoryImpl(
         }
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
-    private fun com.example.kotlinclient.local_cache.entity.EventEntity.toCreateRequest() =
+    private fun com.example.kotlinclient.local_cache.entity.EventEntity.toCreateRequest(templateServerId: Long?) =
         EventCreateRequest(
-            templateId = serverId,   // NOTE: это local templateId → нужно маппить в serverId шаблона
+            templateId = templateServerId,
             name = name,
             description = description,
             imageUrl = imageUrl,

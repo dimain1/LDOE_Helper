@@ -30,7 +30,8 @@ class GameContentRepositoryImpl(
 
     override fun getFilteredContent(query: String, typeId: Long?): Flow<List<GameContent>> =
         session.pipe { id ->
-            gameContentDao.getFilteredContent(id, query, typeId)
+            // 0L — "ничего не выбрано" (начальное состояние), передаём null → DAO показывает всё
+            gameContentDao.getFilteredContent(id, query, typeId?.takeIf { it != 0L })
                 .map { list -> list.map { it.toModel() } }
         }
 
@@ -52,6 +53,13 @@ class GameContentRepositoryImpl(
 
     override suspend fun syncFromServer() {
         val userId = session.requireId()
+
+        // 0. Синхронизируем все типы независимо от контента (гарантирует наличие "All")
+        try {
+            val allTypes = api.getContentTypes()
+            gameContentDao.upsertTypes(allTypes.map { ContentTypeEntity(id = it.id, name = it.name) })
+        } catch (_: Exception) { }
+
         val dtos = api.getContent()
 
         // 1. Удаляем контент которого нет на сервере

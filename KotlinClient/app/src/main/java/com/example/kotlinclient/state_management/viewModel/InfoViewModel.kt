@@ -37,12 +37,13 @@ sealed interface InfoAction{
     data class UpdateContentPin(val id: Long, val pinStatus: Boolean) : InfoAction
     data class OpenDialog(val dialog: InfoDialogType): InfoAction
     data object DismissDialog : InfoAction
+    data object Refresh : InfoAction
 }
 
 // endregion
 
 class InfoViewModel(
-    contentTypeRepository: ContentTypeRepository,
+    private val contentTypeRepository: ContentTypeRepository,
     val gameContentRepository: GameContentRepository
 ): ViewModel() {
 
@@ -56,10 +57,11 @@ class InfoViewModel(
 
     // endregion
 
-    init{
-
+    init {
         contentTypeRepository.getAllTypes().onEach { types ->
-            _uiState.update { it.copy(types=types) }
+            // "All" — синтетическая категория с id=0L, всегда первая, не зависит от сервера
+            val allCategory = ContentType(id = 0L, name = "All")
+            _uiState.update { it.copy(types = listOf(allCategory) + types.filter { it.name != "All" }) }
         }.launchIn(viewModelScope)
 
         combine(_searchQuery, _selectedType)
@@ -90,6 +92,7 @@ class InfoViewModel(
             is InfoAction.UpdateContentPin -> updateContentPin(action.id,action.pinStatus)
             is InfoAction.OpenDialog -> openDialog(action.dialog)
             is InfoAction.DismissDialog -> dismissDialog()
+            is InfoAction.Refresh -> syncContent()
         }
     }
 
@@ -115,6 +118,12 @@ class InfoViewModel(
             else{
                 gameContentRepository.unpinContent(id)
             }
+        }
+    }
+
+    private fun syncContent() {
+        viewModelScope.launch {
+            try { gameContentRepository.syncFromServer() } catch (_: Exception) { }
         }
     }
 

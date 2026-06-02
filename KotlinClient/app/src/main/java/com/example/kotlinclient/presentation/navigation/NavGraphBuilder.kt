@@ -85,6 +85,11 @@ fun NavGraphBuilder.infoScreen(
 ) {
     composable(route = Routes.InfoPage.route) {
 
+        // Sync при каждом входе на экран (LaunchedEffect пересоздаётся при навигации)
+        LaunchedEffect(Unit) {
+            infoViewModel.onAction(InfoAction.Refresh)
+        }
+
         val uiState = infoViewModel.uiState.collectAsState()
 
         InfoScreen(

@@ -7,7 +7,7 @@ data class EventDto(
     val name: String?,
     val description: String?,
     val imageUrl: String?,
-    val startTime: String,   // ISO-8601 Instant → "2026-06-01T10:00:00Z"
+    val startTime: String,
     val endTime: String
 )
 

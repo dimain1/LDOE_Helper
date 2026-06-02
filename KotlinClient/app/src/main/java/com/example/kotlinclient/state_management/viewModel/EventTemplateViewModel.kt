@@ -174,7 +174,7 @@ class EventTemplateViewModel(
                     name = state.name.text.toString().trim(),
                     description = state.description.text.toString().trim(),
                     image = state.image,
-                    duration = state.duration.text.toString().trim().toLong()
+                    duration = state.duration.text.toString().trim().toLong() * 1_000 * 60
                 )
                 if (state.id == null) {
                     eventTemplateRepository.createTemplate(template)
@@ -201,7 +201,7 @@ class EventTemplateViewModel(
         _formUiState.update { it.copy(id = template.id, image = template.image, errors = EventTemplateFormErrors()) }
         _formUiState.value.name.edit { replace(0, length, template.name) }
         _formUiState.value.description.edit { replace(0, length, template.description ?: "") }
-        _formUiState.value.duration.edit { replace(0, length, template.duration.toString()) }
+        _formUiState.value.duration.edit { replace(0, length, (template.duration / 60 / 1000).toString()) }
     }
 
     // endregion

@@ -2,6 +2,7 @@ package com.example.backend.mediator;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -10,14 +11,18 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private static final String SECRET =
-            "my_super_secret_key_which_must_be_at_least_32_chars_long";
+    private final SecretKey key;
+    private final long ACCESS_EXPIRATION;
+    private final long REFRESH_EXPIRATION;
 
-    private final SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes());
-
-    private final long ACCESS_EXPIRATION = 1000 * 60 * 20; // 20 minutes;
-
-    private final long REFRESH_EXPIRATION = 1000 * 60 * 60 * 24 * 7; // 7 days;
+    public JwtService(
+            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.access-expiration-ms}") long accessExpiration,
+            @Value("${jwt.refresh-expiration-ms}") long refreshExpiration) {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes());
+        this.ACCESS_EXPIRATION = accessExpiration;
+        this.REFRESH_EXPIRATION = refreshExpiration;
+    }
 
 
 

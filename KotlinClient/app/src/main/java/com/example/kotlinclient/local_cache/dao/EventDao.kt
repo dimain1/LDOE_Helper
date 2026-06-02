@@ -5,7 +5,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
-import androidx.room.Update
 import com.example.kotlinclient.local_cache.entity.EventEntity
 import com.example.kotlinclient.local_cache.entity.SyncStatus
 import com.example.kotlinclient.local_cache.entity.relationExtension.EventWithUserAndTemplate
@@ -41,8 +40,17 @@ interface EventDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addEvent(event: EventEntity): Long
 
-    @Update(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun updateEvent(event: EventEntity)
+    @Query("""
+        UPDATE events
+        SET name = :name, description = :description, image = :imageUrl,
+            start_time = :startTime, end_time = :endTime,
+            sync_status = 'PENDING_UPDATE'
+        WHERE id = :id
+    """)
+    suspend fun updateEvent(id: Long, name: String?, description: String?, imageUrl: String?, startTime: Long, endTime: Long)
+
+    @Query("SELECT server_id FROM events WHERE id = :localId LIMIT 1")
+    suspend fun getServerIdByLocalId(localId: Long): Long?
 
     @Query("UPDATE events SET sync_status = 'PENDING_DELETE' WHERE id = :localId AND user_id = :userId")
     suspend fun markDeleted(userId: Long, localId: Long)

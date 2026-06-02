@@ -7,6 +7,7 @@ import android.os.Build
 import android.provider.Settings
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -53,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kotlinclient.R
 import com.example.kotlinclient.presentation.overlay.OverlayService
+import com.example.kotlinclient.ui.theme.ServiceStopButtonColor
 import com.example.kotlinclient.presentation.utility.uiComponent.LocalImage
 import com.example.kotlinclient.presentation.utility.uiComponent.AnimatedTimer
 import com.example.kotlinclient.state_management.entity.Event
@@ -80,6 +82,7 @@ fun HomeScreen(
 
     val scrollState = rememberScrollState()
     val context: Context = LocalContext.current
+    val isOverlayRunning by OverlayService.isRunning.collectAsState()
 
     var showModalEvent by remember { mutableStateOf(false) }
 
@@ -175,39 +178,43 @@ fun HomeScreen(
                 // Нижняя часть с кнопкой
                 Button(
                     onClick = {
-                        launchOverlay(context)
+                        if (isOverlayRunning) {
+                            context.stopService(Intent(context, OverlayService::class.java))
+                        } else {
+                            launchOverlay(context)
+                        }
                     },
                     shape = RoundedCornerShape(15),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White,
-                        contentColor = colorScheme.tertiary
+                        contentColor = if (isOverlayRunning) ServiceStopButtonColor else colorScheme.tertiary
                     ),
-                    modifier = Modifier
-                        .height(50.dp)
+                    modifier = Modifier.height(50.dp)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier
-                            .fillMaxSize()
-
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        // Иконка в кнопке
                         Image(
                             modifier = Modifier.size(20.dp),
-                            painter = painterResource(R.drawable.service_start_button),
-                            contentDescription = "Запустить",
-                            colorFilter = ColorFilter.tint(colorScheme.tertiary)
+                            painter = painterResource(
+                                if (isOverlayRunning) R.drawable.service_stop_button
+                                else R.drawable.service_start_button
+                            ),
+                            contentDescription = if (isOverlayRunning) "Закрыть" else "Запустить",
+                            colorFilter = ColorFilter.tint(
+                                if (isOverlayRunning) ServiceStopButtonColor else colorScheme.tertiary
+                            )
                         )
                         Spacer(Modifier.width(10.dp))
-                        // Текст на кнопке
                         Text(
-                            text = "Запустить оверлей",
+                            text = if (isOverlayRunning) "Закрыть оверлей" else "Запустить оверлей",
                             style = TextStyle(
                                 fontSize = Typography.bodyLarge.fontSize,
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = colorScheme.tertiary
+                            color = if (isOverlayRunning) ServiceStopButtonColor else colorScheme.tertiary
                         )
                     }
                 }

@@ -7,5 +7,7 @@ interface ContentTypeRepository {
 
     fun getAllTypes(): Flow<List<ContentType>>
 
+    suspend fun createType(name: String): ContentType
 
+    suspend fun deleteType(id: Long)
 }
