@@ -7,23 +7,69 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.example.kotlinclient.local_cache.entity.EventTemplateEntity
+import com.example.kotlinclient.local_cache.entity.SyncStatus
 import com.example.kotlinclient.local_cache.entity.relationExtension.EventTemplateWithUser
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface EventTemplateDao {
 
+    // ── Queries для UI ────────────────────────────────────────────────────────
+
     @Transaction
-    @Query("SELECT * FROM event_template WHERE creator_id = :userId")
+    @Query("""
+        SELECT * FROM event_template
+        WHERE creator_id = :userId
+          AND sync_status != 'PENDING_DELETE'
+    """)
     fun getAllEventTemplateWithUser(userId: Long): Flow<List<EventTemplateWithUser>>
 
-    @Query("DELETE FROM event_template WHERE id = :id AND creator_id = :userId")
-    fun deleteTemplateById(userId: Long,id: Long)
+    // ── Мутации ───────────────────────────────────────────────────────────────
 
-    @Insert(EventTemplateEntity::class, onConflict = OnConflictStrategy.REPLACE)
-    fun createTemplate(template: EventTemplateEntity)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun createTemplate(template: EventTemplateEntity): Long
 
-    @Update(EventTemplateEntity::class, onConflict = OnConflictStrategy.REPLACE)
-    fun updateTemplate(template: EventTemplateEntity)
+    @Update(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun updateTemplate(template: EventTemplateEntity)
 
+    @Query("UPDATE event_template SET sync_status = 'PENDING_DELETE' WHERE id = :localId AND creator_id = :userId")
+    suspend fun markDeleted(userId: Long, localId: Long)
+
+    @Query("DELETE FROM event_template WHERE id = :localId")
+    suspend fun deleteById(localId: Long)
+
+    // ── Sync helpers ──────────────────────────────────────────────────────────
+
+    @Query("UPDATE event_template SET server_id = :serverId, sync_status = 'SYNCED' WHERE id = :localId")
+    suspend fun confirmCreated(localId: Long, serverId: Long)
+
+    @Query("UPDATE event_template SET sync_status = 'SYNCED' WHERE id = :localId")
+    suspend fun confirmUpdated(localId: Long)
+
+    @Query("SELECT * FROM event_template WHERE sync_status = 'PENDING_CREATE' AND creator_id = :userId")
+    suspend fun getPendingCreate(userId: Long): List<EventTemplateEntity>
+
+    @Query("SELECT * FROM event_template WHERE sync_status = 'PENDING_UPDATE' AND creator_id = :userId")
+    suspend fun getPendingUpdate(userId: Long): List<EventTemplateEntity>
+
+    @Query("SELECT * FROM event_template WHERE sync_status = 'PENDING_DELETE' AND creator_id = :userId AND server_id IS NOT NULL")
+    suspend fun getPendingDelete(userId: Long): List<EventTemplateEntity>
+
+    @Query("SELECT id FROM event_template WHERE server_id = :serverId AND creator_id = :userId LIMIT 1")
+    suspend fun getLocalIdByServerId(serverId: Long, userId: Long): Long?
+
+    @Query("""
+        UPDATE event_template
+        SET name = :name, description = :description, image = :imageUrl,
+            duration = :duration, sync_status = 'SYNCED'
+        WHERE server_id = :serverId AND creator_id = :userId
+    """)
+    suspend fun updateByServerId(
+        serverId: Long,
+        userId: Long,
+        name: String,
+        description: String?,
+        imageUrl: String?,
+        duration: Long
+    )
 }

@@ -16,6 +16,10 @@ kspVersion = "2.3.6"
 gsonVersion = "2.14.0"
 koinAndroid = "4.2.0"
 coil = "3.0.4"
+retrofit = "2.11.0"
+okhttp = "4.12.0"
+securityCrypto = "1.1.0-alpha06"
+workManager = "2.10.1"
 
 
 [libraries]
@@ -46,6 +50,12 @@ koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinAndr
 koin-Compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinAndroid" }
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
+retrofit-core = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+okhttp-core = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
+security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
+work-manager = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }
 
 
 [plugins]

@@ -49,7 +49,7 @@ fun TemplateList(
                 {
                     Image(
                         painterResource(R.drawable.pencil),
-                        contentDescription = "Edit Event",
+                        contentDescription = "Редактировать шаблон",
                         modifier = Modifier
                             .size(16.dp)
                             .clickable(onClick = {
@@ -73,7 +73,7 @@ fun TemplateList(
 
                     Image(
                         painterResource(R.drawable.trash_event),
-                        contentDescription = "Delete Event",
+                        contentDescription = "Удалить шаблон",
                         modifier = Modifier
                             .size(16.dp)
                             .clickable(onClick = {

@@ -120,8 +120,7 @@ fun InfoScreen(
                         ) {
                             if (textField.text.isEmpty()) {
                                 Text(
-                                    "Search entities..." +
-                                            "",
+                                    "Поиск...",
                                     style = Typography.bodyLarge,
                                     color = colorScheme.secondary
                                 )

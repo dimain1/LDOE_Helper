@@ -159,7 +159,7 @@ fun TemplateCreateModal(
                     } else {
                         Image(
                             painterResource(R.drawable.pencil),
-                            contentDescription = "Choose image",
+                            contentDescription = "Выбрать изображение",
                             Modifier
                                 .size(48.dp)
                                 .clip(RoundedCornerShape(10.dp))

@@ -56,7 +56,7 @@ fun EventTemplatePicker(
                     ) {
                         Text("Выбери шаблон")
                         Icon(
-                            Icons.Default.Close, "Close", modifier = Modifier
+                            Icons.Default.Close, "Закрыть", modifier = Modifier
                                 .size(32.dp)
                                 .clickable(onClick = onDismiss)
                         )

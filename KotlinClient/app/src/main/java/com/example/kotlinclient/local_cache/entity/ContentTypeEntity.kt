@@ -7,13 +7,13 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "content_type",
-    indices = [ Index(value= ["name"], unique = true) ]
+    indices = [Index(value = ["name"], unique = true)]
 )
 data class ContentTypeEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id:Long,
+    /** Используем server ID напрямую — типы только с сервера. */
+    @PrimaryKey
+    val id: Long,
 
     @ColumnInfo
     val name: String
-
 )

@@ -8,11 +8,11 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "event_template",
-    indices =
-        [
+    indices = [
         Index(value = ["name", "creator_id"], unique = true),
-        Index(value = ["creator_id"])
-        ],
+        Index(value = ["creator_id"]),
+        Index(value = ["server_id"])
+    ],
     foreignKeys = [
         ForeignKey(
             entity = UserEntity::class,
@@ -23,16 +23,25 @@ import androidx.room.PrimaryKey
     ]
 )
 data class EventTemplateEntity(
-
     @PrimaryKey(autoGenerate = true)
     val id: Long? = null,
 
-    @ColumnInfo(name= "creator_id")
+    /** ID на сервере. null — шаблон ещё не синхронизирован. */
+    @ColumnInfo(name = "server_id")
+    val serverId: Long? = null,
+
+    /** Статус синхронизации. */
+    @ColumnInfo(name = "sync_status")
+    val syncStatus: SyncStatus = SyncStatus.PENDING_CREATE,
+
+    @ColumnInfo(name = "creator_id")
     val creatorId: Long?,
+
     val name: String,
     val description: String?,
-    @ColumnInfo(name="image")
-    val imageUrl: String?,
-    val duration: Long
 
+    @ColumnInfo(name = "image")
+    val imageUrl: String?,
+
+    val duration: Long
 )

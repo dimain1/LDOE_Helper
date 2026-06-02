@@ -5,11 +5,21 @@ import kotlinx.coroutines.flow.Flow
 
 interface EventTemplateRepository {
 
-    fun getAllTemplateWithUser() : Flow<List<EventTemplate>>
+    // ── UI (Room-first) ───────────────────────────────────────────────────────
 
-    suspend fun deleteTemplateById(id: Long)
+    fun getAllTemplateWithUser(): Flow<List<EventTemplate>>
+
+    // ── Мутации ───────────────────────────────────────────────────────────────
 
     suspend fun createTemplate(template: EventTemplate)
 
     suspend fun updateTemplate(template: EventTemplate)
+
+    suspend fun deleteTemplateById(id: Long)
+
+    // ── Синхронизация ─────────────────────────────────────────────────────────
+
+    suspend fun pushPendingChanges()
+
+    suspend fun syncFromServer()
 }

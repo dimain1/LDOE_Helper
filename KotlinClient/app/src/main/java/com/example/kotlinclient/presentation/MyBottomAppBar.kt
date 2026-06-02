@@ -26,10 +26,9 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.kotlinclient.R
+import com.example.kotlinclient.presentation.navigation.Routes
 import com.example.kotlinclient.ui.theme.Typography
 
-
-//Нижняя часть приложения(Bottom App Bar)
 @Composable
 fun MyBottomAppBar(
     currentRoute: String?,
@@ -43,62 +42,56 @@ fun MyBottomAppBar(
         containerColor = colorScheme.primaryContainer,
         modifier = Modifier
             .fillMaxWidth()
-            .navigationBarsPadding() // Системный отступ от кнопок навигации
-
-
+            .navigationBarsPadding()
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceAround,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 0.dp)
-
         ) {
-            // Иконки
-            BottomIcons(R.drawable.home, "Home",currentRoute ,onHomeClick)
-            BottomIcons(R.drawable.info, "Database",currentRoute , onInfoClick)
-            BottomIcons(R.drawable.notification, "Events",currentRoute ,onEventClick)
-            BottomIcons(R.drawable.template, "Templates",currentRoute ,onTemplateClick)
-            BottomIcons(R.drawable.settings, "Settings",currentRoute ,onSettingsClick)
-
+            BottomIcons(R.drawable.home,        Routes.HomePage.route,     "Главная",    currentRoute, onHomeClick)
+            BottomIcons(R.drawable.info,        Routes.InfoPage.route,     "База",       currentRoute, onInfoClick)
+            BottomIcons(R.drawable.notification,Routes.EventsPage.route,   "События",    currentRoute, onEventClick)
+            BottomIcons(R.drawable.template,    Routes.TemplatePage.route, "Шаблоны",   currentRoute, onTemplateClick)
+            BottomIcons(R.drawable.settings,    Routes.SettingsPage.route, "Настройки", currentRoute, onSettingsClick)
         }
-
     }
 }
 
-// Шаблон иконок
+/**
+ * @param route  маршрут из [Routes] — используется только для подсветки активного экрана
+ * @param label  видимая подпись под иконкой
+ */
 @Composable
-fun BottomIcons(image: Int, title: String,currentScreen: String?,onClick: ()-> Unit){
+fun BottomIcons(
+    image: Int,
+    route: String,
+    label: String,
+    currentScreen: String?,
+    onClick: () -> Unit
+) {
+    val color = if (route == currentScreen) colorScheme.tertiary else colorScheme.secondary
 
-    val color = if(title == currentScreen) colorScheme.tertiary else colorScheme.secondary
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier= Modifier
+        modifier = Modifier
             .clickable(
-                onClick = {
-                    onClick()
-                },
+                onClick = onClick,
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(
-                    color = colorScheme.tertiary,
-                    radius = 36.dp
-                ) // Изменение эффекта нажатия на иконку
+                indication = ripple(color = colorScheme.tertiary, radius = 36.dp)
             )
             .background(shape = RoundedCornerShape(15), color = colorScheme.primaryContainer)
             .padding(10.dp)
-    )
-    {
-        // Сама иконка
+    ) {
         Image(
             painter = painterResource(image),
-            contentDescription = title,
-            colorFilter=ColorFilter.tint(color),
-            modifier= Modifier.size(20.dp)
+            contentDescription = label,
+            colorFilter = ColorFilter.tint(color),
+            modifier = Modifier.size(20.dp)
         )
-
         Spacer(Modifier.height(8.dp))
-        // Подпись к иконке
-        Text(text= title, style = Typography.bodySmall, color= color )
+        Text(text = label, style = Typography.bodySmall, color = color)
     }
 }

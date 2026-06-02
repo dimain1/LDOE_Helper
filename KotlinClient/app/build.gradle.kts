@@ -112,6 +112,15 @@ dependencies {
     implementation(libs.koin.compose)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
+    // Network
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.gson)
+    implementation(libs.okhttp.core)
+    implementation(libs.okhttp.logging)
+    // Tokens storage
+    implementation(libs.security.crypto)
+    // Background sync
+    implementation(libs.work.manager)
     ksp(libs.androidx.room.ksp)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

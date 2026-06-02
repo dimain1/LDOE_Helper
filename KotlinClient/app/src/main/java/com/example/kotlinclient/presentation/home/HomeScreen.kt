@@ -143,7 +143,7 @@ fun HomeScreen(
                         // Иконка сервиса
                         Image(
                             painter = painterResource(R.drawable.service_button),
-                            contentDescription = "Service Icon",
+                            contentDescription = "Иконка сервиса",
                             colorFilter = ColorFilter.tint(Color.White),
                             modifier = Modifier
                                 .size(24.dp)
@@ -156,13 +156,13 @@ fun HomeScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "In-Game Overlay",
+                            text = "Игровой оверлей",
                             style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
                             color = Color.White
                         )
                         Spacer(Modifier.height(5.dp))
                         Text(
-                            text = "Create Events while playing",
+                            text = "Создавай события прямо во время игры",
                             style = TextStyle(
                                 fontSize = Typography.bodyMedium.fontSize,
                                 fontWeight = FontWeight.Normal
@@ -196,13 +196,13 @@ fun HomeScreen(
                         Image(
                             modifier = Modifier.size(20.dp),
                             painter = painterResource(R.drawable.service_start_button),
-                            contentDescription = "Play Arrow in button",
+                            contentDescription = "Запустить",
                             colorFilter = ColorFilter.tint(colorScheme.tertiary)
                         )
                         Spacer(Modifier.width(10.dp))
                         // Текст на кнопке
                         Text(
-                            text = "Launch Overlay",
+                            text = "Запустить оверлей",
                             style = TextStyle(
                                 fontSize = Typography.bodyLarge.fontSize,
                                 fontWeight = FontWeight.Bold
@@ -227,14 +227,14 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                 ) {
-                    //Левая верхняя иконка
+                    //Левая верхняя иконка — переход на экран настроек
                     QuickBlock(
-                        image = R.drawable.plus,
-                        title = "New Event",
-                        desc = "Quick create",
+                        image = R.drawable.settings,
+                        title = "Настройки",
+                        desc = "Аккаунт и параметры",
                         modifier = Modifier.weight(1f),
-                        color = Color.Red,
-                        onClick = { onAction(HomeAction.ToEvent) }
+                        color = colorScheme.secondary,
+                        onClick = { onAction(HomeAction.ToSettings) }
                     )
 
                     Spacer(Modifier.width(12.dp))
@@ -242,8 +242,8 @@ fun HomeScreen(
                     //Правая верхняя иконка
                     QuickBlock(
                         R.drawable.template,
-                        "Templates",
-                        "Your saved templates",
+                        "Шаблоны",
+                        "Ваши шаблоны",
                         Modifier.weight(1f),
                         TemplateIconColor,
                         { onAction(HomeAction.ToTemplate) }
@@ -263,8 +263,8 @@ fun HomeScreen(
                     //Левая нижняя иконка
                     QuickBlock(
                         R.drawable.notification,
-                        "My Events",
-                        "${uiState.upcomingEvents.size} upcoming",
+                        "Мои события",
+                        "${uiState.upcomingEvents.size} предстоящих",
                         Modifier.weight(1f),
                         NotificationIconColor,
                         { onAction(HomeAction.ToEvent) }
@@ -275,8 +275,8 @@ fun HomeScreen(
                     //Правая нижняя иконка
                     QuickBlock(
                         R.drawable.info,
-                        "Database",
-                        "Browse items",
+                        "База данных",
+                        "Просмотр",
                         Modifier.weight(1f),
                         InfoIconColor,
                         { onAction(HomeAction.ToInfo) }
@@ -289,20 +289,17 @@ fun HomeScreen(
             // Upcoming events
 
             QuickList(
-                "Upcoming Events",
-                "Oops. Maybe you don't have an upcoming evnts. Go to create one",
+                "Предстоящие события",
+                "Предстоящих событий нет. Создайте новое!",
                 uiState.upcomingEvents,
                 onAction,
             )
 
             Spacer(Modifier.height(16.dp))
 
-            // Pinned entities Контейнер
-            "Oops. Maybe you don't have an pinned entities. Go to pin one"
-
             QuickList(
-                "Pinned Entity",
-                "Oops. Maybe you don't have an pinned entities. Go to pin one",
+                "Закреплённые",
+                "Нет закреплённых элементов. Закрепите что-нибудь!",
                 uiState.pinnedEntity,
                 onAction,
             )
@@ -372,7 +369,7 @@ fun <T> QuickList(
                         {
                             Image(
                                 painter = painterResource(R.drawable.trash),
-                                contentDescription = "Delete Image",
+                                contentDescription = "Удалить",
                                 modifier = Modifier
                                     .size(32.dp)
                                     .clickable(onClick = { onAction(HomeAction.DeleteEvent(event.id!!)) }),
@@ -403,7 +400,7 @@ fun <T> QuickList(
                         {
                             Image(
                                 painter = painterResource(if (content.pinned == false) R.drawable.pinned_off else R.drawable.pinned_on),
-                                contentDescription = "Pinned Image",
+                                contentDescription = "Закреплено",
                                 modifier = Modifier
                                     .size(32.dp)
                                     .clickable(onClick = {

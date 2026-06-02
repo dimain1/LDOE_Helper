@@ -265,6 +265,13 @@ fun NavGraphBuilder.settingsScreen(
                     is SettingsFormNotificationEvent.AuthFailed -> Toast.makeText(
                         context, "Имя пользователя либо пароль неверны", Toast.LENGTH_SHORT
                     ).show()
+
+                    is SettingsFormNotificationEvent.ServerError -> Toast.makeText(
+                        context, event.message, Toast.LENGTH_SHORT
+                    ).show()
+                    SettingsFormNotificationEvent.SuccessPasswordChange -> Toast.makeText(
+                        context, "Пароль успешно изменён", Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }

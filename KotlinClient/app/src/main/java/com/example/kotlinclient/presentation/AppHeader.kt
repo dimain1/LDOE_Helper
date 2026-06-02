@@ -29,7 +29,7 @@ fun AppHeader(){
             .padding(bottom = 12.dp)
     )
     {
-        Text(text= "Last Day On Earth", style= TextStyle(fontSize = Typography.titleLarge.fontSize, fontWeight = FontWeight.Bold), color= colorScheme.primary)
-        Text(text= "Survival Companion", style = Typography.titleSmall, color= colorScheme.secondary )
+        Text(text= "Last Day on Earth", style= TextStyle(fontSize = Typography.titleLarge.fontSize, fontWeight = FontWeight.Bold), color= colorScheme.primary)
+        Text(text= "Справочник выживания", style = Typography.titleSmall, color= colorScheme.secondary )
     }
 }

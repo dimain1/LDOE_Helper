@@ -54,7 +54,7 @@ fun EventList(
                 {
                     Image(
                         painterResource(R.drawable.pencil),
-                        contentDescription = "Edit Event",
+                        contentDescription = "Редактировать событие",
                         modifier = Modifier.size(16.dp)
                             .clickable(onClick = { onEditClick(event) }),
                         colorFilter = ColorFilter.tint(colorScheme.secondary)
@@ -64,7 +64,7 @@ fun EventList(
 
                     Image(
                         painterResource(R.drawable.trash_event),
-                        contentDescription = "Delete Event",
+                        contentDescription = "Удалить событие",
                         modifier = Modifier.size(16.dp)
                             .clickable(onClick = { onDeleteClick(event.id!!) }),
                         colorFilter = ColorFilter.tint(colorScheme.secondary)

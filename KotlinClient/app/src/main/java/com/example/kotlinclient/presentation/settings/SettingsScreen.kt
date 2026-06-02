@@ -123,7 +123,7 @@ fun SettingsScreen(
                 ) {
                     Icon(
                         Icons.Default.Person,
-                        "Person Icon",
+                        "Иконка пользователя",
                         modifier = Modifier
                             .padding(16.dp)
                             .size(48.dp)
@@ -182,13 +182,13 @@ fun SettingsScreen(
                 }
             }
 
-            SettingsBlockTitle("Account")
+            SettingsBlockTitle("Аккаунт")
 
             SettingsBlock()
             {
                 SettingsBlockRow(
                     Icons.Default.Person,
-                    "Edit Profile",
+                    "Редактировать профиль",
                     onRowClick = {
                         if (uiState.user == null) {
                             Toast.makeText(
@@ -205,7 +205,7 @@ fun SettingsScreen(
                 {
                     Icon(
                         Icons.Default.KeyboardArrowRight,
-                        "Arrow Right",
+                        "Перейти",
                         modifier = Modifier.size(16.dp),
                         tint = colorScheme.secondary
                     )
@@ -215,17 +215,17 @@ fun SettingsScreen(
 
                 SettingsBlockRow(
                     Icons.Default.ExitToApp,
-                    "Sign Out",
+                    "Выйти из аккаунта",
                     true,
                     onRowClick = { onAction(SettingsAction.ExitProfile) }
                 ) {}
             }
 
-            SettingsBlockTitle("Preferences")
+            SettingsBlockTitle("Параметры")
 
             SettingsBlock()
             {
-                SettingsBlockRow(Icons.Default.Clear, "Push Notifications")
+                SettingsBlockRow(Icons.Default.Clear, "Уведомления")
                 {
                     CustomSwitcher(
                         uiState.notification,
@@ -240,34 +240,34 @@ fun SettingsScreen(
                         })
                 }
                 HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
-                SettingsBlockRow(Icons.Default.Clear, "Sound Effects")
+                SettingsBlockRow(Icons.Default.Clear, "Звуковые эффекты")
                 {
                     CustomSwitcher(
                         uiState.sound,
                         { onAction(SettingsAction.SwitchPreference("sound")) })
                 }
                 HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
-                SettingsBlockRow(Icons.Default.Clear, "Language")
+                SettingsBlockRow(Icons.Default.Clear, "Язык")
                 {
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            "English",
+                            "Русский",
                             style = Typography.bodyMedium,
                             color = colorScheme.secondary
                         )
                         Spacer(Modifier.width(12.dp))
                         Icon(
                             Icons.Default.KeyboardArrowRight,
-                            "Arrow Right",
+                            "Перейти",
                             modifier = Modifier.size(16.dp),
                             tint = colorScheme.secondary
                         )
                     }
                 }
                 HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
-                SettingsBlockRow(Icons.Default.Clear, "Dark Theme")
+                SettingsBlockRow(Icons.Default.Clear, "Тёмная тема")
                 {
                     CustomSwitcher(
                         uiState.theme,
@@ -276,30 +276,30 @@ fun SettingsScreen(
             }
 
 
-            SettingsBlockTitle("About")
+            SettingsBlockTitle("О приложении")
 
             SettingsBlock()
             {
-                SettingsBlockRow(Icons.Default.Info, "Version")
+                SettingsBlockRow(Icons.Default.Info, "Версия")
                 {
                     Text("1.0.0", style = Typography.bodyMedium, color = colorScheme.secondary)
                 }
                 HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
-                SettingsBlockRow(Icons.Default.Info, "Terms of Service")
+                SettingsBlockRow(Icons.Default.Info, "Условия использования")
                 {
                     Icon(
                         Icons.Default.KeyboardArrowRight,
-                        "Arrow Right",
+                        contentDescription = null,
                         modifier = Modifier.size(16.dp),
                         tint = colorScheme.secondary
                     )
                 }
                 HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
-                SettingsBlockRow(Icons.Default.Info, "Privacy Policy")
+                SettingsBlockRow(Icons.Default.Info, "Конфиденциальность")
                 {
                     Icon(
                         Icons.Default.KeyboardArrowRight,
-                        "Arrow Right",
+                        contentDescription = null,
                         modifier = Modifier.size(16.dp),
                         tint = colorScheme.secondary
                     )

@@ -5,13 +5,25 @@ import kotlinx.coroutines.flow.Flow
 
 interface EventRepository {
 
-    fun getAllEventsUpcomingWithTemplate() : Flow<List<Event>>
+    // ── UI (Room-first, всегда реактивны) ────────────────────────────────────
 
-    fun getAllEventsWithTemplate() : Flow<List<Event>>
+    fun getAllEventsUpcomingWithTemplate(): Flow<List<Event>>
 
-    suspend fun deleteEventById(id: Long)
+    fun getAllEventsWithTemplate(): Flow<List<Event>>
+
+    // ── Мутации (сначала Room, потом сервер) ─────────────────────────────────
 
     suspend fun addEvent(event: Event): Long
 
     suspend fun updateEvent(event: Event)
+
+    suspend fun deleteEventById(id: Long)
+
+    // ── Синхронизация с сервером ─────────────────────────────────────────────
+
+    /** Отправить на сервер все локальные изменения (PENDING_*). */
+    suspend fun pushPendingChanges()
+
+    /** Получить события с сервера и обновить Room. */
+    suspend fun syncFromServer()
 }

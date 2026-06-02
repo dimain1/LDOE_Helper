@@ -196,7 +196,7 @@ fun EventCreateModal(
                         ) {}
                         Image(
                             painter = painterResource(R.drawable.pencil),
-                            contentDescription = "Select template",
+                            contentDescription = "Выбрать шаблон",
                             modifier = Modifier
                                 .size(32.dp)
                                 .clickable(onClick = {
@@ -251,7 +251,7 @@ fun EventCreateModal(
                         }
                         Icon(
                             imageVector = Icons.Default.Clear,
-                            contentDescription = "Select Template",
+                            contentDescription = "Убрать шаблон",
                             modifier = Modifier
                                 .size(32.dp)
                                 .clickable(onClick = {

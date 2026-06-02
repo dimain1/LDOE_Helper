@@ -117,10 +117,13 @@ fun EventScreen(
             {
                 // Заголовок экрана
                 Text(
-                    text = "Event Notifications",
+                    text = "Уведомления о событиях",
                     style = Typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                     color = colorScheme.primary
                 )
+
+                Spacer(Modifier.width(16.dp))
+
                 // Кнопка экрана(Создание ивента)
                 Button(
                     colors = ButtonDefaults.buttonColors(
@@ -146,7 +149,7 @@ fun EventScreen(
                     Spacer(Modifier.width(12.dp))
                     // Текст внутри кнопки
                     Text(
-                        text = "Create Event",
+                        text = "Создать событие",
                         style = Typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                         color = Color.White
                     )

@@ -6,7 +6,6 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import java.time.Instant
-import java.time.OffsetDateTime
 
 @Entity(
     tableName = "events",
@@ -26,15 +25,23 @@ import java.time.OffsetDateTime
     ],
     indices = [
         Index("template_id"),
-        Index("user_id")
-
+        Index("user_id"),
+        Index("server_id")
     ]
-    )
+)
 data class EventEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long? = null,
 
-    @ColumnInfo(name= "template_id")
+    /** ID на сервере. null — событие ещё не синхронизировано. */
+    @ColumnInfo(name = "server_id")
+    val serverId: Long? = null,
+
+    /** Статус синхронизации с сервером. */
+    @ColumnInfo(name = "sync_status")
+    val syncStatus: SyncStatus = SyncStatus.PENDING_CREATE,
+
+    @ColumnInfo(name = "template_id")
     val templateId: Long?,
 
     @ColumnInfo(name = "user_id")
@@ -42,10 +49,13 @@ data class EventEntity(
 
     val name: String?,
     val description: String?,
+
     @ColumnInfo(name = "image")
     val imageUrl: String?,
-    @ColumnInfo(name="start_time")
+
+    @ColumnInfo(name = "start_time")
     val startTime: Instant,
-    @ColumnInfo(name="end_time")
+
+    @ColumnInfo(name = "end_time")
     val endTime: Instant
 )

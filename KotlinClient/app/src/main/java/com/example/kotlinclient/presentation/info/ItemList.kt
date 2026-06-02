@@ -91,7 +91,7 @@ fun ItemList(
 
                 Image(
                     painter = painterResource(if (Items[item].pinned == false) R.drawable.pinned_off else R.drawable.pinned_on),
-                    contentDescription = "Pinned Image",
+                    contentDescription = "Закреплено",
                     modifier = Modifier
                         .Authorized()
                         .size(32.dp)

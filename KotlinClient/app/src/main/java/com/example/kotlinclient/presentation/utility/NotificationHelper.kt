@@ -22,7 +22,7 @@ object NotificationHelper {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Event notifications",
+                "Уведомления о событиях",
                 NotificationManager.IMPORTANCE_HIGH
             )
             manager.createNotificationChannel(channel)

@@ -347,7 +347,7 @@ class OverlayService : LifecycleService(), KoinComponent, SavedStateRegistryOwne
         val channelId = "overlay_channel"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                channelId, "Overlay Service", NotificationManager.IMPORTANCE_LOW
+                channelId, "Оверлей-сервис", NotificationManager.IMPORTANCE_LOW
             )
             getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
         }

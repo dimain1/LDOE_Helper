@@ -50,7 +50,7 @@ fun NowIndicator() {
         )
         Spacer(Modifier.width(6.dp))
         Text(
-            text = "NOW",
+            text = "СЕЙЧАС",
             style = Typography.labelSmall.copy(fontWeight = FontWeight.Bold),
             color = colorScheme.onSurfaceVariant
         )

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -70,9 +71,10 @@ fun SettingsModalDialog(
             ) {
                 Text(
                     text = when (uiState.activeDialog) {
-                        is SettingsDialogType.EditProfile -> "Редакитровать профиль"
-                        is SettingsDialogType.Registration -> "Регистрация"
-                        is SettingsDialogType.Authorization -> "Авторизация"
+                        is SettingsDialogType.EditProfile    -> "Редактировать профиль"
+                        is SettingsDialogType.Registration   -> "Регистрация"
+                        is SettingsDialogType.Authorization  -> "Авторизация"
+                        is SettingsDialogType.ChangePassword -> "Сменить пароль"
                         else -> ""
                     },
                     style = Typography.titleLarge.copy(fontWeight = FontWeight.Bold),
@@ -258,8 +260,66 @@ fun SettingsModalDialog(
                         )
                     }
 
+                    is SettingsDialogType.ChangePassword -> {
+                        ValidatedBasicTextFieldInModal(
+                            state = formUiState.oldPassword,
+                            errorText = formUiState.errors.oldPasswordError,
+                            onFocused = {},
+                            onFocusLost = {},
+                            placeholder = "Текущий пароль",
+                            keyboardOption = KeyboardOptions(keyboardType = KeyboardType.Password)
+                        )
+                        Spacer(Modifier.height(16.dp))
+                        ValidatedBasicTextFieldInModal(
+                            state = formUiState.password,
+                            errorText = formUiState.errors.passwordError,
+                            onFocused = {
+                                onAction(SettingsAction.OnFormAction(
+                                    SettingsFormAction.OnFormValidation(SettingsFormValidation.ClearPasswordError)
+                                ))
+                            },
+                            onFocusLost = {
+                                onAction(SettingsAction.OnFormAction(
+                                    SettingsFormAction.OnFormValidation(SettingsFormValidation.ValidatePassword)
+                                ))
+                            },
+                            placeholder = "Новый пароль",
+                            keyboardOption = KeyboardOptions(keyboardType = KeyboardType.Password)
+                        )
+                        Spacer(Modifier.height(16.dp))
+                        ValidatedBasicTextFieldInModal(
+                            state = formUiState.confirmPassword,
+                            errorText = formUiState.errors.passwordConfirmError,
+                            onFocused = {
+                                onAction(SettingsAction.OnFormAction(
+                                    SettingsFormAction.OnFormValidation(SettingsFormValidation.ClearConfirmPasswordError)
+                                ))
+                            },
+                            onFocusLost = {
+                                onAction(SettingsAction.OnFormAction(
+                                    SettingsFormAction.OnFormValidation(SettingsFormValidation.ValidateConfirmPassword)
+                                ))
+                            },
+                            placeholder = "Подтвердите новый пароль",
+                            keyboardOption = KeyboardOptions(keyboardType = KeyboardType.Password)
+                        )
+                    }
+
                     else -> {}
                 }
+
+                // Ошибка сервера — показывается в любом диалоге если есть
+                formUiState.errors.serverError
+                    ?.takeIf { it.isNotBlank() }
+                    ?.let { error ->
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = error,
+                            color = colorScheme.tertiary,
+                            style = Typography.bodyMedium,
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
+                    }
             }
         },
         confirmButton = {
@@ -284,6 +344,12 @@ fun SettingsModalDialog(
                             )
                         )
 
+                        SettingsDialogType.ChangePassword -> onAction(
+                            SettingsAction.OnFormAction(
+                                SettingsFormAction.ChangePassword
+                            )
+                        )
+
                         null -> {}
                     }
                 },
@@ -297,6 +363,7 @@ fun SettingsModalDialog(
                         SettingsDialogType.Authorization -> "Войти"
                         SettingsDialogType.EditProfile -> "Изменить"
                         SettingsDialogType.Registration -> "Создать"
+                        SettingsDialogType.ChangePassword -> "Изменить"
                         null -> ""
                     }, color = Color.White
                 )

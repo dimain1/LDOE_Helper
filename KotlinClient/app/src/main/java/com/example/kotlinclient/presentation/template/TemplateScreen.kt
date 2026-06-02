@@ -108,7 +108,7 @@ fun TemplateScreen(
             {
                 // Заголовок экрана
                 Text(
-                    text = "Event Templates",
+                    text = "Шаблоны событий",
                     style = Typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                     color = colorScheme.primary
                 )
@@ -132,7 +132,7 @@ fun TemplateScreen(
                     Spacer(Modifier.width(12.dp))
                     // Текст внутри кнопки
                     Text(
-                        text = "New Template",
+                        text = "Новый шаблон",
                         style = Typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                         color = Color.White
                     )
