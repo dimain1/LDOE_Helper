@@ -30,6 +30,8 @@ public class SecurityConfig {
 
                         // публичные
                         .requestMatchers("/auth/**").permitAll()
+                        // статика — изображения без авторизации
+                        .requestMatchers("/images/**").permitAll()
 
                         .requestMatchers(
                 "/v3/api-docs/**",

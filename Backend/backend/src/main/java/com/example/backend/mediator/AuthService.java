@@ -1,11 +1,12 @@
 package com.example.backend.mediator;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 
-
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.example.backend.dto.auth.AuthResponse;
 import com.example.backend.dto.auth.LoginRequest;
@@ -20,8 +21,7 @@ import com.example.backend.foundation.repository.UserRoleRepository;
 
 import jakarta.transaction.Transactional;
 
-
-@Service 
+@Service
 public class AuthService {
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -31,8 +31,10 @@ public class AuthService {
     private final JwtService jwtService;
     private final RefreshTokenRepository refreshTokenRepository;
 
-
-    public AuthService(UserRepository userRepository, UserRoleRepository userRoleRepository, JwtService jwtService, RefreshTokenRepository refreshTokenRepository) {
+    public AuthService(UserRepository userRepository,
+                       UserRoleRepository userRoleRepository,
+                       JwtService jwtService,
+                       RefreshTokenRepository refreshTokenRepository) {
         this.userRepository = userRepository;
         this.userRoleRepository = userRoleRepository;
         this.jwtService = jwtService;
@@ -40,53 +42,67 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-
-        User user = userRepository.findByLogin(request.getLogin())
-                .orElseThrow();
-
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid password");
+        // 401 — пользователь не найден или пароль неверен
+        User user;
+        try {
+            user = userRepository.findByLogin(request.getLogin()).orElseThrow();
+        } catch (NoSuchElementException e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Неверный логин или пароль");
         }
 
-        String accessToken = jwtService.generateAccessToken(user.getLogin());
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Неверный логин или пароль");
+        }
+
+        String accessToken  = jwtService.generateAccessToken(user.getLogin());
         String refreshToken = jwtService.generateRefreshToken(user.getLogin());
 
         refreshTokenRepository.save(
-                new RefreshToken(user, refreshToken, LocalDateTime.now().plusDays(7))
+            new RefreshToken(user, refreshToken, Instant.now().plusSeconds(7L * 24 * 60 * 60))
         );
 
         return new AuthResponse(accessToken, refreshToken);
-    }   
-    
-   @Transactional
-    public User register(RegisterRequest request) {
+    }
 
-        UserRole role = userRoleRepository.findById(1L).orElseThrow(() -> new RuntimeException("Default role not found"));
-        System.out.println("Default role: " + role.getName());
-        System.out.println("Registering user: " + request.getLogin() + ", " + request.getEmail());
-        User user = new User(request.getLogin(), passwordEncoder.encode(request.getPassword()), request.getEmail(), role);
-        
+    @Transactional
+    public User register(RegisterRequest request) {
+        // 409 — логин или email уже заняты
+        if (userRepository.findByLogin(request.getLogin()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Логин уже занят");
+        }
+
+        UserRole role = userRoleRepository.findById(1L)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR, "Роль по умолчанию не найдена"));
+
+        User user = new User(
+            request.getLogin(),
+            passwordEncoder.encode(request.getPassword()),
+            request.getEmail(),
+            role
+        );
         return userRepository.save(user);
-    } 
-    
+    }
+
     public void logout(RefreshRequest request) {
         refreshTokenRepository.deleteByToken(request.getRefreshToken());
     }
 
     public AuthResponse refresh(RefreshRequest request) {
         RefreshToken refreshToken = refreshTokenRepository.findByToken(request.getRefreshToken())
-                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED, "Недействительный refresh token"));
 
         if (refreshToken.getExpiryDate().isBefore(Instant.now())) {
             refreshTokenRepository.delete(refreshToken);
-            throw new RuntimeException("Refresh token expired");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token истёк");
         }
 
-        String accessToken = jwtService.generateAccessToken(refreshToken.getUser().getLogin());
-        String newRefreshToken = jwtService.generateRefreshToken(refreshToken.getUser().getLogin());
+        String accessToken      = jwtService.generateAccessToken(refreshToken.getUser().getLogin());
+        String newRefreshToken  = jwtService.generateRefreshToken(refreshToken.getUser().getLogin());
 
         refreshToken.setToken(newRefreshToken);
-        refreshToken.setExpiryDate(Instant.now().plusSeconds(7 * 24 * 60 * 60)); // 7 days
+        refreshToken.setExpiryDate(Instant.now().plusSeconds(7L * 24 * 60 * 60));
         refreshTokenRepository.save(refreshToken);
 
         return new AuthResponse(accessToken, newRefreshToken);

@@ -45,7 +45,8 @@ public class AuthController {
         authService.logout(request);
     }
 
-    @GetMapping("/refresh")
+    // POST вместо GET: Retrofit не поддерживает тело запроса у @GET
+    @PostMapping("/refresh")
     @Transactional
     public AuthResponse refresh(@RequestBody RefreshRequest request) {
         return authService.refresh(request);
