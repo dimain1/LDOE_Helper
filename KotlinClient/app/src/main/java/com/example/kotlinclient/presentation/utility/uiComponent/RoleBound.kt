@@ -1,4 +1,4 @@
-package com.example.kotlinclient.presentation.utility
+package com.example.kotlinclient.presentation.utility.uiComponent
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState

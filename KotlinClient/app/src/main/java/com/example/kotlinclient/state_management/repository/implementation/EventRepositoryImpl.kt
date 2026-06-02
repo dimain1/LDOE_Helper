@@ -34,8 +34,8 @@ class EventRepositoryImpl(
         eventDao.deleteEventById(session.requireId(), id)
     }
 
-    override suspend fun addEvent(event: Event) {
-        eventDao.addEvent(event.toEntity())
+    override suspend fun addEvent(event: Event) : Long {
+        return eventDao.addEvent(event.toEntity())
     }
 
     override suspend fun updateEvent(event: Event) {

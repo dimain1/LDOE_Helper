@@ -25,7 +25,7 @@ interface EventDao {
     fun deleteEventById(userId: Long, id:Long)
 
     @Insert(EventEntity::class, onConflict = OnConflictStrategy.REPLACE)
-    fun addEvent(event: EventEntity)
+    fun addEvent(event: EventEntity) : Long
 
     @Update(EventEntity::class, onConflict = OnConflictStrategy.REPLACE)
     fun updateEvent(event: EventEntity)

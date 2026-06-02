@@ -1,12 +1,12 @@
 package com.example.kotlinclient.state_management.viewModel
 
 
-import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.kotlinclient.presentation.utility.EventAlarmScheduler
+import com.example.kotlinclient.presentation.utility.ImageStorageManager
 import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.state_management.entity.EventTemplate
 import com.example.kotlinclient.state_management.repository.UserSessionProvider
@@ -71,7 +71,7 @@ sealed interface EventFormAction {
     data object ClearUiState : EventFormAction
     data class SelectTemplate(val template: EventTemplate?) : EventFormAction
     data class LoadUiState(val event: Event) : EventFormAction
-    data class ValidateAndSave(val context: Context) : EventFormAction
+    data object ValidateAndSave : EventFormAction
     data object UpdateEndTime : EventFormAction
     data class OnFormValidation(val action: EventFormValidation) : EventFormAction
 }
@@ -93,8 +93,8 @@ sealed interface EventFormValidation {
 
 // Запечатанный интерфейс событий валидации
 sealed interface EventFormNotificationEvent {
-    data class SuccessCreate(val context: Context) : EventFormNotificationEvent
-    data class SuccessUpdate(val context: Context) : EventFormNotificationEvent
+    data object SuccessCreate : EventFormNotificationEvent
+    data object SuccessUpdate : EventFormNotificationEvent
 }
 
 // endregion
@@ -102,6 +102,7 @@ sealed interface EventFormNotificationEvent {
 class EventViewModel(
     val eventRepository: EventRepository,
     val session: UserSessionProvider,
+    val alarmScheduler: EventAlarmScheduler,
 ) : ViewModel() {
 
     // Формат представления даты и времени
@@ -155,8 +156,10 @@ class EventViewModel(
 
     // Удаление события
     private fun deleteEvent(id: Long) {
+
         viewModelScope.launch {
             eventRepository.deleteEventById(id)
+            alarmScheduler.cancel(id)
         }
     }
 
@@ -178,7 +181,7 @@ class EventViewModel(
             is EventFormAction.LoadUiState -> loadUiState(action.event)
             is EventFormAction.SelectTemplate -> selectTemplate(action.template)
             is EventFormAction.UpdateEndTime -> updateEndTime()
-            is EventFormAction.ValidateAndSave -> saveEvent(action.context)
+            is EventFormAction.ValidateAndSave -> saveEvent()
             is EventFormAction.OnFormValidation -> onFormValidation(action.action)
         }
     }
@@ -253,7 +256,7 @@ class EventViewModel(
     }
 
     // Сохранение(изменение) события
-    private fun saveEvent(context: Context) {
+    private fun saveEvent() {
         val state = _formUiState.value
 
         viewModelScope.launch {
@@ -262,19 +265,22 @@ class EventViewModel(
                     id = state.id, // null для создания, ID для обновления
                     user = session.user.value,
                     template = state.template,
-                    name = state.name.text.toString(),
-                    description = if (state.description.text == "") null else state.description.text.toString(),
+                    name = state.name.text.toString().trim(),
+                    description = if (state.description.text == "") null else state.description.text.toString().trim(),
                     image = state.template?.image,
                     startTime = getTimeByString(state.startTime.text.toString()),
                     endTime = getTimeByString(state.endTime.text.toString())
                 )
                 if (state.id == null) {
-                    eventRepository.addEvent(event)
-                    _notificationEvent.send(EventFormNotificationEvent.SuccessCreate(context))
+                    val savedEventId = eventRepository.addEvent(event)
+                    _notificationEvent.send(EventFormNotificationEvent.SuccessCreate)
+                    alarmScheduler.scheduleFinish(event.copy(id = savedEventId))
                 } else {
+                    alarmScheduler.cancel(event.id!!)
                     eventRepository.updateEvent(event)
                     onAction(EventAction.DismissDialog)
-                    _notificationEvent.send(EventFormNotificationEvent.SuccessUpdate(context))
+                    _notificationEvent.send(EventFormNotificationEvent.SuccessUpdate)
+                    alarmScheduler.scheduleFinish(event)
                 }
             }
         }
@@ -339,7 +345,7 @@ class EventViewModel(
     }
 
     private fun clearStartTimeError() {
-        if (_formUiState.value.errors.nameError != null) {
+        if (_formUiState.value.errors.startTimeError != null) {
             _formUiState.update { it.copy(errors = it.errors.copy(startTimeError = null)) }
         }
     }
@@ -362,30 +368,6 @@ class EventViewModel(
     private fun clearEndTimeError() {
         if (_formUiState.value.errors.nameError != null) {
             _formUiState.update { it.copy(errors = it.errors.copy(endTimeError = null)) }
-        }
-    }
-
-    // endregion
-
-    // region NotificationUser
-
-    fun onNotification(event: EventFormNotificationEvent) {
-        when (event) {
-            is EventFormNotificationEvent.SuccessCreate -> {
-                Toast.makeText(
-                    event.context,
-                    "Успешно создано!",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-
-            is EventFormNotificationEvent.SuccessUpdate -> {
-                Toast.makeText(
-                    event.context,
-                    "Успешно изменено!",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
         }
     }
 

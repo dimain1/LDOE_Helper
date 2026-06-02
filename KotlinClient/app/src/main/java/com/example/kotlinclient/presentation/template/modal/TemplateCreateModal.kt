@@ -71,7 +71,7 @@ fun TemplateCreateModal(
                 Intent.FLAG_GRANT_READ_URI_PERMISSION
             )
 
-            onFormAction(EventTemplateFormAction.SaveImageInLocal(context, it))
+            onFormAction(EventTemplateFormAction.SaveImageInLocal(it))
         }
     }
 
@@ -225,7 +225,7 @@ fun TemplateCreateModal(
         },
         confirmButton = {
             Button(
-                onClick = { onFormAction(EventTemplateFormAction.CreateEventTemplate(context)) },
+                onClick = { onFormAction(EventTemplateFormAction.CreateEventTemplate) },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = colorScheme.tertiary,
                     contentColor = Color.White

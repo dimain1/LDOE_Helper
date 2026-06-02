@@ -268,19 +268,19 @@ fun SettingsModalDialog(
                     when (uiState.activeDialog) {
                         SettingsDialogType.Authorization -> onAction(
                             SettingsAction.OnFormAction(
-                                SettingsFormAction.AuthorizationUser(context)
+                                SettingsFormAction.AuthorizationUser
                             )
                         )
 
                         SettingsDialogType.EditProfile -> onAction(
                             SettingsAction.OnFormAction(
-                                SettingsFormAction.EditUserInfo(context)
+                                SettingsFormAction.EditUserInfo
                             )
                         )
 
                         SettingsDialogType.Registration -> onAction(
                             SettingsAction.OnFormAction(
-                                SettingsFormAction.Registration(context)
+                                SettingsFormAction.Registration
                             )
                         )
 

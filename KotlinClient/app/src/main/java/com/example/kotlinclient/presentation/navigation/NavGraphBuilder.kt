@@ -1,6 +1,7 @@
 package com.example.kotlinclient.presentation.navigation
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -17,6 +18,8 @@ import com.example.kotlinclient.presentation.template.TemplateScreen
 import com.example.kotlinclient.state_management.viewModel.DialogType
 import com.example.kotlinclient.state_management.viewModel.EventAction
 import com.example.kotlinclient.state_management.viewModel.EventDialogType
+import com.example.kotlinclient.state_management.viewModel.EventFormNotificationEvent
+import com.example.kotlinclient.state_management.viewModel.EventTemplateFormNotificationEvent
 import com.example.kotlinclient.state_management.viewModel.EventTemplateViewModel
 import com.example.kotlinclient.state_management.viewModel.EventViewModel
 import com.example.kotlinclient.state_management.viewModel.HomeAction
@@ -24,6 +27,7 @@ import com.example.kotlinclient.state_management.viewModel.HomeViewModel
 import com.example.kotlinclient.state_management.viewModel.InfoAction
 import com.example.kotlinclient.state_management.viewModel.InfoDialogType
 import com.example.kotlinclient.state_management.viewModel.InfoViewModel
+import com.example.kotlinclient.state_management.viewModel.SettingsFormNotificationEvent
 import com.example.kotlinclient.state_management.viewModel.SettingsViewModel
 import com.example.kotlinclient.state_management.viewModel.SharedAction
 import com.example.kotlinclient.state_management.viewModel.SharedAppViewModel
@@ -44,16 +48,9 @@ fun NavGraphBuilder.homeScreen(
             uiState = uiState.value,
             onAction = { action ->
                 when (action) {
-                    is HomeAction.LaunchOverlay -> homeViewModel.onAction(
-                        HomeAction.LaunchOverlay(
-                            context
-                        )
-                    )
 
                     is HomeAction.DeleteEvent -> eventViewModel.onAction(
-                        EventAction.DeleteEvent(
-                            action.id
-                        )
+                        EventAction.DeleteEvent(action.id)
                     )
 
                     is HomeAction.TogglePin ->
@@ -125,8 +122,28 @@ fun NavGraphBuilder.eventScreen(
 ) {
     composable(route = Routes.EventsPage.route) {
 
+        val context: Context = LocalContext.current
+
         LaunchedEffect(Unit) {
-            eventViewModel.notificationEvent.collect { event -> eventViewModel.onNotification(event) }
+            eventViewModel.notificationEvent.collect { event ->
+                when (event) {
+                    is EventFormNotificationEvent.SuccessCreate -> {
+                        Toast.makeText(
+                            context,
+                            "Успешно создано!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+
+                    is EventFormNotificationEvent.SuccessUpdate -> {
+                        Toast.makeText(
+                            context,
+                            "Успешно изменено!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
         }
 
         val eventUiState = eventViewModel.uiState.collectAsStateWithLifecycle()
@@ -175,14 +192,32 @@ fun NavGraphBuilder.templateScreen(
 ) {
     composable(route = Routes.TemplatePage.route) {
 
+        val context: Context = LocalContext.current
+
         val uiState = eventTemplateViewModel.uiState.collectAsState()
         val formUiState = eventTemplateViewModel.formUiState.collectAsState()
 
         LaunchedEffect(Unit) {
             eventTemplateViewModel.notificationEvent.collect { event ->
-                eventTemplateViewModel.onNotification(
-                    event
-                )
+                when (event) {
+                    is EventTemplateFormNotificationEvent.ImageLoadError -> Toast.makeText(
+                        context,
+                        "Во время выбора изображения произошла ошибка, попробуйте снова",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    is EventTemplateFormNotificationEvent.SuccessCreate -> Toast.makeText(
+                        context,
+                        "Шаблон успешно создан",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    is EventTemplateFormNotificationEvent.SuccesssUpdate -> Toast.makeText(
+                        context,
+                        "Шаблон успешно изменён",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
 
@@ -202,14 +237,35 @@ fun NavGraphBuilder.settingsScreen(
 ) {
     composable(route = Routes.SettingsPage.route) {
 
+        val context = LocalContext.current
+
         val uiState = settingsViewModel.uiState.collectAsState()
         val formUiState = settingsViewModel.formUiState.collectAsState()
 
         LaunchedEffect(Unit) {
             settingsViewModel.notificationEvent.collect { event ->
-                settingsViewModel.onNotification(
-                    event
-                )
+                when (event) {
+                    is SettingsFormNotificationEvent.SuccessAuth -> Toast.makeText(
+                        context
+                        , "Успешная авторизация",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    is SettingsFormNotificationEvent.SuccessRegistration -> Toast.makeText(
+                        context, "Успешная регистрация",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    is SettingsFormNotificationEvent.SuccessUpdate -> Toast.makeText(
+                        context,
+                        "Профиль успешно изменён",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    is SettingsFormNotificationEvent.AuthFailed -> Toast.makeText(
+                        context, "Имя пользователя либо пароль неверны", Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
 

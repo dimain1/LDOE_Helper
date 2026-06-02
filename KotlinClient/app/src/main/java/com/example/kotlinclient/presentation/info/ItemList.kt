@@ -27,8 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.kotlinclient.R
 import com.example.kotlinclient.presentation.utility.uiComponent.LocalImage
-import com.example.kotlinclient.presentation.utility.Authorized
-import com.example.kotlinclient.state_management.entity.GameContent
+import com.example.kotlinclient.presentation.utility.uiComponent.Authorized
 import com.example.kotlinclient.state_management.viewModel.InfoAction
 import com.example.kotlinclient.state_management.viewModel.InfoDialogType
 import com.example.kotlinclient.state_management.viewModel.InfoUiState

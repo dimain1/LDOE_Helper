@@ -1,11 +1,10 @@
 package com.example.kotlinclient.state_management.viewModel
 
-import android.content.Context
 import android.net.Uri
-import android.widget.Toast
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.kotlinclient.presentation.utility.ImageStorageManager
 import com.example.kotlinclient.state_management.entity.EventTemplate
 import com.example.kotlinclient.state_management.repository.UserSessionProvider
 import com.example.kotlinclient.state_management.repository.interfaces.EventTemplateRepository
@@ -18,9 +17,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.File
-import java.io.FileOutputStream
-import java.util.UUID
 
 // region EventTemplate screen
 
@@ -39,7 +35,6 @@ sealed interface EventTemplateAction {
     data class DeleteTemplate(val id: Long) : EventTemplateAction
     data class OpenDialog(val dialog: EventTemplateDialogType) : EventTemplateAction
     data object DismissDialog : EventTemplateAction
-
     data class OnFormAction(val action: EventTemplateFormAction) : EventTemplateAction
 }
 
@@ -54,8 +49,8 @@ data class EventTemplateFormUiState(
 
 
 sealed interface EventTemplateFormAction {
-    data class CreateEventTemplate(val context: Context) : EventTemplateFormAction
-    data class SaveImageInLocal(val context: Context, val uri: Uri?) : EventTemplateFormAction
+    data object CreateEventTemplate : EventTemplateFormAction
+    data class SaveImageInLocal(val uri: Uri?) : EventTemplateFormAction
     data object ClearUiState : EventTemplateFormAction
     data class LoadUiState(val template: EventTemplate) : EventTemplateFormAction
 
@@ -75,16 +70,17 @@ sealed interface EventTemplateFormValidation {
 }
 
 sealed interface EventTemplateFormNotificationEvent {
-    data class ImageLoadError(val context: Context) : EventTemplateFormNotificationEvent
-    data class SuccessCreate(val context: Context) : EventTemplateFormNotificationEvent
-    data class SuccesssUpdate(val context: Context) : EventTemplateFormNotificationEvent
+    data object ImageLoadError : EventTemplateFormNotificationEvent
+    data object SuccessCreate : EventTemplateFormNotificationEvent
+    data object SuccesssUpdate : EventTemplateFormNotificationEvent
 }
 
 // endregion
 
 class EventTemplateViewModel(
     val eventTemplateRepository: EventTemplateRepository,
-    val session: UserSessionProvider
+    val session: UserSessionProvider,
+    val imageStorageManager: ImageStorageManager
 ) : ViewModel() {
 
     // region flows
@@ -140,12 +136,8 @@ class EventTemplateViewModel(
 
     fun onFormAction(action: EventTemplateFormAction) {
         when (action) {
-            is EventTemplateFormAction.CreateEventTemplate -> saveTemplate(action.context)
-            is EventTemplateFormAction.SaveImageInLocal -> saveImageInLocal(
-                action.context,
-                action.uri
-            )
-
+            is EventTemplateFormAction.CreateEventTemplate -> saveTemplate()
+            is EventTemplateFormAction.SaveImageInLocal -> saveImageInLocal(action.uri)
             is EventTemplateFormAction.ClearUiState -> clearFormUiState()
             is EventTemplateFormAction.LoadUiState -> loadFormUiState(action.template)
             is EventTemplateFormAction.OnFormValidation -> onFormValidation(action.action)
@@ -153,6 +145,11 @@ class EventTemplateViewModel(
     }
 
     // region onFormAction function
+
+    private fun saveImageInLocal(uri: Uri?){
+        val path = imageStorageManager.saveImageToLocal(uri)
+        _formUiState.update { it.copy(image = path) }
+    }
 
     private suspend fun isDataValid(): Boolean {
         if (!validateName()) {
@@ -164,7 +161,7 @@ class EventTemplateViewModel(
         return true
     }
 
-    private fun saveTemplate(context: Context) {
+    private fun saveTemplate() {
         val state = _formUiState.value
 
         viewModelScope.launch {
@@ -174,58 +171,25 @@ class EventTemplateViewModel(
                 val template = EventTemplate(
                     id = state.id,
                     creator = session.user.value,
-                    name = state.name.text.toString(),
-                    description = state.description.text.toString(),
+                    name = state.name.text.toString().trim(),
+                    description = state.description.text.toString().trim(),
                     image = state.image,
-                    duration = state.duration.text.toString().toLong()
+                    duration = state.duration.text.toString().trim().toLong()
                 )
                 if (state.id == null) {
                     eventTemplateRepository.createTemplate(template)
-                    _notificationEvent.send(EventTemplateFormNotificationEvent.SuccessCreate(context))
+                    _notificationEvent.send(EventTemplateFormNotificationEvent.SuccessCreate)
                 } else {
                     eventTemplateRepository.updateTemplate(template)
                     onAction(EventTemplateAction.DismissDialog)
                     _notificationEvent.send(
-                        EventTemplateFormNotificationEvent.SuccesssUpdate(
-                            context
-                        )
+                        EventTemplateFormNotificationEvent.SuccesssUpdate
                     )
                 }
 
             }
 
 
-        }
-    }
-
-    private fun saveImageInLocal(context: Context, uri: Uri?) {
-        try {
-            val imagesDir = File(context.filesDir, "template_images")
-            if (!imagesDir.exists()) {
-                imagesDir.mkdirs()
-            }
-
-            val fileName = "${UUID.randomUUID()}.jpg"
-            val destinationFile = File(imagesDir, fileName)
-
-            if (uri == null) {
-                _formUiState.update { it.copy(image = null) }
-                return
-            }
-
-            context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                FileOutputStream(destinationFile).use { outputStream ->
-                    inputStream.copyTo(outputStream)
-                }
-            }
-
-            _formUiState.update { it.copy(image = destinationFile.absolutePath) }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            viewModelScope.launch {
-                _notificationEvent.send(EventTemplateFormNotificationEvent.ImageLoadError(context))
-            }
-            null
         }
     }
 
@@ -293,32 +257,6 @@ class EventTemplateViewModel(
 
     // endregion
 
-    // region NotificationUser
-
-    fun onNotification(action: EventTemplateFormNotificationEvent) {
-        when (action) {
-            is EventTemplateFormNotificationEvent.ImageLoadError -> Toast.makeText(
-                action.context,
-                "Во время выбора изображения произошла ошибка, попробуйте снова",
-                Toast.LENGTH_SHORT
-            ).show()
-
-            is EventTemplateFormNotificationEvent.SuccessCreate -> Toast.makeText(
-                action.context,
-                "Шаблон успешно создан",
-                Toast.LENGTH_SHORT
-            ).show()
-
-            is EventTemplateFormNotificationEvent.SuccesssUpdate -> Toast.makeText(
-                action.context,
-                "Шаблон успешно изменён",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-
-    }
-
-    // endregion
 
 
 }

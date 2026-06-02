@@ -1,5 +1,6 @@
 package com.example.kotlinclient.di
 
+import com.example.kotlinclient.presentation.utility.ImageStorageManager
 import com.example.kotlinclient.state_management.repository.implementation.ContentTypeRepositoryImpl
 import com.example.kotlinclient.state_management.repository.implementation.EventRepositoryImpl
 import com.example.kotlinclient.state_management.repository.implementation.EventTemplateRepositoryImpl
@@ -12,6 +13,7 @@ import com.example.kotlinclient.state_management.repository.interfaces.EventTemp
 import com.example.kotlinclient.state_management.repository.interfaces.GameContentRepository
 import com.example.kotlinclient.state_management.repository.interfaces.SharedPreferencesRepository
 import com.example.kotlinclient.state_management.repository.interfaces.UserRepository
+import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
 val repositoryModule = module {
@@ -38,6 +40,10 @@ val repositoryModule = module {
 
     single<SharedPreferencesRepository>{
         SharedPreferencesRepositoryImpl(get())
+    }
+
+    single<ImageStorageManager>{
+        ImageStorageManager(androidContext())
     }
 
 }

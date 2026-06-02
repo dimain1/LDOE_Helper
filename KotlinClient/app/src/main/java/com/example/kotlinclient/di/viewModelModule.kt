@@ -20,11 +20,11 @@ val viewModelModule = module {
     }
 
     viewModel{
-        EventViewModel(get(), get())
+        EventViewModel(get(),  get(),get())
     }
 
     viewModel {
-        EventTemplateViewModel(get(), get())
+        EventTemplateViewModel(get(), get(), get())
     }
 
     viewModel {

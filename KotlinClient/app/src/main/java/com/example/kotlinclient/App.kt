@@ -2,6 +2,7 @@ package com.example.kotlinclient
 
 import android.app.Application
 import com.example.kotlinclient.di.databaseModule
+import com.example.kotlinclient.di.notificationModule
 import com.example.kotlinclient.di.preferencesModule
 import com.example.kotlinclient.di.repositoryModule
 import com.example.kotlinclient.di.viewModelModule
@@ -27,6 +28,7 @@ class App: Application() {
                 preferencesModule,
                 repositoryModule,
                 viewModelModule,
+                notificationModule
 
             )
         }

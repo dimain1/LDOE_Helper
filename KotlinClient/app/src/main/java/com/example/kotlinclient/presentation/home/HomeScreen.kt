@@ -1,6 +1,10 @@
 package com.example.kotlinclient.presentation.home
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -48,6 +52,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kotlinclient.R
+import com.example.kotlinclient.presentation.overlay.OverlayService
 import com.example.kotlinclient.presentation.utility.uiComponent.LocalImage
 import com.example.kotlinclient.presentation.utility.uiComponent.AnimatedTimer
 import com.example.kotlinclient.state_management.entity.Event
@@ -74,7 +79,7 @@ fun HomeScreen(
 ) {
 
     val scrollState = rememberScrollState()
-    val content: Context = LocalContext.current
+    val context: Context = LocalContext.current
 
     var showModalEvent by remember { mutableStateOf(false) }
 
@@ -169,7 +174,9 @@ fun HomeScreen(
                 Spacer(Modifier.height(20.dp))
                 // Нижняя часть с кнопкой
                 Button(
-                    onClick = { },
+                    onClick = {
+                        launchOverlay(context)
+                    },
                     shape = RoundedCornerShape(15),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White,
@@ -315,6 +322,7 @@ fun <T> QuickList(
     listOfValue: List<T>,
     onAction: (HomeAction) -> Unit,
 ) {
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -529,6 +537,25 @@ fun QuickBlock(
             ),
             color = colorScheme.secondary
         )
+    }
+}
+
+private fun launchOverlay(context: Context){
+    if (!Settings.canDrawOverlays(context)) {
+        val intent = Intent(
+            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+            Uri.parse("package:${context.packageName}")
+        )
+        context.startActivity(intent)
+    }
+    else{
+        val intent = Intent(context, OverlayService::class.java)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(intent)
+        } else {
+            context.startService(intent)
+        }
     }
 }
 

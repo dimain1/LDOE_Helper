@@ -1,5 +1,9 @@
 package com.example.kotlinclient.presentation.settings
 
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import android.provider.Settings
 import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
@@ -45,6 +49,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationManagerCompat
 import com.example.kotlinclient.state_management.viewModel.SettingsAction
 import com.example.kotlinclient.state_management.viewModel.SettingsDialogType
 import com.example.kotlinclient.state_management.viewModel.SettingsFormAction
@@ -224,7 +229,15 @@ fun SettingsScreen(
                 {
                     CustomSwitcher(
                         uiState.notification,
-                        { onAction(SettingsAction.SwitchPreference("notification")) })
+                        {
+                            if(!checkNotificationPermission(context)){
+
+                            }
+                            else{
+                                onAction(SettingsAction.SwitchPreference("notification"))
+                            }
+
+                        })
                 }
                 HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
                 SettingsBlockRow(Icons.Default.Clear, "Sound Effects")
@@ -397,6 +410,30 @@ fun CustomSwitcher(checked: Boolean, onClick: () -> Unit = {}) {
     }
 }
 
-// Перенести в ViewModel !!!!!!!!!!!!!!!!!!!!!!!
+fun checkNotificationPermission(context: Context): Boolean {
+    val notificationManager = NotificationManagerCompat.from(context)
+
+    if (!notificationManager.areNotificationsEnabled()) {
+
+        val intent = Intent().apply {
+            when {
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> {
+                    action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+                    putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                }
+
+                else -> {
+                    action = "android.settings.APP_NOTIFICATION_SETTINGS"
+                    putExtra("app_package", context.packageName)
+                    putExtra("app_uid", context.applicationInfo.uid)
+                }
+            }
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        context.startActivity(intent)
+        return false
+    }
+    return true
+}
 
 

@@ -328,7 +328,7 @@ fun EventCreateModal(
             {
                 Button(
                     onClick = {
-                        onFormAction(EventFormAction.ValidateAndSave(context))
+                        onFormAction(EventFormAction.ValidateAndSave)
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colorScheme.tertiary,

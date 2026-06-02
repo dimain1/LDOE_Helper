@@ -106,6 +106,7 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     testImplementation("io.mockk:mockk:1.13.12")
     implementation("org.mindrot:jbcrypt:0.4")
+    implementation("androidx.lifecycle:lifecycle-service:2.6.2")
     implementation(libs.google.gson)
     implementation(libs.koin.android)
     implementation(libs.koin.compose)

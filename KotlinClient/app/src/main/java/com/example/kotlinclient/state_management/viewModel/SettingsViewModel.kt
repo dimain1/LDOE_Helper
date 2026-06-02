@@ -1,8 +1,7 @@
 package com.example.kotlinclient.state_management.viewModel
 
-import android.content.Context
-import android.widget.Toast
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.kotlinclient.presentation.utility.PasswordHasher
@@ -66,9 +65,9 @@ data class SettingsFormErrors(
 sealed interface SettingsFormAction {
     data object LoadUiState : SettingsFormAction
     data object ClearUiState : SettingsFormAction
-    data class EditUserInfo(val context: Context) : SettingsFormAction
-    data class AuthorizationUser(val context: Context) : SettingsFormAction
-    data class Registration(val context: Context) : SettingsFormAction
+    data object EditUserInfo : SettingsFormAction
+    data object AuthorizationUser : SettingsFormAction
+    data object Registration: SettingsFormAction
     data class OnFormValidation(val action: SettingsFormValidation) : SettingsFormAction
 }
 
@@ -84,10 +83,10 @@ sealed interface SettingsFormValidation {
 }
 
 sealed interface SettingsFormNotificationEvent {
-    data class SuccessUpdate(val context: Context) : SettingsFormNotificationEvent
-    data class SuccessAuth(val context: Context) : SettingsFormNotificationEvent
-    data class SuccessRegistration(val context: Context) : SettingsFormNotificationEvent
-    data class AuthFailed(val context: Context) : SettingsFormNotificationEvent
+    data object SuccessUpdate: SettingsFormNotificationEvent
+    data object SuccessAuth : SettingsFormNotificationEvent
+    data object SuccessRegistration : SettingsFormNotificationEvent
+    data object AuthFailed : SettingsFormNotificationEvent
 }
 
 
@@ -137,6 +136,7 @@ class SettingsViewModel(
         when (action) {
             is SettingsAction.SetUserId -> setUserId(action.id)
             is SettingsAction.SwitchPreference -> switchBooleanPreferences(action.key)
+
             is SettingsAction.ExitProfile -> exitProfile()
             is SettingsAction.DismissDialog -> dismissDialog()
             is SettingsAction.OpenDialog -> openDialog(action.dialog)
@@ -177,9 +177,9 @@ class SettingsViewModel(
         when (action) {
             is SettingsFormAction.LoadUiState -> loadUiState()
             is SettingsFormAction.ClearUiState -> clearUiState()
-            is SettingsFormAction.AuthorizationUser -> authorizationUser(action.context)
-            is SettingsFormAction.EditUserInfo -> validateAndSave(action.context)
-            is SettingsFormAction.Registration -> validateAndSave(action.context)
+            is SettingsFormAction.AuthorizationUser -> authorizationUser()
+            is SettingsFormAction.EditUserInfo -> validateAndSave()
+            is SettingsFormAction.Registration -> validateAndSave()
             is SettingsFormAction.OnFormValidation -> onFormValidation(action.action)
         }
     }
@@ -203,7 +203,7 @@ class SettingsViewModel(
         return validateLogin() && validateEmail() && validatePassword() && validateConfirmPassword()
     }
 
-    private fun validateAndSave(context: Context) {
+    private fun validateAndSave() {
         val formUiState = _formUiState.value
         val uiState = uiState.value
 
@@ -218,15 +218,17 @@ class SettingsViewModel(
             )
 
             if (user.id == null) {
-                if(isDataValid()){
-                userRepository.createUser(user)
-                _notificationEvent.send(SettingsFormNotificationEvent.SuccessRegistration(context))
-                dismissDialog()
+                if (isDataValid()) {
+                    userRepository.createUser(user)
+                    _notificationEvent.send(
+                        SettingsFormNotificationEvent.SuccessRegistration
+                    )
+                    dismissDialog()
                 }
             } else {
-                if(validateLogin() && validateEmail()){
+                if (validateLogin() && validateEmail()) {
                     userRepository.updateUserInfo(user)
-                    _notificationEvent.send(SettingsFormNotificationEvent.SuccessUpdate(context))
+                    _notificationEvent.send(SettingsFormNotificationEvent.SuccessUpdate)
                     dismissDialog()
                 }
             }
@@ -235,7 +237,7 @@ class SettingsViewModel(
         }
     }
 
-    private fun authorizationUser(context: Context) {
+    private fun authorizationUser() {
         val login = _formUiState.value.login.text.toString()
         val password = _formUiState.value.password.text.toString()
 
@@ -247,11 +249,11 @@ class SettingsViewModel(
             }
 
             if (user == null) {
-                _notificationEvent.send(SettingsFormNotificationEvent.AuthFailed(context))
+                _notificationEvent.send(SettingsFormNotificationEvent.AuthFailed)
                 _formUiState.value.password.edit { replace(0, length, "") }
             } else {
                 setUserId(user.id!!)
-                _notificationEvent.send(SettingsFormNotificationEvent.SuccessAuth(context))
+                _notificationEvent.send(SettingsFormNotificationEvent.SuccessAuth)
                 dismissDialog()
             }
         }
@@ -338,37 +340,6 @@ class SettingsViewModel(
         updateErrors { copy(passwordConfirmError = error) }
 
         return error == null
-    }
-
-    // endregion
-
-    // region NotificationUser
-
-    fun onNotification(event: SettingsFormNotificationEvent) {
-        when (event) {
-            is SettingsFormNotificationEvent.SuccessAuth -> Toast.makeText(
-                event.context, "Успешная авторизация",
-                Toast.LENGTH_SHORT
-            ).show()
-
-            is SettingsFormNotificationEvent.SuccessRegistration -> Toast.makeText(
-                event.context, "Успешная регистрация",
-                Toast.LENGTH_SHORT
-            ).show()
-
-            is SettingsFormNotificationEvent.SuccessUpdate -> Toast.makeText(
-                event.context,
-                "Профиль успешно изменён",
-                Toast.LENGTH_SHORT
-            ).show()
-
-            is SettingsFormNotificationEvent.AuthFailed -> Toast.makeText(
-                event.context, "Имя пользователя либо пароль неверны", Toast.LENGTH_SHORT
-            ).show()
-
-        }
-
-
     }
 
     // endregion

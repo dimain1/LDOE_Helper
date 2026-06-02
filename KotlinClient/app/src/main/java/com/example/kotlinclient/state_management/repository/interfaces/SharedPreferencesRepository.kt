@@ -8,12 +8,12 @@ interface SharedPreferencesRepository {
 
     fun observeLong(key: String, defaultValue: Long): Flow<Long>
 
-    suspend fun getBooleanByKey(key: String): Boolean
+    fun getBooleanByKey(key: String): Boolean
 
-    suspend fun getLongByKey(key: String): Long
+    fun getLongByKey(key: String): Long
 
-    suspend fun putLongByKey(key: String, value: Long)
+    fun putLongByKey(key: String, value: Long)
 
-    suspend fun switchBooleanValueByKey(key: String)
+    fun switchBooleanValueByKey(key: String)
 
 }

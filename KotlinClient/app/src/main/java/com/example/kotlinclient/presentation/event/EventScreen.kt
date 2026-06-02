@@ -1,5 +1,10 @@
 package com.example.kotlinclient.presentation.event
 
+import android.app.AlarmManager
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.kotlinclient.presentation.event.modal.EventCreateModal
@@ -49,6 +55,8 @@ fun EventScreen(
     currentTime: LocalDateTime,
     paddingValues: PaddingValues
 ) {
+
+    val context: Context = LocalContext.current
 
     when (uiState.activeDialog) {
         is EventDialogType.Create -> {
@@ -122,8 +130,14 @@ fun EventScreen(
                     shape = RoundedCornerShape(25),
                     modifier = Modifier,
                     onClick = {
-                        onFormAction(EventFormAction.ClearUiState)
-                        onAction(EventAction.OpenDialog(EventDialogType.Create))
+                        if(!checkAlarmPermission(context)){
+
+                        }
+                        else{
+                            onFormAction(EventFormAction.ClearUiState)
+                            onAction(EventAction.OpenDialog(EventDialogType.Create))
+                        }
+
                     }
                 )
                 {
@@ -163,4 +177,22 @@ fun EventScreen(
         HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
     }
 
+}
+
+fun checkAlarmPermission(context: Context): Boolean{
+
+    val alarmManager =
+        context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (!alarmManager.canScheduleExactAlarms()) {
+            val intent = Intent().apply {
+                action = Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
+            }
+            context.startActivity(intent)
+            return false
+        }
+        return true
+    }
+    return true
 }

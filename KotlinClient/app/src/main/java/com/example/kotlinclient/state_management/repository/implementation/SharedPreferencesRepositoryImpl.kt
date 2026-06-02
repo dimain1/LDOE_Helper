@@ -43,19 +43,19 @@ class SharedPreferencesRepositoryImpl(
             awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
         }
 
-    override suspend fun getBooleanByKey(key: String): Boolean {
+    override fun getBooleanByKey(key: String): Boolean {
         return sharedPreferences.getBoolean(key, false)
     }
 
-    override suspend fun getLongByKey(key: String): Long {
+    override fun getLongByKey(key: String): Long {
         return sharedPreferences.getLong(key, 0)
     }
 
-    override suspend fun putLongByKey(key: String , value: Long) {
+    override fun putLongByKey(key: String , value: Long) {
         sharedPreferences.edit { putLong(key , value) }
     }
 
-    override suspend fun switchBooleanValueByKey(key: String) {
+    override fun switchBooleanValueByKey(key: String) {
         sharedPreferences.edit { putBoolean(key, !getBooleanByKey(key)) }
     }
 

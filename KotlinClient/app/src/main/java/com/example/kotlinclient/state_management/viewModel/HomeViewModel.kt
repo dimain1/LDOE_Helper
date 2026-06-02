@@ -1,9 +1,8 @@
 package com.example.kotlinclient.state_management.viewModel
 
-import android.content.Context
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.kotlinclient.presentation.overlay.OverlayService
 import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.state_management.entity.GameContent
 import com.example.kotlinclient.state_management.repository.interfaces.EventRepository
@@ -25,7 +24,6 @@ sealed interface HomeAction{
     data object ToTemplate: HomeAction
     data object ToInfo: HomeAction
     data object ToSettings: HomeAction
-    data class LaunchOverlay(val context: Context) : HomeAction
     data class OpenDialog(val dialog: DialogType?) : HomeAction
 }
 
@@ -49,7 +47,6 @@ class HomeViewModel(
 
     fun onAction(action: HomeAction){
         when(action){
-            is HomeAction.LaunchOverlay -> launchOverlay(action.context)
             is HomeAction.DeleteEvent -> TODO()
             is HomeAction.ToEvent -> TODO()
             is HomeAction.ToInfo -> TODO()
@@ -62,9 +59,7 @@ class HomeViewModel(
 
     // region onAction function
 
-    private fun launchOverlay(context: Context){
-        Toast.makeText(context,"Launch Overlay", Toast.LENGTH_SHORT).show()
-    }
+
 
     // endregion
 
