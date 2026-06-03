@@ -1,0 +1,140 @@
+@startuml ER_Diagram
+
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam linetype ortho
+
+skinparam entity {
+    BackgroundColor #EEF5FF
+    BorderColor     #4A90D9
+    FontSize        12
+    FontStyle       bold
+}
+skinparam note {
+    BackgroundColor #FFFDE7
+    BorderColor     #F57F17
+    FontSize        10
+}
+
+' ══════════════════════════════════════════════════════
+'  СПРАВОЧНИКИ
+' ══════════════════════════════════════════════════════
+
+entity "**user_role**" as UserRole {
+    * id          : BIGSERIAL <<PK>>
+    --
+    * name        : VARCHAR UNIQUE
+}
+
+entity "**content_type**" as ContentType {
+    * id          : BIGSERIAL <<PK>>
+    --
+    * name        : VARCHAR UNIQUE
+}
+
+' ══════════════════════════════════════════════════════
+'  ПОЛЬЗОВАТЕЛИ
+' ══════════════════════════════════════════════════════
+
+entity "**users**" as Users {
+    * id          : BIGSERIAL <<PK>>
+    --
+    * login       : VARCHAR UNIQUE
+    * password    : VARCHAR
+    * email       : VARCHAR UNIQUE
+    * role_id     : BIGINT <<FK>>
+}
+
+entity "**settings**" as Settings {
+    * id          : BIGSERIAL <<PK>>
+    --
+      user_id     : BIGINT UNIQUE <<FK>>
+      preferences : JSONB
+}
+
+entity "**refresh_tokens**" as RefreshTokens {
+    * id          : BIGSERIAL <<PK>>
+    --
+      user_id     : BIGINT <<FK>>
+    * token       : VARCHAR
+    * expiry_date : TIMESTAMP
+}
+
+' ══════════════════════════════════════════════════════
+'  КОНТЕНТ
+' ══════════════════════════════════════════════════════
+
+entity "**game_content**" as GameContent {
+    * id          : BIGSERIAL <<PK>>
+    --
+    * name        : VARCHAR
+      description : TEXT
+      image       : VARCHAR
+      attributes  : JSONB
+}
+
+entity "**type_to_content**" as TypeToContent <<M:N>> {
+    * content_id  : BIGINT <<FK>>
+    * type_id     : BIGINT <<FK>>
+}
+
+entity "**user_pinned_content**" as PinnedContent <<M:N>> {
+    * user_id     : BIGINT <<FK>>
+    * content_id  : BIGINT <<FK>>
+}
+
+' ══════════════════════════════════════════════════════
+'  СОБЫТИЯ
+' ══════════════════════════════════════════════════════
+
+entity "**event_template**" as EventTemplate {
+    * id          : BIGSERIAL <<PK>>
+    --
+      creator_id  : BIGINT <<FK>>
+    * name        : VARCHAR
+      description : TEXT
+      image       : VARCHAR
+    * duration    : BIGINT
+}
+
+entity "**events**" as Events {
+    * id          : BIGSERIAL <<PK>>
+    --
+    * user_id     : BIGINT <<FK>>
+      template_id : BIGINT <<FK>> nullable
+    * name        : VARCHAR
+      description : TEXT
+      image       : VARCHAR
+    * start_time  : TIMESTAMP
+    * end_time    : TIMESTAMP
+}
+
+' ══════════════════════════════════════════════════════
+'  СВЯЗИ
+' ══════════════════════════════════════════════════════
+
+Users         }o--||  UserRole       : role_id
+Settings      ||--o|  Users          : user_id (1:1)
+RefreshTokens ||--o|  Users          : user_id (1:1, CASCADE)
+
+Events        }o--||  Users          : user_id
+Events        }o--o|  EventTemplate  : template_id (SET NULL)
+EventTemplate }o--o|  Users          : creator_id (SET NULL)
+
+GameContent   ||--o{  TypeToContent  : content_id
+ContentType   ||--o{  TypeToContent  : type_id
+
+Users         ||--o{  PinnedContent  : user_id
+GameContent   ||--o{  PinnedContent  : content_id
+
+note bottom of RefreshTokens
+  ON DELETE CASCADE:
+  удаляется вместе с User
+end note
+
+note bottom of Events
+  template_id nullable:
+  ON DELETE SET NULL
+end note
+
+@enduml

@@ -1,0 +1,93 @@
+@startuml SD_003_GetContent
+
+skinparam sequenceMessageAlign center
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam sequence {
+    ArrowColor       #333333
+    ParticipantBackgroundColor #EEF5FF
+    ParticipantBorderColor #4A90D9
+    LifeLineBorderColor #AAAAAA
+    BoxBackgroundColor #F8F9FA
+}
+
+title SD-003 — Получение контента (offline-first)
+
+actor       "User"                    as User
+participant "Compose\nScreen"         as UI
+participant "Content\nViewModel"      as VM
+participant "Content\nRepository"     as Repo
+participant "Room DAO"                as Room
+participant "Retrofit\n(OkHttp)"      as Retrofit
+
+box "Сервер" #F0F8FF
+    participant "JwtFilter"           as Filter
+    participant "GameContent\nController" as Controller
+    participant "GameContent\nService" as Service
+    participant "GameContent\nRepository" as GCRepo
+end box
+
+User -> UI : открывает экран контента
+
+UI -> VM : loadContent()
+activate VM
+
+VM -> Repo : getAll()
+activate Repo
+
+' ─── Шаг 1: Мгновенный ответ из кэша ──────────────────────
+Repo -> Room : getAll() → Flow<List<Entity>>
+activate Room
+Room --> Repo : Flow (кэшированные данные)
+deactivate Room
+
+Repo --> VM : Flow<List<ContentUi>>
+VM --> UI : StateFlow emit (кэш)
+UI --> User : отображает кэшированный список
+
+' ─── Шаг 2: Асинхронный запрос к серверу ──────────────────
+Repo -> Retrofit : GET /content\n{Bearer token}
+activate Retrofit
+
+Retrofit -> Filter : HTTP Request
+activate Filter
+Filter --> Retrofit : JWT OK
+deactivate Filter
+
+Retrofit -> Controller : getAll(login)
+activate Controller
+Controller -> Service : getAll(login)
+activate Service
+Service -> GCRepo : findAllWithPinnedFlag(userId)
+activate GCRepo
+GCRepo --> Service : List<Object[]>
+deactivate GCRepo
+Service --> Controller : List<GameContentDto>
+deactivate Service
+Controller --> Retrofit : 200 OK
+deactivate Controller
+
+Retrofit --> Repo : List<GameContentDto>
+deactivate Retrofit
+
+' ─── Шаг 3: Обновление кэша ────────────────────────────────
+Repo -> Room : upsertAll(entities)\n(OnConflictStrategy.REPLACE)
+activate Room
+Room --> Repo : done
+Room --> VM : Flow emit (обновлённые данные)
+deactivate Room
+
+VM --> UI : StateFlow emit (актуальные данные)
+deactivate Repo
+deactivate VM
+UI --> User : перерисовка с актуальным контентом
+
+' ─── Альтернатива: нет сети ────────────────────────────────
+note over Repo, Retrofit
+  Альтернативный поток (сеть недоступна):
+  Retrofit бросает IOException →
+  Repository перехватывает, логирует →
+  UI остаётся на кэшированных данных
+end note
+
+@enduml

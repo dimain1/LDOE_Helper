@@ -71,9 +71,13 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Логин уже занят");
         }
 
-        UserRole role = userRoleRepository.findById(1L)
+        // Первый зарегистрированный пользователь получает роль ADMIN,
+        // все последующие — USER
+        String roleName = userRepository.count() == 0 ? "ADMIN" : "USER";
+
+        UserRole role = userRoleRepository.findByName(roleName)
             .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.INTERNAL_SERVER_ERROR, "Роль по умолчанию не найдена"));
+                HttpStatus.INTERNAL_SERVER_ERROR, "Роль '" + roleName + "' не найдена в справочнике"));
 
         User user = new User(
             request.getLogin(),

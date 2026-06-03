@@ -1,0 +1,89 @@
+@startuml DependencyDiagram
+
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+skinparam component {
+    BackgroundColor #EEF5FF
+    BorderColor     #4A90D9
+    FontSize        12
+}
+skinparam interface {
+    BackgroundColor #FFFDE7
+    BorderColor     #F57F17
+    FontSize        11
+}
+skinparam note {
+    BackgroundColor #FCF3CF
+    BorderColor     #D4AC0D
+    FontSize        10
+}
+skinparam arrow {
+    Color           #333333
+    FontSize        10
+}
+
+title Диаграмма зависимостей PCMEF\n(интерфейсы между слоями)
+
+' ═══════════════════════════════════════════════════════
+'  КЛИЕНТСКАЯ СТОРОНА (слева)
+' ═══════════════════════════════════════════════════════
+
+component "Presentation\n(Compose Screen)" as P
+component "ViewModel\n(Koin)"              as VM
+component "Repository\nimpl"              as RepoImpl
+
+component "Room DAO\nimpl"                as RoomImpl  #D5F5E3
+component "Retrofit Service\nimpl"        as RetImpl   #FDEBD0
+
+interface "StateFlow<UiState>" as IState
+interface "<<Repository>>\nsuspend fun / Flow" as IRepo
+interface "<<Dao>>\n@Query / @Insert"     as IDao
+interface "<<RetrofitService>>\n@GET / @POST" as IRet
+
+P       --> IState
+IState  --> VM
+VM      --> IRepo
+IRepo   --> RepoImpl
+RepoImpl --> IDao
+IDao    --> RoomImpl
+RepoImpl --> IRet
+IRet    --> RetImpl
+
+' ═══════════════════════════════════════════════════════
+'  ГРАНИЦА: HTTP
+' ═══════════════════════════════════════════════════════
+
+RetImpl -right-> [Control\n(REST Controller)] : REST HTTP/JSON\n(Bearer JWT)
+
+' ═══════════════════════════════════════════════════════
+'  СЕРВЕРНАЯ СТОРОНА
+' ═══════════════════════════════════════════════════════
+
+component "[Security]\nJwtFilter"         as Sec  #FADBD8
+component "Control\n(REST Controller)"    as C
+component "Mediator\n(Service)"           as M
+component "Foundation\n(JPA Repository)"  as F
+component "Entity\n(JPA Entity)"          as E    #FFFDE7
+
+interface "<<JpaRepository>>\n<Entity, ID>" as IJpa
+
+Sec  .down.> C : <<cross-cutting>>\nбежит до Controller
+C    -down-> M
+M    -down-> IJpa
+IJpa -down-> F
+F    --> E
+M    --> E
+
+database "PostgreSQL 15" as DB #E8F8F5
+F -down-> DB
+
+' ═══════════════════════════════════════════════════════
+'  ЛЕГЕНДА
+' ═══════════════════════════════════════════════════════
+note bottom
+  ——→  прямая зависимость (использует)
+  - ->  реализует интерфейс / сквозная зависимость
+end note
+
+@enduml

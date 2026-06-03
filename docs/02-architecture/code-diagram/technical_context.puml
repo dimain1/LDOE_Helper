@@ -1,0 +1,25 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Пользователь" as User
+actor "Администратор" as Admin
+
+package "LDOE-Helper" {
+    [Android App\n(Kotlin / Compose)] as App
+    [Spring Boot API\n(Java 17)] as API
+}
+
+database "PostgreSQL 15" as DB
+cloud "Google Play" as GP
+[Android System\n(WorkManager, NotificationMgr)] as Android
+
+User  --> App
+Admin --> API  : REST HTTP/JSON\n(ADMIN role)
+App   --> API  : REST HTTP/JSON\n(Bearer JWT)
+API   --> DB   : JDBC / JPA
+App   --> Android : schedules timers
+Android --> User  : push notifications
+GP    --> User    : APK distribution
+
+@enduml
