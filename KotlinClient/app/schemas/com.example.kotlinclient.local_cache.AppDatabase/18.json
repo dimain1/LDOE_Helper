@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 17,
-    "identityHash": "254f96ad15f2fc06509fc17087d850e3",
+    "version": 18,
+    "identityHash": "6defb024003e36e08c3aec0b56c86b0b",
     "entities": [
       {
         "tableName": "content_type",
@@ -199,7 +199,7 @@
       },
       {
         "tableName": "event_template",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `server_id` INTEGER, `sync_status` TEXT NOT NULL, `creator_id` INTEGER, `name` TEXT NOT NULL, `description` TEXT, `image` TEXT, `duration` INTEGER NOT NULL, FOREIGN KEY(`creator_id`) REFERENCES `users`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `server_id` INTEGER, `sync_status` TEXT NOT NULL, `creator_id` INTEGER, `name` TEXT NOT NULL, `description` TEXT, `image` TEXT, `local_image_path` TEXT, `duration` INTEGER NOT NULL, FOREIGN KEY(`creator_id`) REFERENCES `users`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -236,6 +236,11 @@
           {
             "fieldPath": "imageUrl",
             "columnName": "image",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "localImagePath",
+            "columnName": "local_image_path",
             "affinity": "TEXT"
           },
           {
@@ -491,7 +496,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '254f96ad15f2fc06509fc17087d850e3')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6defb024003e36e08c3aec0b56c86b0b')"
     ]
   }
 }
