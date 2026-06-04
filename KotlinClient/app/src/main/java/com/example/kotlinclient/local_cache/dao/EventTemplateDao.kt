@@ -73,10 +73,14 @@ interface EventTemplateDao {
     @Query("SELECT id FROM event_template WHERE server_id = :serverId AND creator_id = :userId LIMIT 1")
     suspend fun getLocalIdByServerId(serverId: Long, userId: Long): Long?
 
+    /**
+     * Обновляет поля шаблона при синхронизации с сервера.
+     * local_image_path НЕ обнуляется — он обновляется отдельно после скачивания картинки.
+     */
     @Query("""
         UPDATE event_template
         SET name = :name, description = :description, image = :imageUrl,
-            local_image_path = NULL, duration = :duration, sync_status = 'SYNCED'
+            duration = :duration, sync_status = 'SYNCED'
         WHERE server_id = :serverId AND creator_id = :userId
     """)
     suspend fun updateByServerId(
@@ -87,4 +91,10 @@ interface EventTemplateDao {
         imageUrl: String?,
         duration: Long
     )
+
+    @Query("SELECT local_image_path FROM event_template WHERE id = :localId LIMIT 1")
+    suspend fun getLocalImagePath(localId: Long): String?
+
+    @Query("UPDATE event_template SET local_image_path = :path WHERE id = :localId")
+    suspend fun setLocalImagePath(localId: Long, path: String)
 }

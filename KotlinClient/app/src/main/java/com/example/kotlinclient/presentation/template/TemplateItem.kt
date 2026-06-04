@@ -109,22 +109,6 @@ fun TemplateItem(
                 }
                 Spacer(Modifier.height(12.dp))
 
-//                // Описание
-//                Row(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(bottom = 16.dp)
-//                )
-//                {
-//                    Text(
-//                        text = description ?: "",
-//                        style = Typography.bodyMedium,
-//                        color = colorScheme.secondary,
-//                        maxLines = 3,
-//                        overflow = TextOverflow.Ellipsis,
-//                    )
-//                }
-
                 Spacer(
                     Modifier
                         .heightIn(min = 0.dp)

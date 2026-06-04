@@ -49,4 +49,4 @@ fun Modifier.roleBound(allowedRoles: List<UserRole>): Modifier {
 //fun Modifier.userAndAdmin() = roleBound(listOf(UserRole.USER, UserRole.ADMIN))
 
 @Composable
-fun Modifier.Authorized() = roleBound(listOf(UserRole.USER))
+fun Modifier.Authorized() = roleBound(listOf(UserRole.USER, UserRole.ADMIN))

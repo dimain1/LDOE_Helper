@@ -13,6 +13,8 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.example.kotlinclient.api_client.AuthInterceptor
+import com.example.kotlinclient.api_client.TokenStorage
 import com.example.kotlinclient.di.databaseModule
 import com.example.kotlinclient.di.networkModule
 import com.example.kotlinclient.di.notificationModule
@@ -23,6 +25,8 @@ import com.example.kotlinclient.sync.SyncWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
@@ -32,6 +36,9 @@ class App : Application() {
 
     val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
+    private val tokenStorage: TokenStorage by inject()
+    private val authInterceptor: AuthInterceptor by inject()
+
     override fun onCreate() {
         super.onCreate()
 
@@ -39,7 +46,7 @@ class App : Application() {
             androidContext(this@App)
             modules(
                 module { single { applicationScope } },
-                networkModule,           // должен быть до repositoryModule
+                networkModule,
                 databaseModule,
                 preferencesModule,
                 repositoryModule,
@@ -49,11 +56,9 @@ class App : Application() {
         }
 
         schedulePeriodSync()
-        triggerOneTimeSync()   // немедленный sync при старте, если сеть уже подключена
+        triggerOneTimeSync()
         registerNetworkCallback()
     }
-
-    // ── Периодическая синхронизация каждые 15 минут (минимум WorkManager) ────
 
     private fun schedulePeriodSync() {
         val constraints = Constraints.Builder()
@@ -71,8 +76,6 @@ class App : Application() {
         )
     }
 
-    // ── При появлении сети — немедленный one-shot sync ────────────────────────
-
     private fun registerNetworkCallback() {
         val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val request = NetworkRequest.Builder()
@@ -82,8 +85,18 @@ class App : Application() {
         cm.registerNetworkCallback(request, object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
                 triggerOneTimeSync()
+                tryRefreshTokensInBackground()
             }
         })
+    }
+
+    private fun tryRefreshTokensInBackground() {
+        if (!tokenStorage.hasTokens()) return
+        val accessToken = tokenStorage.getAccessToken() ?: return
+        if (!authInterceptor.isExpiredOrExpiringSoon(accessToken)) return
+        applicationScope.launch(Dispatchers.IO) {
+            authInterceptor.tryRefresh()
+        }
     }
 
     fun triggerOneTimeSync() {

@@ -209,6 +209,12 @@ class SettingsViewModel(
                             _notificationEvent.send(SettingsFormNotificationEvent.AuthFailed)
                             _formUiState.value.password.edit { replace(0, length, "") }
                         }
+                        // Сервер вернул 403 — аккаунт заблокирован / недостаточно прав
+                        e.httpCode() == 403 -> _notificationEvent.send(
+                            SettingsFormNotificationEvent.ServerError(
+                                e.serverMessage() ?: "Доступ запрещён"
+                            )
+                        )
                         // Любая другая ошибка сервера
                         else -> _notificationEvent.send(
                             SettingsFormNotificationEvent.ServerError(

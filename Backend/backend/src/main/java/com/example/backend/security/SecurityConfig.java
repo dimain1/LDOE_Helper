@@ -2,6 +2,7 @@ package com.example.backend.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -33,6 +34,8 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         // статика — изображения без авторизации
                         .requestMatchers("/images/**").permitAll()
+                        // публичный контент — только чтение (POST/DELETE по-прежнему требуют авторизации)
+                        .requestMatchers(HttpMethod.GET, "/content", "/content/types").permitAll()
 
                         .requestMatchers(
                 "/v3/api-docs/**",

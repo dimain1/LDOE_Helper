@@ -1,5 +1,6 @@
 package com.example.kotlinclient.api_client
 
+import org.json.JSONObject
 import retrofit2.HttpException
 import java.io.IOException
 
@@ -16,7 +17,24 @@ fun Throwable.isNetworkError(): Boolean =
 fun Throwable.httpCode(): Int? = (this as? HttpException)?.code()
 
 /**
- * Тело ответа сервера (строка), если доступно.
+ * Человекочитаемое сообщение из тела ответа сервера.
+ *
+ * Сначала пробует распарсить JSON и вернуть поле "message"/"error".
+ * Если тело — не JSON, возвращает сырую строку (если непустая).
  */
-fun Throwable.serverMessage(): String? =
-    runCatching { (this as? HttpException)?.response()?.errorBody()?.string() }.getOrNull()
+fun Throwable.serverMessage(): String? = runCatching {
+    val body = (this as? HttpException)
+        ?.response()?.errorBody()?.string()
+        ?.takeIf { it.isNotBlank() }
+        ?: return@runCatching null
+
+    // Пробуем распарсить {"message": "..."} или {"error": "..."}
+    try {
+        val json = JSONObject(body)
+        json.optString("message").takeIf { it.isNotBlank() }
+            ?: json.optString("error").takeIf { it.isNotBlank() }
+            ?: body
+    } catch (_: Exception) {
+        body
+    }
+}.getOrNull()

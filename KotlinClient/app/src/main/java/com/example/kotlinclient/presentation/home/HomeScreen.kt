@@ -41,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -53,9 +54,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kotlinclient.R
+import android.widget.Toast
 import com.example.kotlinclient.presentation.overlay.OverlayService
+import com.example.kotlinclient.state_management.repository.UserSessionProvider
 import com.example.kotlinclient.ui.theme.ServiceStopButtonColor
 import com.example.kotlinclient.presentation.utility.uiComponent.LocalImage
+import org.koin.compose.koinInject
 import com.example.kotlinclient.presentation.utility.uiComponent.AnimatedTimer
 import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.state_management.entity.GameContent
@@ -83,6 +87,8 @@ fun HomeScreen(
     val scrollState = rememberScrollState()
     val context: Context = LocalContext.current
     val isOverlayRunning by OverlayService.isRunning.collectAsState()
+    val session: UserSessionProvider = koinInject()
+    val user by session.user.collectAsState()
 
     var showModalEvent by remember { mutableStateOf(false) }
 
@@ -178,10 +184,16 @@ fun HomeScreen(
                 // Нижняя часть с кнопкой
                 Button(
                     onClick = {
-                        if (isOverlayRunning) {
-                            context.stopService(Intent(context, OverlayService::class.java))
-                        } else {
-                            launchOverlay(context)
+                        when {
+                            isOverlayRunning -> context.stopService(
+                                Intent(context, OverlayService::class.java)
+                            )
+                            user == null -> Toast.makeText(
+                                context,
+                                "Войдите в аккаунт, чтобы запустить оверлей",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            else -> launchOverlay(context)
                         }
                     },
                     shape = RoundedCornerShape(15),
@@ -454,8 +466,14 @@ fun QuickListItem(
             .clickable(onClick = onItemClick)
 
     ) {
-        // Изображение события !!!!!!!!!!!!!!!!
-        LocalImage(fileName, Modifier.size(48.dp))
+        Box(
+            modifier = Modifier
+                .border(1.dp, colorScheme.outline, RoundedCornerShape(10.dp))
+                .clip(RoundedCornerShape(10.dp))
+        ) {
+            LocalImage(fileName, Modifier.size(48.dp),size=48)
+        }
+
 
         Spacer(Modifier.width(12.dp))
         // Содержание события

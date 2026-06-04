@@ -18,6 +18,7 @@ import com.example.kotlinclient.state_management.repository.interfaces.EventTemp
 import com.example.kotlinclient.state_management.repository.interfaces.GameContentRepository
 import com.example.kotlinclient.state_management.repository.interfaces.SharedPreferencesRepository
 import com.example.kotlinclient.state_management.repository.interfaces.UserRepository
+import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
@@ -45,8 +46,18 @@ val repositoryModule = module {
         ContentTypeRepositoryImpl(get(), get<ApiService>())
     }
 
+    // ImageStorageManager использует OkHttpClient из networkModule для скачивания картинок
+    single<ImageStorageManager> {
+        ImageStorageManager(androidContext(), get<OkHttpClient>())
+    }
+
     single<GameContentRepository> {
-        GameContentRepositoryImpl(get(), get(), get<ApiService>())
+        GameContentRepositoryImpl(
+            database = get(),
+            session = get(),
+            api = get<ApiService>(),
+            imageStorageManager = get<ImageStorageManager>()
+        )
     }
 
     single<EventRepository> {
@@ -54,10 +65,11 @@ val repositoryModule = module {
     }
 
     single<EventTemplateRepository> {
-        EventTemplateRepositoryImpl(get(), get(), get<ApiService>())
-    }
-
-    single<ImageStorageManager> {
-        ImageStorageManager(androidContext())
+        EventTemplateRepositoryImpl(
+            database = get(),
+            session = get(),
+            api = get<ApiService>(),
+            imageStorageManager = get<ImageStorageManager>()
+        )
     }
 }

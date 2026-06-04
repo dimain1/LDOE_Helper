@@ -32,8 +32,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import android.widget.Toast
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import com.example.kotlinclient.presentation.event.modal.EventCreateModal
 import com.example.kotlinclient.state_management.entity.EventTemplate
+import com.example.kotlinclient.state_management.repository.UserSessionProvider
+import org.koin.compose.koinInject
 import com.example.kotlinclient.state_management.viewModel.DialogType
 import com.example.kotlinclient.state_management.viewModel.EventAction
 import com.example.kotlinclient.state_management.viewModel.EventDialogType
@@ -57,6 +62,8 @@ fun EventScreen(
 ) {
 
     val context: Context = LocalContext.current
+    val session: UserSessionProvider = koinInject()
+    val user by session.user.collectAsState()
 
     when (uiState.activeDialog) {
         is EventDialogType.Create -> {
@@ -131,16 +138,17 @@ fun EventScreen(
                         contentColor = Color.White
                     ),
                     shape = RoundedCornerShape(25),
-                    modifier = Modifier,
                     onClick = {
-                        if(!checkAlarmPermission(context)){
-
-                        }
-                        else{
+                        if (user == null) {
+                            Toast.makeText(
+                                context,
+                                "Войдите в аккаунт, чтобы создавать события",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else if (checkAlarmPermission(context)) {
                             onFormAction(EventFormAction.ClearUiState)
                             onAction(EventAction.OpenDialog(EventDialogType.Create))
                         }
-
                     }
                 )
                 {

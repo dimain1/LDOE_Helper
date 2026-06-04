@@ -1,4 +1,4 @@
-package com.example.kotlinclient.presentation.info
+package com.example.kotlinclient.presentation.info.modal
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +16,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -81,7 +80,8 @@ fun GameContentViewDetails(onDismiss: () -> Unit, initialData: GameContent?){
                         .height(200.dp)
                         .clip(RoundedCornerShape(20.dp))
                         .border(2.dp, colorScheme.outline, RoundedCornerShape(20.dp))
-                        .fillMaxWidth()
+                        .fillMaxWidth(),
+                    fillAll = true
                 )
 
                 Column(modifier = Modifier.fillMaxWidth()) {
@@ -160,7 +160,7 @@ fun RenderAttributes(
                         text = "- $key:",
                         style = Typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = colorScheme.secondary
                     )
                     // Уходим в рекурсию, увеличивая отступ
                     RenderAttributes(
@@ -175,7 +175,7 @@ fun RenderAttributes(
                         text = "- $key: ${value.joinToString(", ")}",
                         style = Typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = colorScheme.secondary
                     )
                 }
 
@@ -191,7 +191,7 @@ fun RenderAttributes(
                     Text(
                         text = "- $key: $formattedValue",
                         style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = colorScheme.onSurface
                     )
                 }
             }

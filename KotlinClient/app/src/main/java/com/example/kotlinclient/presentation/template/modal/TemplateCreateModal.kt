@@ -66,11 +66,16 @@ fun TemplateCreateModal(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
-            context.contentResolver.takePersistableUriPermission(
-                it,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION
-            )
-
+            // takePersistableUriPermission бросает SecurityException для URI из Google Photos
+            // и других провайдеров, которые не поддерживают persistable permissions.
+            // Оборачиваем в runCatching — если права не удалось сохранить, это не критично:
+            // файл всё равно будет скопирован в приватное хранилище прямо сейчас.
+            runCatching {
+                context.contentResolver.takePersistableUriPermission(
+                    it,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            }
             onFormAction(EventTemplateFormAction.SaveImageInLocal(it))
         }
     }

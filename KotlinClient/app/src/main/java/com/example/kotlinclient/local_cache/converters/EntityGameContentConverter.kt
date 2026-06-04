@@ -5,7 +5,7 @@ import com.example.kotlinclient.local_cache.entity.relationExtension.GameContent
 import com.example.kotlinclient.local_cache.entity.relationExtension.GameContentWithTypes
 import com.example.kotlinclient.state_management.entity.GameContent
 
-fun GameContent.toEntity(): GameContentEntity{
+fun GameContent.toEntity(): GameContentEntity {
     return GameContentEntity(
         id = this.id,
         name = this.name,
@@ -15,27 +15,28 @@ fun GameContent.toEntity(): GameContentEntity{
     )
 }
 
-fun GameContentEntity.toModel(): GameContent{
+fun GameContentEntity.toModel(): GameContent {
     return GameContent(
         id = this.id,
         name = this.name,
         description = this.description,
-        image = this.imageUrl,
+        // Предпочитаем локальный файл (офлайн); fallback — серверный URL
+        image = this.localImagePath ?: this.imageUrl,
         pinned = false,
         types = null,
         attributes = this.attributes
     )
 }
 
-fun GameContentFull.toModel(): GameContent{
+fun GameContentFull.toModel(): GameContent {
     return GameContent(
         id = this.content.id,
         name = this.content.name,
         description = this.content.description,
-        image = this.content.imageUrl,
+        // Предпочитаем локальный файл (офлайн); fallback — серверный URL
+        image = this.content.localImagePath ?: this.content.imageUrl,
         pinned = this.isPinned,
-        types = this.types.map {type -> type.toModel() }.toSet(),
+        types = this.types.map { type -> type.toModel() }.toSet(),
         attributes = this.content.attributes
     )
 }
-

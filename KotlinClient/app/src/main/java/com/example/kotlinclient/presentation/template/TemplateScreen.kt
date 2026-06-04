@@ -26,9 +26,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import android.content.Context
+import android.widget.Toast
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import com.example.kotlinclient.presentation.template.modal.TemplateCreateModal
 import com.example.kotlinclient.presentation.template.modal.TemplateViewDetails
+import com.example.kotlinclient.state_management.repository.UserSessionProvider
 import com.example.kotlinclient.state_management.viewModel.EventFormAction
+import org.koin.compose.koinInject
 import com.example.kotlinclient.state_management.viewModel.EventTemplateAction
 import com.example.kotlinclient.state_management.viewModel.EventTemplateUiState
 import com.example.kotlinclient.state_management.viewModel.EventTemplateDialogType
@@ -45,6 +52,10 @@ fun TemplateScreen(
     paddingValues: PaddingValues
 ) {
 
+
+    val context: Context = LocalContext.current
+    val session: UserSessionProvider = koinInject()
+    val user by session.user.collectAsState()
 
     when (uiState.activeDialog) {
         is EventTemplateDialogType.Create ->{
@@ -112,18 +123,24 @@ fun TemplateScreen(
                     style = Typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                     color = colorScheme.primary
                 )
-                // Кнопка экрана(Создание ивента)
+                // Кнопка экрана(Создание шаблона)
                 Button(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colorScheme.tertiary,
                         contentColor = Color.White
                     ),
                     shape = RoundedCornerShape(25),
-                    modifier = Modifier,
-
                     onClick = {
-                        onFormAction(EventTemplateFormAction.ClearUiState)
-                        onAction(EventTemplateAction.OpenDialog(EventTemplateDialogType.Create))
+                        if (user == null) {
+                            Toast.makeText(
+                                context,
+                                "Войдите в аккаунт, чтобы создавать шаблоны",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            onFormAction(EventTemplateFormAction.ClearUiState)
+                            onAction(EventTemplateAction.OpenDialog(EventTemplateDialogType.Create))
+                        }
                     }
                 )
                 {

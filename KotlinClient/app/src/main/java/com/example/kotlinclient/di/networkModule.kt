@@ -20,9 +20,8 @@ val networkModule = module {
 
     single { TokenStorage(androidContext()) }
 
-    single { AuthInterceptor(get()) }
+    single { AuthInterceptor(get()) { get() } }
 
-    // ApiService через лямбду — разрывает циклическую зависимость
     single { TokenAuthenticator(get()) { get() } }
 
     single {

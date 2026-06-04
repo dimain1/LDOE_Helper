@@ -23,10 +23,12 @@ public class GameContentController {
         this.gameContentService = gameContentService;
     }
 
-    /** Весь контент с флагом pinned для текущего пользователя. */
+    /** Весь контент с флагом pinned для текущего пользователя.
+     *  Для анонимных запросов (userDetails == null) возвращает контент с pinned = false. */
     @GetMapping
     public List<GameContentDto> getAll(@AuthenticationPrincipal UserDetails userDetails) {
-        return gameContentService.getAll(userDetails.getUsername());
+        String login = (userDetails != null) ? userDetails.getUsername() : null;
+        return gameContentService.getAll(login);
     }
 
     /** Создать контент (только ADMIN). Multipart: "request" + "file". */

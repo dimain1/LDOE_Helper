@@ -8,6 +8,7 @@ import com.example.kotlinclient.state_management.utility.ImageStorageManager
 import com.example.kotlinclient.state_management.entity.EventTemplate
 import com.example.kotlinclient.state_management.repository.UserSessionProvider
 import com.example.kotlinclient.state_management.repository.interfaces.EventTemplateRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -146,9 +147,18 @@ class EventTemplateViewModel(
 
     // region onFormAction function
 
-    private fun saveImageInLocal(uri: Uri?){
-        val path = imageStorageManager.saveImageToLocal(uri)
-        _formUiState.update { it.copy(image = path) }
+    private fun saveImageInLocal(uri: Uri?) {
+        // Запускаем на IO-потоке: copyTo() — блокирующий файловый I/O,
+        // который нельзя выполнять на главном потоке.
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching {
+                imageStorageManager.saveImageToLocal(uri)
+            }.onSuccess { path ->
+                _formUiState.update { it.copy(image = path) }
+            }.onFailure {
+                _notificationEvent.send(EventTemplateFormNotificationEvent.ImageLoadError)
+            }
+        }
     }
 
     private suspend fun isDataValid(): Boolean {

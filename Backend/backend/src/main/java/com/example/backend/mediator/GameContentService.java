@@ -84,10 +84,14 @@ public class GameContentService {
         contentTypeRepository.deleteById(id);
     }
 
-    /** Весь контент с флагом pinned для текущего пользователя. */
+    /** Весь контент с флагом pinned для текущего пользователя.
+     *  login == null означает анонимный запрос: весь контент возвращается с pinned = false. */
     public List<GameContentDto> getAll(String login) {
-        User user = findUser(login);
-        return gameContentRepository.findAllWithPinnedFlag(user.getId())
+        long userId = -1L; // для анонима LEFT JOIN не найдёт совпадений → pinned всегда false
+        if (login != null) {
+            userId = findUser(login).getId();
+        }
+        return gameContentRepository.findAllWithPinnedFlag(userId)
                 .stream()
                 .map(row -> toDto((GameContent) row[0], (Boolean) row[1]))
                 .toList();

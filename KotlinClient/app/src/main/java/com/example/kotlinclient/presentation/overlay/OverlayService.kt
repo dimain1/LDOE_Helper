@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.IBinder
 import android.view.Gravity
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -41,6 +42,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
@@ -56,6 +58,7 @@ import com.example.kotlinclient.ui.theme.KotlinClientTheme
 import com.example.kotlinclient.ui.theme.ServiceFloatingButtonColor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.math.roundToInt
@@ -91,6 +94,25 @@ class OverlayService : LifecycleService(), KoinComponent, SavedStateRegistryOwne
         controller = OverlayController(repository, templateRepository, alarmScheduler, session)
         _isRunning.value = true
         showFloatingButton()
+        observeSessionForAutoStop()
+    }
+
+    /**
+     * Останавливает сервис при выходе из аккаунта.
+     * drop(1) пропускает начальное значение StateFlow (null при холодном старте),
+     * реагируя только на последующий переход user → null.
+     */
+    private fun observeSessionForAutoStop() {
+        lifecycleScope.launch {
+            var wasLoggedIn = false
+            session.user.collect { user ->
+                if (user != null) {
+                    wasLoggedIn = true
+                } else if (wasLoggedIn) {
+                    stopSelf()
+                }
+            }
+        }
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -233,6 +255,7 @@ class OverlayService : LifecycleService(), KoinComponent, SavedStateRegistryOwne
         view.setContent {
             KotlinClientTheme {
                 val state by controller.state.collectAsState()
+                val currentUser by session.user.collectAsState()
 
                 // Лямбда, которая удаляет оверлей из WindowManager
                 val dismiss: () -> Unit = {
@@ -255,7 +278,17 @@ class OverlayService : LifecycleService(), KoinComponent, SavedStateRegistryOwne
                         when (state.screen) {
                             OverlayScreen.Menu -> OverlayMenuScreen(
                                 onEvents = { controller.openEvents() },
-                                onCreate = { controller.openCreate() },
+                                onCreate = {
+                                    if (currentUser != null) {
+                                        controller.openCreate()
+                                    } else {
+                                        Toast.makeText(
+                                            this@OverlayService,
+                                            "Войдите в аккаунт, чтобы создавать события",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                },
                                 onClose  = { controller.collapse(); dismiss() }
                             )
                             OverlayScreen.Events -> OverlayEventsScreen(

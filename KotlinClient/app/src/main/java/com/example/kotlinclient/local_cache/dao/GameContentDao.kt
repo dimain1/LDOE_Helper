@@ -71,4 +71,10 @@ interface GameContentDao {
 
     @Query("DELETE FROM game_content WHERE id NOT IN (:serverIds)")
     suspend fun deleteNotIn(serverIds: List<Long>)
+
+    @Query("SELECT local_image_path FROM game_content WHERE id = :id LIMIT 1")
+    suspend fun getLocalImagePath(id: Long): String?
+
+    @Query("UPDATE game_content SET local_image_path = :path WHERE id = :id")
+    suspend fun updateLocalImagePath(id: Long, path: String?)
 }

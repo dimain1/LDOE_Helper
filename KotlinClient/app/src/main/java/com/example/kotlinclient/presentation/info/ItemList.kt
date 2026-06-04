@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -60,8 +62,13 @@ fun ItemList(
                     .clickable(onClick = { onAction(InfoAction.OpenDialog(InfoDialogType.View(Items[item]))) })
             ) {
                 // Картинка предмета(Замениться на Image)
-                LocalImage(Items[item].image, Modifier.size(48.dp))
-
+                Box(
+                    modifier = Modifier
+                        .border(1.dp, colorScheme.outline, RoundedCornerShape(10.dp))
+                        .clip(RoundedCornerShape(10.dp))
+                ) {
+                    LocalImage(Items[item].image, Modifier.size(48.dp), size=48)
+                }
                 Spacer(Modifier.width(16.dp))
                 // Описание предмета
                 Column(
@@ -95,7 +102,14 @@ fun ItemList(
                     modifier = Modifier
                         .Authorized()
                         .size(32.dp)
-                        .clickable(onClick = {onAction(InfoAction.UpdateContentPin(Items[item].id, !Items[item].pinned))}),
+                        .clickable(onClick = {
+                            onAction(
+                                InfoAction.UpdateContentPin(
+                                    Items[item].id,
+                                    !Items[item].pinned
+                                )
+                            )
+                        }),
                     colorFilter = if (Items[item].pinned == false) null else ColorFilter.tint(
                         colorScheme.tertiary
                     )

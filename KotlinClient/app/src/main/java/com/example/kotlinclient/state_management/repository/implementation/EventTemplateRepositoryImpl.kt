@@ -1,5 +1,6 @@
 package com.example.kotlinclient.state_management.repository.implementation
 
+import com.example.kotlinclient.api_client.NetworkConfig
 import com.example.kotlinclient.local_cache.AppDatabase
 import com.example.kotlinclient.local_cache.converters.toEntity
 import com.example.kotlinclient.local_cache.converters.toModel
@@ -11,6 +12,7 @@ import com.example.kotlinclient.api_client.dto.EventTemplateUpdateRequest
 import com.example.kotlinclient.state_management.entity.EventTemplate
 import com.example.kotlinclient.state_management.repository.UserSessionProvider
 import com.example.kotlinclient.state_management.repository.interfaces.EventTemplateRepository
+import com.example.kotlinclient.state_management.utility.ImageStorageManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import okhttp3.MediaType.Companion.toMediaType
@@ -23,7 +25,8 @@ import java.io.File
 class EventTemplateRepositoryImpl(
     database: AppDatabase,
     private val session: UserSessionProvider,
-    private val api: ApiService
+    private val api: ApiService,
+    private val imageStorageManager: ImageStorageManager
 ) : EventTemplateRepository {
 
     private val templateDao = database.EventTemplateDao()
@@ -177,8 +180,10 @@ class EventTemplateRepositoryImpl(
 
         serverTemplates.forEach { dto ->
             val localId = templateDao.getLocalIdByServerId(dto.id, userId)
+
             if (localId == null) {
-                templateDao.createTemplate(
+                // Новый шаблон с сервера — создаём, затем скачиваем картинку
+                val newLocalId = templateDao.createTemplate(
                     EventTemplateEntity(
                         serverId = dto.id,
                         syncStatus = SyncStatus.SYNCED,
@@ -189,7 +194,9 @@ class EventTemplateRepositoryImpl(
                         duration = dto.duration
                     )
                 )
+                downloadAndSaveTemplateImage(newLocalId, dto.imageUrl)
             } else {
+                // Существующий шаблон — обновляем метаданные (local_image_path НЕ трогаем)
                 templateDao.updateByServerId(
                     serverId = dto.id,
                     userId = userId,
@@ -198,7 +205,21 @@ class EventTemplateRepositoryImpl(
                     imageUrl = dto.imageUrl,
                     duration = dto.duration
                 )
+                // Скачиваем картинку только если локального файла нет
+                val existingLocalPath = templateDao.getLocalImagePath(localId)
+                val hasValidLocalFile = existingLocalPath != null && File(existingLocalPath).exists()
+                if (!hasValidLocalFile) {
+                    downloadAndSaveTemplateImage(localId, dto.imageUrl)
+                }
             }
+        }
+    }
+
+    private suspend fun downloadAndSaveTemplateImage(localId: Long, imageUrl: String?) {
+        if (imageUrl == null) return
+        val fullUrl = NetworkConfig.imageUrl(imageUrl) ?: return
+        imageStorageManager.downloadFromUrl(fullUrl)?.let { localPath ->
+            templateDao.setLocalImagePath(localId, localPath)
         }
     }
 }

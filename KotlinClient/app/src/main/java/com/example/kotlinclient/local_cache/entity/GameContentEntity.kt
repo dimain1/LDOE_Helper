@@ -13,8 +13,13 @@ data class GameContentEntity(
     val name: String,
     val description: String?,
 
+    /** Серверный относительный URL (/images/xxx.jpg). */
     @ColumnInfo(name = "image")
     val imageUrl: String?,
+
+    /** Абсолютный путь к локально скачанному файлу. Заполняется при syncFromServer. */
+    @ColumnInfo(name = "local_image_path")
+    val localImagePath: String? = null,
 
     val attributes: Map<String, Any>?
 )

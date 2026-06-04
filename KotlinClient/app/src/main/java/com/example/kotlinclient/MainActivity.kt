@@ -15,7 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.kotlinclient.presentation.AppHeader
 import com.example.kotlinclient.presentation.MyBottomAppBar
 import com.example.kotlinclient.presentation.event.modal.EventViewDetails
-import com.example.kotlinclient.presentation.info.GameContentViewDetails
+import com.example.kotlinclient.presentation.info.modal.GameContentViewDetails
 import com.example.kotlinclient.presentation.navigation.ApplicationNavHost
 import com.example.kotlinclient.presentation.navigation.Routes
 import com.example.kotlinclient.presentation.navigation.navigateToEvent
@@ -47,85 +47,88 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
 
-            val userSession: UserSessionProvider = koinInject()
-            val sharedAppViewModel: SharedAppViewModel = koinViewModel()
-            val eventViewModel: EventViewModel = koinViewModel()
-            val infoViewModel: InfoViewModel = koinViewModel()
 
-            val sharedUiState = sharedAppViewModel.uiState.collectAsState()
+                val userSession: UserSessionProvider = koinInject()
+                val sharedAppViewModel: SharedAppViewModel = koinViewModel()
+                val eventViewModel: EventViewModel = koinViewModel()
+                val infoViewModel: InfoViewModel = koinViewModel()
 
-            // Глобальное состояние для userSession
-            CompositionLocalProvider(LocalUserSession provides userSession) {
-                // Основная тема приложения определяющая типографию и Цветовые схемы
-                KotlinClientTheme(sharedUiState.value.darkTheme) {
+                val sharedUiState = sharedAppViewModel.uiState.collectAsState()
 
-                    // Контроллер навигации осуществляющий переходы(Единственный экземпляр)
-                    val navController = rememberNavController()
+                // Глобальное состояние для userSession
+                CompositionLocalProvider(LocalUserSession provides userSession) {
+                    // Основная тема приложения определяющая типографию и Цветовые схемы
+                    KotlinClientTheme(sharedUiState.value.darkTheme) {
 
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val currentRoute = navBackStackEntry?.destination?.route
-                    // Путь к начальному экрану
-                    val startDestination = Routes.HomePage.route
-                    // Системная обёртка позволяющая получить информацию об системных оступах и их предусмотреть
-                    Scaffold(
-                        containerColor = colorScheme.primaryContainer,
-                        topBar = { AppHeader() },
-                        bottomBar = {
-                            MyBottomAppBar(
-                                currentRoute,
-                                { navigateToHome(navController) },
-                                { navigateToInfo(navController) },
-                                { navigateToEvent(navController) },
-                                { navigateToTemplate(navController) },
-                                { navigateToSettings(navController) },
-                            )
-                        }
-                    ) { paddingValues ->
+                        // Контроллер навигации осуществляющий переходы(Единственный экземпляр)
+                        val navController = rememberNavController()
 
-                        if (sharedUiState.value.eventDetailsDialogUiState.initialData != null
-                            && sharedUiState.value.eventDetailsDialogUiState.showDialog
-                        ) {
-                            EventViewDetails(
-                                onAction = { action -> eventViewModel.onAction(action) },
-                                onDismiss = {
-                                    eventViewModel.onAction(EventAction.DismissDialog)
-                                    sharedAppViewModel.onAction(
-                                        SharedAction.ChangeDialogVisibility(
-                                            false,
-                                            DialogType.EventViewDetailsDialog(null)
+                        val navBackStackEntry by navController.currentBackStackEntryAsState()
+                        val currentRoute = navBackStackEntry?.destination?.route
+                        // Путь к начальному экрану
+                        val startDestination = Routes.HomePage.route
+                        // Системная обёртка позволяющая получить информацию об системных оступах и их предусмотреть
+                        Scaffold(
+                            containerColor = colorScheme.primaryContainer,
+                            topBar = { AppHeader() },
+                            bottomBar = {
+                                MyBottomAppBar(
+                                    currentRoute,
+                                    { navigateToHome(navController) },
+                                    { navigateToInfo(navController) },
+                                    { navigateToEvent(navController) },
+                                    { navigateToTemplate(navController) },
+                                    { navigateToSettings(navController) },
+                                )
+                            }
+                        ) { paddingValues ->
+
+                            if (sharedUiState.value.eventDetailsDialogUiState.initialData != null
+                                && sharedUiState.value.eventDetailsDialogUiState.showDialog
+                            ) {
+                                EventViewDetails(
+                                    onAction = { action -> eventViewModel.onAction(action) },
+                                    onDismiss = {
+                                        eventViewModel.onAction(EventAction.DismissDialog)
+                                        sharedAppViewModel.onAction(
+                                            SharedAction.ChangeDialogVisibility(
+                                                false,
+                                                DialogType.EventViewDetailsDialog(null)
+                                            )
                                         )
-                                    )
-                                },
-                                sharedUiState.value.eventDetailsDialogUiState.initialData
-                            )
-                        }
+                                    },
+                                    sharedUiState.value.eventDetailsDialogUiState.initialData
+                                )
+                            }
 
-                        if (sharedUiState.value.gameContentDetailsDialogUiState.initialData != null
-                            && sharedUiState.value.gameContentDetailsDialogUiState.showDialog
-                        ) {
-                            GameContentViewDetails(
-                                onDismiss = {
-                                    sharedAppViewModel.onAction(
-                                        SharedAction.ChangeDialogVisibility(
-                                            false,
-                                            DialogType.GameContentViewDetailsDialog(null)
+                            if (sharedUiState.value.gameContentDetailsDialogUiState.initialData != null
+                                && sharedUiState.value.gameContentDetailsDialogUiState.showDialog
+                            ) {
+                                GameContentViewDetails(
+                                    onDismiss = {
+                                        sharedAppViewModel.onAction(
+                                            SharedAction.ChangeDialogVisibility(
+                                                false,
+                                                DialogType.GameContentViewDetailsDialog(null)
+                                            )
                                         )
-                                    )
-                                    infoViewModel.onAction(InfoAction.DismissDialog)
-                                },
-                                initialData = sharedUiState.value.gameContentDetailsDialogUiState.initialData
+                                        infoViewModel.onAction(InfoAction.DismissDialog)
+                                    },
+                                    initialData = sharedUiState.value.gameContentDetailsDialogUiState.initialData
+                                )
+                            }
+                            ApplicationNavHost(
+                                navController,
+                                startDestination,
+                                paddingValues,
+                                sharedAppViewModel
                             )
                         }
-                        ApplicationNavHost(
-                            navController,
-                            startDestination,
-                            paddingValues,
-                            sharedAppViewModel
-                        )
                     }
                 }
             }
-        }
+
+
     }
 }
 
