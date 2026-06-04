@@ -9,7 +9,7 @@ import com.example.kotlinclient.api_client.dto.LoginRequest
 import com.example.kotlinclient.api_client.dto.RefreshRequest
 import com.example.kotlinclient.api_client.dto.RegisterRequest
 import com.example.kotlinclient.api_client.dto.UpdateUserRequest
-import com.example.kotlinclient.presentation.utility.EventAlarmScheduler
+import com.example.kotlinclient.state_management.utility.EventAlarmScheduler
 import com.example.kotlinclient.state_management.repository.interfaces.AuthRepository
 import com.example.kotlinclient.state_management.repository.interfaces.SharedPreferencesRepository
 

@@ -1,14 +1,11 @@
-package com.example.kotlinclient.presentation.utility
+package com.example.kotlinclient.state_management.utility
 
+import android.R
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.content.Intent
 import android.os.Build
-import android.provider.Settings
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import com.example.kotlinclient.state_management.entity.Event
 
 object NotificationHelper {
 
@@ -29,7 +26,7 @@ object NotificationHelper {
         }
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(R.drawable.ic_dialog_info)
             .setContentTitle("Событие завершено")
             .setContentText("Событие: ${eventName} Завершено")
             .setPriority(NotificationCompat.PRIORITY_HIGH)

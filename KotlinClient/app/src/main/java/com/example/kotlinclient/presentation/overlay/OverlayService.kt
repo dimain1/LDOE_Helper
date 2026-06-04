@@ -48,7 +48,7 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.example.kotlinclient.MainActivity
 import com.example.kotlinclient.R
-import com.example.kotlinclient.presentation.utility.EventAlarmScheduler
+import com.example.kotlinclient.state_management.utility.EventAlarmScheduler
 import com.example.kotlinclient.state_management.repository.UserSessionProvider
 import com.example.kotlinclient.state_management.repository.interfaces.EventRepository
 import com.example.kotlinclient.state_management.repository.interfaces.EventTemplateRepository
@@ -67,20 +67,14 @@ class OverlayService : LifecycleService(), KoinComponent, SavedStateRegistryOwne
         val isRunning: StateFlow<Boolean> = _isRunning
     }
 
-    // ── SavedState ────────────────────────────────────────────────────────────
-
     private val savedStateRegistryController = SavedStateRegistryController.create(this)
     override val savedStateRegistry: SavedStateRegistry
         get() = savedStateRegistryController.savedStateRegistry
-
-    // ── Window management ────────────────────────────────────────────────────
 
     private lateinit var windowManager: WindowManager
     private lateinit var composeView: ComposeView
     private lateinit var params: WindowManager.LayoutParams
     private var overlayView: ComposeView? = null
-
-    // ── DI ───────────────────────────────────────────────────────────────────
 
     private val repository:       EventRepository         by inject()
     private val templateRepository: EventTemplateRepository by inject()
@@ -88,10 +82,6 @@ class OverlayService : LifecycleService(), KoinComponent, SavedStateRegistryOwne
     private val session:          UserSessionProvider      by inject()
 
     private lateinit var controller: OverlayController
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Lifecycle
-    // ─────────────────────────────────────────────────────────────────────────
 
     override fun onCreate() {
         super.onCreate()
@@ -117,10 +107,6 @@ class OverlayService : LifecycleService(), KoinComponent, SavedStateRegistryOwne
         controller.clear()
         super.onDestroy()
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Floating button
-    // ─────────────────────────────────────────────────────────────────────────
 
     private fun showFloatingButton() {
         params = WindowManager.LayoutParams(
@@ -223,10 +209,6 @@ class OverlayService : LifecycleService(), KoinComponent, SavedStateRegistryOwne
             if (parent == null) windowManager.addView(this, params)
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Expanded overlay window
-    // ─────────────────────────────────────────────────────────────────────────
 
     private fun showOverlay() {
         if (overlayView != null) return

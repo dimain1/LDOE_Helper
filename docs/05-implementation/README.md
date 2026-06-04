@@ -85,12 +85,12 @@ UserRepository (Foundation)  ──→  User (Entity)
 
 | Зависимость | Статус |
 |-------------|--------|
-| `AuthController` → `AuthService` | ✅ C → M |
-| `AuthController` → `JwtService` | ✅ C → M |
-| `AuthService` → `UserRepository` | ✅ M → F |
-| `AuthService` → `User`, `UserRole`, `RefreshToken` | ✅ M → E |
-| `UserRepository` → `User` | ✅ F → E |
-| `JwtFilter` → `JwtService` | ✅ сквозной → M |
+| `AuthController` → `AuthService` |  C → M |
+| `AuthController` → `JwtService` |  C → M |
+| `AuthService` → `UserRepository` |  M → F |
+| `AuthService` → `User`, `UserRole`, `RefreshToken` |  M → E |
+| `UserRepository` → `User` |  F → E |
+| `JwtFilter` → `JwtService` |  сквозной → M |
 
 ---
 
@@ -164,12 +164,12 @@ Event (Entity) — возвращается как localId: Long
 
 | Зависимость | Статус |
 |-------------|--------|
-| `EventScreen` → `EventViewModel` | ✅ P → C |
-| `EventViewModel` → `EventRepository` (интерфейс) | ✅ C → M (через абстракцию) |
-| `EventRepositoryImpl` → `EventDao` | ✅ M → F |
-| `EventRepositoryImpl` → `ApiService` | ✅ M → F |
-| `EventRepositoryImpl` → `Event` | ✅ M → E |
-| `EventDao` → `EventEntity` | ✅ F → E (Room-сущность) |
+| `EventScreen` → `EventViewModel` |  P → C |
+| `EventViewModel` → `EventRepository` (интерфейс) |  C → M (через абстракцию) |
+| `EventRepositoryImpl` → `EventDao` |  M → F |
+| `EventRepositoryImpl` → `ApiService` |  M → F |
+| `EventRepositoryImpl` → `Event` |  M → E |
+| `EventDao` → `EventEntity` |  F → E (Room-сущность) |
 
 ### Инверсия зависимостей
 
@@ -187,21 +187,6 @@ val repositoryModule = module {
 
 ---
 
-## Отклонение от канонической структуры
-
-В пакете `presentation/utility/` размещены компоненты с инфраструктурной ответственностью:
-
-| Класс | Формальный слой по пакету | Фактическая ответственность |
-|-------|--------------------------|----------------------------|
-| `EventAlarmScheduler` | Presentation | Foundation — управление `AlarmManager` |
-| `EventFinishReceiver` | Presentation | Foundation — `BroadcastReceiver` по сигналу будильника |
-| `BootReceiver` | Presentation | Foundation — восстановление будильников после перезагрузки |
-| `NotificationHelper` | Presentation | Foundation — `NotificationManager` |
-| `ImageStorageManager` | Presentation | Foundation — файловая система устройства |
-
-**Обоснование:** перечисленные классы требуют Android `Context` (доступ к системным сервисам), который в Android SDK традиционно передаётся через Presentation-уровень. Принцип однонаправленных зависимостей при этом не нарушается: `EventViewModel` (Control) получает `EventAlarmScheduler` через инжекцию зависимостей (`notificationModule`), не создавая его напрямую.
-
----
 
 ## Сводная таблица соответствия
 

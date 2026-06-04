@@ -48,10 +48,6 @@ import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
-// ─────────────────────────────────────────────────────────────────────────────
-// DateTimePicker  —  промежуточное окно с выбором даты и времени (два ряда)
-// ─────────────────────────────────────────────────────────────────────────────
-
 @Composable
 fun OverlayDateTimePickerModal(
     title: String,
@@ -72,7 +68,6 @@ fun OverlayDateTimePickerModal(
 
         Spacer(Modifier.height(16.dp))
 
-        // ── Строка выбора даты ────────────────────────────────────────────────
         Text(
             "Дата",
             style = Typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
@@ -106,7 +101,6 @@ fun OverlayDateTimePickerModal(
 
         Spacer(Modifier.height(16.dp))
 
-        // ── Строка выбора времени ─────────────────────────────────────────────
         Text(
             "Время",
             style = Typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
@@ -151,10 +145,6 @@ fun OverlayDateTimePickerModal(
         }
     }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// TemplatePicker
-// ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
 fun OverlayTemplatePickerModal(
@@ -253,10 +243,6 @@ fun OverlayTemplatePickerModal(
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// DatePicker
-// ─────────────────────────────────────────────────────────────────────────────
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OverlayDatePickerModal(
@@ -323,10 +309,6 @@ fun OverlayDatePickerModal(
         }
     }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// TimePicker
-// ─────────────────────────────────────────────────────────────────────────────
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

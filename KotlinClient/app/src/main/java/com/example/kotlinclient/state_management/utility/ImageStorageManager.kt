@@ -1,4 +1,4 @@
-package com.example.kotlinclient.presentation.utility
+package com.example.kotlinclient.state_management.utility
 
 import android.content.Context
 import android.net.Uri

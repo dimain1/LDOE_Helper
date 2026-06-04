@@ -41,12 +41,12 @@
             android:foregroundServiceType="specialUse" />
 
         <receiver
-            android:name=".presentation.utility.EventFinishReceiver"
+            android:name=".state_management.utility.EventFinishReceiver"
             android:enabled="true"
             android:exported="false" />
 
         <receiver
-            android:name=".presentation.utility.BootReceiver"
+            android:name=".state_management.utility.BootReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>

@@ -1,4 +1,4 @@
-package com.example.kotlinclient.presentation.utility
+package com.example.kotlinclient.state_management.utility
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -23,7 +23,7 @@ class BootReceiver : BroadcastReceiver(), KoinComponent {
 
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action
-        // Обрабатываем стандартную перезагрузку и быстрое включение (Xiaomi/MIUI)
+
         if (action != Intent.ACTION_BOOT_COMPLETED &&
             action != "android.intent.action.QUICKBOOT_POWERON") return
 
@@ -31,12 +31,11 @@ class BootReceiver : BroadcastReceiver(), KoinComponent {
         val sharedPrefs: SharedPreferencesRepository by inject()
 
         val userId = sharedPrefs.getLongByKey("user_id")
-        if (userId == -1L) return          // пользователь не залогинен — нечего восстанавливать
+        if (userId == -1L) return
 
         val alarmScheduler = EventAlarmScheduler(context)
         val nowMillis = Instant.now().toEpochMilli()
 
-        // Синхронный запрос допустим здесь, т.к. allowMainThreadQueries() выставлен в AppDatabase
         val activeEvents = database.EventDao().getActiveEventsSync(userId, nowMillis)
 
         activeEvents.forEach { entity ->

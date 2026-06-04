@@ -1,11 +1,10 @@
-package com.example.kotlinclient.presentation.utility
+package com.example.kotlinclient.state_management.utility
 
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.example.kotlinclient.state_management.repository.interfaces.SharedPreferencesRepository
-import org.koin.compose.koinInject
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 

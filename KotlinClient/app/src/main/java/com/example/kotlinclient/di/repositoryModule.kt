@@ -2,8 +2,8 @@ package com.example.kotlinclient.di
 
 import com.example.kotlinclient.api_client.ApiService
 import com.example.kotlinclient.api_client.TokenStorage
-import com.example.kotlinclient.presentation.utility.EventAlarmScheduler
-import com.example.kotlinclient.presentation.utility.ImageStorageManager
+import com.example.kotlinclient.state_management.utility.EventAlarmScheduler
+import com.example.kotlinclient.state_management.utility.ImageStorageManager
 import com.example.kotlinclient.state_management.repository.implementation.AuthRepositoryImpl
 import com.example.kotlinclient.state_management.repository.implementation.ContentTypeRepositoryImpl
 import com.example.kotlinclient.state_management.repository.implementation.EventRepositoryImpl

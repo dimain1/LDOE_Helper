@@ -1,13 +1,10 @@
-package com.example.kotlinclient.presentation.utility
+package com.example.kotlinclient.state_management.utility
 
 import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import android.provider.Settings
-import androidx.core.app.NotificationManagerCompat
 import com.example.kotlinclient.state_management.entity.Event
 import java.time.ZoneId
 

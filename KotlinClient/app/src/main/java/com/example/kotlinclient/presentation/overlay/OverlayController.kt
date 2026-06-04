@@ -1,6 +1,6 @@
 package com.example.kotlinclient.presentation.overlay
 
-import com.example.kotlinclient.presentation.utility.EventAlarmScheduler
+import com.example.kotlinclient.state_management.utility.EventAlarmScheduler
 import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.state_management.entity.EventTemplate
 import com.example.kotlinclient.state_management.repository.UserSessionProvider
