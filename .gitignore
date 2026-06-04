@@ -1,0 +1,41 @@
+# ─── Секреты и окружение ──────────────────────────────────────────────────────
+.env
+
+# ─── Инструменты ──────────────────────────────────────────────────────────────
+.claude/
+
+# ─── Пустые / устаревшие папки ────────────────────────────────────────────────
+mobile/
+prev/
+
+# ─── Backend (Gradle / Spring Boot) ───────────────────────────────────────────
+Backend/backend/build/
+Backend/backend/.gradle/
+Backend/backend/out/
+Backend/backend/*.log
+Backend/backend/HELP.md
+
+# ─── Android / Kotlin Client ──────────────────────────────────────────────────
+KotlinClient/local.properties
+KotlinClient/.gradle/
+KotlinClient/build/
+KotlinClient/app/build/
+KotlinClient/**/*.apk
+KotlinClient/**/*.aab
+KotlinClient/**/*.ap_
+
+# ─── IDE ──────────────────────────────────────────────────────────────────────
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+*.swp
+*~
+
+# ─── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─── Загруженные файлы (runtime) ──────────────────────────────────────────────
+uploads/
