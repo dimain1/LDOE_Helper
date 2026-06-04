@@ -15,9 +15,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
@@ -30,6 +32,9 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
+
+    @Spy
+    private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Mock
     private UserRepository userRepository;
@@ -115,7 +120,7 @@ class AuthServiceTest {
     @Test
     void register_newLogin_savesUserAndReturnsIt() {
         when(userRepository.findByLogin("newUser")).thenReturn(Optional.empty());
-        when(userRoleRepository.findById(1L)).thenReturn(Optional.of(role));
+        when(userRoleRepository.findByName("ADMIN")).thenReturn(Optional.of(role));
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         RegisterRequest req = new RegisterRequest();
@@ -149,7 +154,6 @@ class AuthServiceTest {
     @Test
     void register_defaultRoleNotFound_throwsInternalServerError() {
         when(userRepository.findByLogin("newUser")).thenReturn(Optional.empty());
-        when(userRoleRepository.findById(1L)).thenReturn(Optional.empty());
 
         RegisterRequest req = new RegisterRequest();
         req.setLogin("newUser");

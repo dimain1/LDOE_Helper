@@ -134,8 +134,5 @@ ER-диаграмма (Entity-Relationship) отображает таблицы 
 
 ## Диаграмма
 
-> Диаграмма требует обновления: добавить таблицы `refresh_tokens` и `user_pinned_content`; в `events` заменить `trigger_at`/`status` на `start_time`/`end_time`; в `settings` показать `preferences JSONB` вместо отдельных колонок.
-
 ![ER-диаграмма](./images/ER-diagram.png)
 
-PlantUML-исходник: [`diagrams/er-diagram.puml`](./diagrams/er-diagram.puml)

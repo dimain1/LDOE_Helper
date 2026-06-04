@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 @Service
 public class GameContentService {
 
+    private static final String ALL_TYPE_NAME = "All";
+
     private final ImageStorageService imageStorageService;
     private final GameContentRepository gameContentRepository;
     private final ContentTypeRepository contentTypeRepository;
@@ -45,7 +47,7 @@ public class GameContentService {
     @PostConstruct
     @Transactional
     public void ensureAllTypeExists() {
-        contentTypeRepository.findByName("All").orElseGet(() -> {
+        contentTypeRepository.findByName(ALL_TYPE_NAME).orElseGet(() -> {
             ContentType allType = new ContentType();
             allType.setName("All");
             return contentTypeRepository.save(allType);
@@ -76,7 +78,7 @@ public class GameContentService {
     public void deleteType(Long id) {
         ContentType type = contentTypeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Тип не найден: " + id));
-        if ("All".equals(type.getName())) {
+        if (ALL_TYPE_NAME.equals(type.getName())) {
             throw new RuntimeException("Тип 'All' нельзя удалить");
         }
         contentTypeRepository.deleteById(id);
@@ -102,13 +104,9 @@ public class GameContentService {
         content.setImageUrl(imagePath);
         content.setAttributes(request.getAttributes());
 
-        // Группа "All" всегда присутствует — находим или создаём
-        ContentType allType = contentTypeRepository.findByName("All")
-                .orElseGet(() -> {
-                    ContentType newAll = new ContentType();
-                    newAll.setName("All");
-                    return contentTypeRepository.save(newAll);
-                });
+        // Группа "All" всегда присутствует — гарантируется @PostConstruct ensureAllTypeExists()
+        ContentType allType = contentTypeRepository.findByName(ALL_TYPE_NAME)
+                .orElseThrow(() -> new RuntimeException("Системный тип '" + ALL_TYPE_NAME + "' не найден"));
 
         Set<ContentType> types = new java.util.HashSet<>();
         types.add(allType);

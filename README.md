@@ -1,281 +1,203 @@
-<<<<<<< HEAD
-# [Название курсового проекта]
+# LDOE-Helper
 
 **Автор:** [ФИО]  
 **Группа:** [номер]  
-**Траектория:** [Desktop / Web / Mobile / Enterprise]  
+**Траектория:** Мобильная  
 **Дата начала:** [ДД.ММ.ГГГГ]  
 **Дата сдачи:** [ДД.ММ.ГГГГ]
-```
-
-## Описание проекта
-
-[2-3 предложения о том, что делает система]
-
-**Пример:**  
-Система управления мероприятиями (Event Management System) — это веб-приложение для организации и проведения мероприятий. Позволяет организаторам создавать мероприятия, управлять регистрацией участников и формировать отчёты.
-
-```
-##  Траектория выполнения
-
-- [x] **Веб-разработка** (React + Spring Boot)
-- [ ] Десктоп
-- [ ] Мобильная
-- [ ] Enterprise
-
-```
-
-## Технологический стек
-
-| Компонент       |            Технология              |
-|-----------------|------------------------------------|
-| Бэкенд          | Java 17, Spring Boot 3, PostgreSQL |
-| Фронтенд        | React 18, TypeScript, Axios        |
-| API             | REST, OpenAPI (Swagger)            |
-| Безопасность    | JWT, BCrypt                        |
-| Сборка          | Maven, Vite                        |
-| Контейнеризация | Docker (опционально)               |
-| Инструменты     | Git, Postman, JaCoCo, SonarQube    |
-
-```
-
-##  Требования к окружению
-
-| Требование           | Версия |
-|----------------------|--------|
-| Java JDK             |   17+  |
-| Node.js              |   18+  |
-| PostgreSQL           |   15+  |
-| Maven                |   3.8+ |
-| Docker (опционально) |   20+  |
-
-
-
-## Установка и запуск
-
-### 1. Клонирование репозитория
-
-
-```bash
-git clone https://github.com/username/course-project.git
-cd course-project
-
-```
-
-### 2. Запуск бэкенда
-
-```bash
-cd backend
-./mvnw spring-boot:run
-
-
-Сервер запустится на http://localhost:8080
-
-Swagger UI: http://localhost:8080/swagger-ui.html
-
-```
-### 3. Запуск фронтенда
-
-```bash
-cd frontend
-npm install
-npm run dev
-
-
-Приложение откроется на http://localhost:5173
-```
- ### 4. Запуск через Docker (опциональной) 
- 
-```bash
-docker-compose up -d
-
-```
- ### 5. API Endpoints
-
-Базовый URL: http://localhost:8080/api
-
-
-|  Метод |         Эндпоинт      | Описание                   |    Доступ   |
-|--------|-----------------------|----------------------------|-------------|
-| POST   | /auth/login           | Вход в систему             | Публичный   |
-| POST   | /auth/register        | Регистрация пользователя   | Публичный   |
-| GET    | /events               | Список мероприятий         | USER, ADMIN |
-| GET    | /events/{id}          | Детали мероприятия         | USER, ADMIN |
-| POST   | /events               | Создание мероприятия       | ADMIN       |
-| PUT    | /events/{id}          | Обновление мероприятия     | ADMIN       |
-| DELETE | /events/{id}          | Удаление мероприятия       | ADMIN       |
-| POST   | /events/{id}/register | Регистрация на мероприятие | USER        |
-| GET    | /users/me             | Профиль пользователя       | USER        |
-
-Полная документация API: [Swagger UI](http://localhost:8080/swagger-ui.html)  
-Postman коллекция: docs/09-api/postman-collection.json
-
-
-
-### 6. Структура документации
-
-Вся документация находится в папке [docs/](docs/):
-
-
- [00-project-charter/](docs/00-project-charter/) 
-| Паспорт проекта, IDEF0, BUC, SWOT, ROI   | 
-| [01-requirements/](docs/01-requirements/)       
-| Use Case, Domain Model, трассировка      | 
-| [02-architecture/](docs/02-architecture/)       
-| PCMEF, ADR, интерфейсы                   | 
-| [03-database/](docs/03-database/)               
-| ER-диаграмма, DDL, ORM                   | 
-| [04-detailed-design/](docs/04-detailed-design/) 
-| Sequence диаграммы, спецификация методов | 
-| [05-implementation/](docs/05-implementation/)  
-| Реализация слоёв                         | 
-| [06-testing/](docs/06-testing/)                
-| Тест-планы, JaCoCo, Postman              | 
-| [07-refactoring/](docs/07-refactoring/)        
-| «Запахи кода», Data Mapper, Identity Map | 
-| [08-ui/](docs/08-ui/)                          
-| Скриншоты интерфейсов                    | 
-| [09-api/](docs/09-api/)                        
-| OpenAPI, Swagger                         | 
-| [10-deployment/](docs/10-deployment/)          
-| Docker, CI/CD, администрирование         | 
-| [11-user-guide/](docs/11-user-guide/)          
-| Руководство пользователя                 | 
-| [12-final-report/](docs/12-final-report/)       
-| Пояснительная записка, презентация       | 
-
-
-
- ### 7.Архитектура (PCMEF)
-
-Система построена на архитектурном паттерне PCMEF (Presentation-Control-Mediator-Entity-Foundation).
-
-Распределение слоёв:
-
-|       Слой       |    Расположение |     Ответственность          |
-|------------------|-----------------|------------------------------|
-| Presentation (P) | React (браузер) | UI, отображение, ввод данных |
-| Control (C)      | Spring Boot     | REST API, валидация DTO      |
-| Mediator (M)     | Spring Boot     | Бизнес-логика, транзакции    |
-| Entity (E)       | Spring Boot     | JPA-сущности                 |
-| Foundation (F)   | Spring Boot     | Репозитории, доступ к БД     |
-
-![Диаграмма пакетов PCMEF](docs/02-architecture/diagrams/package-diagram.png)
-
-Ключевые ADR:  
-- [ADR-001: Выбор архитектурного паттерна](docs/02-architecture/adr/adr-001.md)  
-- [ADR-002: Выбор базы данных и ORM](docs/02-architecture/adr/adr-002.md)  
-- [ADR-003: Стратегия аутентификации](docs/02-architecture/adr/adr-003.md)
 
 ---
 
- ### 8. Статистика разработки
-
- Git метрики
-
-|          Метрика |                  Значение        |
-|---------------------------|-------------------------|
-| Всего коммитов            | 47                      |
-| Период разработки         | 01.03.2026 – 30.05.2026 |
-| Средняя частота           | 2.9 коммита/неделю      |
-| Покрытие тестами (JaCoCo) | 42%                     |
-
- График активности
-
-![Commit Activity](docs/images/git-commit-activity.png)
-
-Рисунок 1 — Активность коммитов в течение семестра
-
- Тепловая карта
-
-![Punch Card](docs/images/git-punch-card.png)
-
-Рисунок 2 — Распределение коммитов по дням и часам
-
-
-
- ### 9. Авторы
-
-- [Фамилия Имя] — разработчик, документация  
-  Группа [номер], email: [email], GitHub: [username]
-
-
-
- ## Лицензия
-
-MIT License
-Этот проект распространяется под лицензией MIT. Подробности в файле [LICENSE](LICENSE).
-
-
-
-
- 🔗 Полезные ссылки
-
-- [Репозиторий проекта](https://github.com/username/course-project)
-- [Документация (docs/)](docs/)
-- [Swagger UI](http://localhost:8080/swagger-ui.html)
-- [Postman коллекция](docs/09-api/postman-collection.json)
-
-
-
-=======
-# [Название курсового проекта]
-
-**Автор:** [ФИО]  
-**Группа:** [номер]  
-**Траектория:** [Desktop / Web / Mobile / Enterprise]  
-**Дата начала:** [ДД.ММ.ГГГГ]  
-**Дата сдачи:** [ДД.ММ.ГГГГ]
-
-
 ## Описание проекта
 
-[2-3 предложения о том, что делает система]
+LDOE-Helper — мобильное Android-приложение с серверной частью для игроков в Last Day on Earth: Survival. Система позволяет создавать игровые события с таймерами обратного отсчёта, управлять шаблонами повторяющихся действий и обращаться к базе игровых знаний прямо во время игры через плавающий overlay-виджет. Серверная часть обеспечивает синхронизацию данных между устройствами и хранение игрового контента.
 
-**Пример:**  
-Система управления мероприятиями (Event Management System) — это веб-приложение для организации и проведения мероприятий. Позволяет организаторам создавать мероприятия, управлять регистрацией участников и формировать отчёты.
+---
 
+## Траектория выполнения
 
-##  Траектория выполнения
-
-- [x] **Веб-разработка** (React + Spring Boot)
+- [ ] Веб-разработка
 - [ ] Десктоп
-- [ ] Мобильная
+- [x] **Мобильная** (Android + Spring Boot)
 - [ ] Enterprise
 
-
+---
 
 ## Технологический стек
 
-| Компонент       |            Технология              |
-|-----------------|------------------------------------|
-| Бэкенд          | Java 17, Spring Boot 3, PostgreSQL |
-| Фронтенд        | React 18, TypeScript, Axios        |
-| API             | REST, OpenAPI (Swagger)            |
-| Безопасность    | JWT, BCrypt                        |
-| Сборка          | Maven, Vite                        |
-| Контейнеризация | Docker (опционально)               |
-| Инструменты     | Git, Postman, JaCoCo, SonarQube    |
+| Компонент | Технология |
+|-----------|-----------|
+| Мобильный клиент | Kotlin, Jetpack Compose, Room, Retrofit, Koin |
+| Бэкенд | Java 17, Spring Boot 4.0.6, Spring Security |
+| База данных | PostgreSQL 15, Hibernate 7, Spring Data JPA |
+| Локальная БД (клиент) | Room (SQLite) |
+| API | REST, OpenAPI / Swagger (SpringDoc) |
+| Безопасность | JWT (JJWT), BCrypt |
+| Сборка | Gradle 9.x (backend), Gradle (Android) |
+| Контейнеризация | Docker, Docker Compose |
+| Тестирование | JUnit 5 (Jupiter 6), Mockito 5, AssertJ, JaCoCo |
 
+---
 
+## Требования к окружению
 
-##  Требования к окружению
+| Требование | Версия |
+|-----------|--------|
+| Java JDK | 17+ |
+| Docker Desktop | 20+ |
+| Docker Compose | 2.x |
+| Android Studio | Koala+ |
+| Android SDK | API 26+ |
 
-| Требование           | Версия |
-|----------------------|--------|
-| Java JDK             |   17+  |
-| Node.js              |   18+  |
-| PostgreSQL           |   15+  |
-| Maven                |   3.8+ |
-| Docker (опционально) |   20+  |
-
-
+---
 
 ## Установка и запуск
 
 ### 1. Клонирование репозитория
 
 ```bash
-git clone https://github.com/username/course-project.git
-cd course-project
->>>>>>> 600ac1be3a62f5ffb8a548f4fae21b4978cd2dd3
+git clone https://github.com/username/ldoe-helper.git
+cd ldoe-helper
+```
+
+### 2. Настройка окружения
+
+Создайте файл `.env` в корне проекта (или используйте существующий):
+
+```env
+DB_PORT=5432
+DB_NAME=LDOE_helper
+DB_USERNAME=test_role
+DB_PASSWORD=admin
+SERVER_PORT=8080
+JWT_SECRET=my_super_secret_key_which_must_be_at_least_32_chars_long
+JWT_ACCESS_EXPIRATION_MS=1200000
+JWT_REFRESH_EXPIRATION_MS=604800000
+```
+
+### 3. Сборка и запуск через Docker Compose
+
+```bash
+# Сборка JAR
+cd Backend/backend
+./gradlew bootJar
+cd ../..
+
+# Запуск всех сервисов
+docker-compose up --build -d
+```
+
+После запуска:
+- **API:** `http://localhost:8080`
+- **Swagger UI:** `http://localhost:8080/swagger-ui.html`
+
+### 4. Запуск только базы данных (для разработки)
+
+```bash
+docker-compose up -d db
+# Backend запускается из IDE или ./gradlew bootRun
+```
+
+### 5. Сборка мобильного приложения
+
+Откройте папку `KotlinClient` в Android Studio и соберите APK через меню **Build → Build APK**.
+
+Укажите IP сервера в `NetworkConfig.kt` перед сборкой.
+
+---
+
+## API Endpoints
+
+Базовый URL: `http://localhost:8080`
+
+| Метод | Эндпоинт | Описание | Доступ |
+|-------|---------|---------|--------|
+| POST | `/auth/register` | Регистрация | Публичный |
+| POST | `/auth/login` | Вход, выдача токенов | Публичный |
+| POST | `/auth/logout` | Выход | Публичный |
+| POST | `/auth/refresh` | Обновление токенов | Публичный |
+| GET | `/events` | Список событий | USER, ADMIN |
+| POST | `/events` | Создать событие | USER, ADMIN |
+| PUT | `/events/{id}` | Обновить событие | USER, ADMIN |
+| DELETE | `/events/{id}` | Удалить событие | USER, ADMIN |
+| GET | `/templates` | Список шаблонов | USER, ADMIN |
+| POST | `/templates` | Создать шаблон | USER, ADMIN |
+| GET | `/content` | Игровой контент | USER, ADMIN |
+| POST | `/content` | Создать контент | **ADMIN** |
+| GET | `/content/types` | Типы контента | USER, ADMIN |
+| POST | `/content/{id}/pin` | Закрепить контент | USER, ADMIN |
+| GET | `/users/me` | Профиль пользователя | USER, ADMIN |
+
+Полная документация: [Swagger UI](http://localhost:8080/swagger-ui.html)
+
+---
+
+## Структура документации
+
+Вся документация находится в папке [`docs/`](docs/):
+
+| Раздел | Содержание |
+|--------|-----------|
+| [`00-project-charter/`](docs/00-project-charter/) | Паспорт проекта, IDEF0, BUC, SWOT, ROI |
+| [`01-requirements/`](docs/01-requirements/) | Use Case, Domain Model, трассировка требований |
+| [`02-architecture/`](docs/02-architecture/) | PCMEF, ADR, интерфейсы, arc42 |
+| [`03-database/`](docs/03-database/) | ER-диаграмма, DDL, ORM-маппинг |
+| [`04-detailed-design/`](docs/04-detailed-design/) | Sequence-диаграммы, спецификация методов |
+| [`05-implementation/`](docs/05-implementation/) | Реализация слоёв PCMEF |
+| [`06-testing/`](docs/06-testing/) | Тест-классы, JaCoCo, результаты (90 тестов) |
+| [`07-refactoring/`](docs/07-refactoring/) | Запахи кода, Data Mapper, Identity Map |
+| [`08-ui/`](docs/08-ui/) | Скриншоты мобильного интерфейса |
+| [`09-api/`](docs/09-api/) | OpenAPI, Swagger, примеры запросов |
+| [`10-deployment/`](docs/10-deployment/) | Docker Compose, Dockerfile, инструкция запуска |
+| [`11-user-guide/`](docs/11-user-guide/) | Руководство пользователя и администратора |
+| [`12-final-report/`](docs/12-final-report/) | Пояснительная записка, презентация |
+
+---
+
+## Архитектура (PCMEF)
+
+Система построена на архитектурном паттерне PCMEF (Presentation – Control – Mediator – Entity – Foundation).
+
+### Серверная часть
+
+| Слой | Пакет | Ответственность |
+|------|-------|----------------|
+| Presentation | `dto/` | DTO для API-границы |
+| Control | `control/` | REST-контроллеры |
+| Mediator | `mediator/` | Сервисы бизнес-логики |
+| Entity | `entity/` | JPA-сущности |
+| Foundation | `foundation/repository/` | Spring Data JPA репозитории |
+
+### Мобильная часть
+
+| Слой | Пакет | Ответственность |
+|------|-------|----------------|
+| Presentation | `presentation/` | Jetpack Compose экраны и компоненты |
+| Control | `state_management/viewModel/` | ViewModel, управление состоянием |
+| Mediator | `state_management/repository/` | Репозитории (Room + Retrofit) |
+| Entity | `state_management/entity/` | Доменные модели |
+| Foundation | `local_cache/` + `api_client/` | Room DAO, Retrofit API-клиент |
+
+Подробнее: [PCMEF-диаграмма](docs/02-architecture/pcmef-diagram.md) · [ADR-001](docs/02-architecture/adr/adr-001.md)
+
+---
+
+## Тестирование
+
+| Метрика | Значение |
+|---------|---------|
+| Всего тестов | 90 |
+| Упавших тестов | 0 |
+| Покрытие инструкций (JaCoCo) | 72% |
+| Покрытие методов | 80% |
+| Покрытие `mediator/` | 92% |
+| Покрытие `control/` | 88% |
+
+Подробнее: [06-testing](docs/06-testing/)
+
+---
+
+## Авторы
+
+- [Фамилия Имя] — разработчик, документация  
+  Группа [номер] · email: [email] · GitHub: [username]

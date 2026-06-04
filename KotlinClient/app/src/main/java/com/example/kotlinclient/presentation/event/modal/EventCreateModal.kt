@@ -176,6 +176,12 @@ fun EventCreateModal(
                     .then(clearFocusModifier)
             ) {
 
+                Text(
+                    "Шаблон", style = Typography.bodyLarge, color = colorScheme.primary
+                )
+
+                Spacer(Modifier.height(5.dp))
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier

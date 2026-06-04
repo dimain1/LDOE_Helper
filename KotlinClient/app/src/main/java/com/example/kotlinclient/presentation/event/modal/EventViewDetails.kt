@@ -39,12 +39,14 @@ import com.example.kotlinclient.state_management.entity.Event
 import com.example.kotlinclient.state_management.viewModel.EventAction
 import com.example.kotlinclient.ui.theme.Typography
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
 fun EventViewDetails(onAction: (EventAction) -> Unit, onDismiss: () -> Unit, initialData: Event?) {
 
     val titleVS = rememberScrollState()
     val descVS = rememberScrollState()
+    val dateFormatter = DateTimeFormatter.ofPattern("d MMMM HH:mm:ss", Locale("ru"))
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -119,11 +121,9 @@ fun EventViewDetails(onAction: (EventAction) -> Unit, onDismiss: () -> Unit, ini
                         Spacer(Modifier.width(10.dp))
 
                         Text(
-                            text = "${initialData?.startTime?.dayOfMonth} ${initialData?.startTime?.month} ${
-                                initialData?.startTime?.format(
-                                    DateTimeFormatter.ofPattern("HH:mm:ss")
-                                )
-                            }", style = Typography.bodyMedium, color = colorScheme.secondary
+                            text = initialData?.startTime?.format(dateFormatter) ?: "",
+                            style = Typography.bodyMedium,
+                            color = colorScheme.secondary
                         )
                     }
 
@@ -141,11 +141,9 @@ fun EventViewDetails(onAction: (EventAction) -> Unit, onDismiss: () -> Unit, ini
                         Spacer(Modifier.width(10.dp))
 
                         Text(
-                            text = "${initialData?.endTime?.dayOfMonth} ${initialData?.endTime?.month} ${
-                                initialData?.endTime?.format(
-                                    DateTimeFormatter.ofPattern("HH:mm:ss")
-                                )
-                            }", style = Typography.bodyMedium, color = colorScheme.secondary
+                            text = initialData?.endTime?.format(dateFormatter) ?: "",
+                            style = Typography.bodyMedium,
+                            color = colorScheme.secondary
                         )
                     }
 

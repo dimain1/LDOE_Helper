@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.NoSuchElementException;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -24,23 +24,25 @@ import jakarta.transaction.Transactional;
 @Service
 public class AuthService {
 
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
+    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
     private final JwtService jwtService;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    public AuthService(UserRepository userRepository,
+    public AuthService(PasswordEncoder passwordEncoder,
+                       UserRepository userRepository,
                        UserRoleRepository userRoleRepository,
                        JwtService jwtService,
                        RefreshTokenRepository refreshTokenRepository) {
+        this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.userRoleRepository = userRoleRepository;
         this.jwtService = jwtService;
         this.refreshTokenRepository = refreshTokenRepository;
     }
 
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         // 401 — пользователь не найден или пароль неверен
         User user;
@@ -56,6 +58,10 @@ public class AuthService {
 
         String accessToken  = jwtService.generateAccessToken(user.getLogin());
         String refreshToken = jwtService.generateRefreshToken(user.getLogin());
+
+        // Удаляем старый refresh-токен пользователя (если есть), чтобы избежать
+        // нарушения уникального constraint по user_id при повторном входе
+        refreshTokenRepository.deleteByUser(user);
 
         refreshTokenRepository.save(
             new RefreshToken(user, refreshToken, Instant.now().plusSeconds(7L * 24 * 60 * 60))
