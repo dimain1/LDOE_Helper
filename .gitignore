@@ -7,6 +7,7 @@
 # ─── Пустые / устаревшие папки ────────────────────────────────────────────────
 mobile/
 prev/
+unpacked_note/
 
 # ─── Backend (Gradle / Spring Boot) ───────────────────────────────────────────
 Backend/backend/build/
@@ -14,6 +15,7 @@ Backend/backend/.gradle/
 Backend/backend/out/
 Backend/backend/*.log
 Backend/backend/HELP.md
+Backend/backend/BOOT-INF/
 
 # ─── Android / Kotlin Client ──────────────────────────────────────────────────
 KotlinClient/local.properties

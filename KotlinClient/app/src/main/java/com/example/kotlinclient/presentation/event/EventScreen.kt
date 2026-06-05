@@ -126,7 +126,9 @@ fun EventScreen(
                 Text(
                     text = "Уведомления о событиях",
                     style = Typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                    color = colorScheme.primary
+                    color = colorScheme.primary,
+                    maxLines= 2,
+                    modifier=Modifier.weight(1f)
                 )
 
                 Spacer(Modifier.width(16.dp))
@@ -150,17 +152,26 @@ fun EventScreen(
                             onAction(EventAction.OpenDialog(EventDialogType.Create))
                         }
                     }
+                    ,
                 )
                 {
                     // Иконка внутри кнопки
                     Icon(Icons.Default.Add, "Add", tint = Color.White)
                     Spacer(Modifier.width(12.dp))
                     // Текст внутри кнопки
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "Создать событие",
+                        text = "Создать",
                         style = Typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
+                        color = Color.White,
                     )
+                        Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "Событие",
+                        style = Typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                        color = Color.White,
+                    )
+                    }
                 }
             }
 

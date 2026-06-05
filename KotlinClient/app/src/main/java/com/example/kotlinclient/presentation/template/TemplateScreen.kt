@@ -121,8 +121,13 @@ fun TemplateScreen(
                 Text(
                     text = "Шаблоны событий",
                     style = Typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                    color = colorScheme.primary
+                    color = colorScheme.primary,
+                    maxLines= 2,
+                    modifier=Modifier.weight(1f)
                 )
+
+                Spacer(Modifier.width(16.dp))
+
                 // Кнопка экрана(Создание шаблона)
                 Button(
                     colors = ButtonDefaults.buttonColors(
@@ -148,11 +153,19 @@ fun TemplateScreen(
                     Icon(Icons.Default.Add, "Add", tint = Color.White)
                     Spacer(Modifier.width(12.dp))
                     // Текст внутри кнопки
-                    Text(
-                        text = "Новый шаблон",
-                        style = Typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
-                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "Новый",
+                            style = Typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                            color = Color.White,
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = "Шаблон",
+                            style = Typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                            color = Color.White,
+                        )
+                    }
                 }
             }
 
