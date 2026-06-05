@@ -1,16 +1,16 @@
 # LDOE-Helper
 
-**Автор:** [ФИО]  
-**Группа:** [номер]  
-**Траектория:** Мобильная  
-**Дата начала:** [ДД.ММ.ГГГГ]  
-**Дата сдачи:** [ДД.ММ.ГГГГ]
+**Автор:** Черников Дмитрий Дмитриевич  
+**Группа:** [ПИЖ-б-о-23-2]  
+**Траектория:** Mobile  
+**Дата начала:** 01.02.2026  
+**Дата сдачи:** 29.05.2026
 
 ---
 
 ## Описание проекта
 
-LDOE-Helper — мобильное Android-приложение с серверной частью для игроков в Last Day on Earth: Survival. Система позволяет создавать игровые события с таймерами обратного отсчёта, управлять шаблонами повторяющихся действий и обращаться к базе игровых знаний прямо во время игры через плавающий overlay-виджет. Серверная часть обеспечивает синхронизацию данных между устройствами и хранение игрового контента.
+LDOE-Helper — мобильное Android-приложение с серверной частью для игроков в *Last Day On Earth: Survival*. Система решает две ключевые проблемы: отсутствие структурированного справочника по игровым механикам, ресурсам и локациям, а также отсутствие гибкого инструмента отслеживания внутриигровых событий. Приложение позволяет создавать таймеры с push-уведомлениями и обращаться к базе знаний прямо во время игры через плавающий overlay-виджет.
 
 ---
 
@@ -32,7 +32,7 @@ LDOE-Helper — мобильное Android-приложение с сервер�
 | База данных | PostgreSQL 15, Hibernate 7, Spring Data JPA |
 | Локальная БД (клиент) | Room (SQLite) |
 | API | REST, OpenAPI / Swagger (SpringDoc) |
-| Безопасность | JWT (JJWT), BCrypt |
+| Безопасность | JWT (JJWT 0.11.5), BCrypt |
 | Сборка | Gradle 9.x (backend), Gradle (Android) |
 | Контейнеризация | Docker, Docker Compose |
 | Тестирование | JUnit 5 (Jupiter 6), Mockito 5, AssertJ, JaCoCo |
@@ -46,8 +46,8 @@ LDOE-Helper — мобильное Android-приложение с сервер�
 | Java JDK | 17+ |
 | Docker Desktop | 20+ |
 | Docker Compose | 2.x |
-| Android Studio | Koala+ |
-| Android SDK | API 26+ |
+| Android Studio | 2023.x+ |
+| Android SDK | API 29+ (Android 10) |
 
 ---
 
@@ -56,13 +56,13 @@ LDOE-Helper — мобильное Android-приложение с сервер�
 ### 1. Клонирование репозитория
 
 ```bash
-git clone https://github.com/username/ldoe-helper.git
+git clone https://github.com/dimain1/LDOE_Helper.git
 cd ldoe-helper
 ```
 
 ### 2. Настройка окружения
 
-Создайте файл `.env` в корне проекта (или используйте существующий):
+Создайте файл `.env` в корне проекта:
 
 ```env
 DB_PORT=5432
@@ -100,9 +100,8 @@ docker-compose up -d db
 
 ### 5. Сборка мобильного приложения
 
-Откройте папку `KotlinClient` в Android Studio и соберите APK через меню **Build → Build APK**.
-
-Укажите IP сервера в `NetworkConfig.kt` перед сборкой.
+Откройте папку `KotlinClient` в Android Studio и соберите APK через **Build → Build APK**.  
+Перед сборкой укажите IP сервера в `NetworkConfig.kt`.
 
 ---
 
@@ -122,11 +121,17 @@ docker-compose up -d db
 | DELETE | `/events/{id}` | Удалить событие | USER, ADMIN |
 | GET | `/templates` | Список шаблонов | USER, ADMIN |
 | POST | `/templates` | Создать шаблон | USER, ADMIN |
+| PUT | `/templates/{id}` | Обновить шаблон | USER, ADMIN |
+| DELETE | `/templates/{id}` | Удалить шаблон | USER, ADMIN |
 | GET | `/content` | Игровой контент | USER, ADMIN |
 | POST | `/content` | Создать контент | **ADMIN** |
 | GET | `/content/types` | Типы контента | USER, ADMIN |
+| POST | `/content/types` | Создать тип | **ADMIN** |
+| DELETE | `/content/types/{id}` | Удалить тип | **ADMIN** |
 | POST | `/content/{id}/pin` | Закрепить контент | USER, ADMIN |
+| DELETE | `/content/{id}/pin` | Открепить контент | USER, ADMIN |
 | GET | `/users/me` | Профиль пользователя | USER, ADMIN |
+| PUT | `/users/me` | Обновить профиль | USER, ADMIN |
 
 Полная документация: [Swagger UI](http://localhost:8080/swagger-ui.html)
 
@@ -150,7 +155,7 @@ docker-compose up -d db
 | [`09-api/`](docs/09-api/) | OpenAPI, Swagger, примеры запросов |
 | [`10-deployment/`](docs/10-deployment/) | Docker Compose, Dockerfile, инструкция запуска |
 | [`11-user-guide/`](docs/11-user-guide/) | Руководство пользователя и администратора |
-| [`12-final-report/`](docs/12-final-report/) | Пояснительная записка, презентация |
+| [`12-final-report/`](docs/12-final-report/) | Пояснительная записка, ТЗ |
 
 ---
 
@@ -168,11 +173,11 @@ docker-compose up -d db
 | Entity | `entity/` | JPA-сущности |
 | Foundation | `foundation/repository/` | Spring Data JPA репозитории |
 
-### Мобильная часть
+### Мобильный клиент
 
 | Слой | Пакет | Ответственность |
 |------|-------|----------------|
-| Presentation | `presentation/` | Jetpack Compose экраны и компоненты |
+| Presentation | `presentation/` | Jetpack Compose экраны |
 | Control | `state_management/viewModel/` | ViewModel, управление состоянием |
 | Mediator | `state_management/repository/` | Репозитории (Room + Retrofit) |
 | Entity | `state_management/entity/` | Доменные модели |
@@ -193,11 +198,38 @@ docker-compose up -d db
 | Покрытие `mediator/` | 92% |
 | Покрытие `control/` | 88% |
 
-Подробнее: [06-testing](docs/06-testing/)
+Подробнее: [06-testing/](docs/06-testing/)
+
+---
+
+## Статистика разработки
+
+| Метрика | Значение |
+|---------|---------|
+| Всего коммитов | 64 |
+| Период разработки | 01.02.2026 – 29.05.2026 |
+| Средняя частота | ~9 коммитов/неделю |
+| Покрытие тестами (JaCoCo) | 72% |
+| Всего тестов | 90 (0 упавших) |
 
 ---
 
 ## Авторы
 
-- [Фамилия Имя] — разработчик, документация  
-  Группа [номер] · email: [email] · GitHub: [username]
+**Черников Дмитрий Дмитриевич** — разработчик, документация  
+Группа [ПИЖ-б-о-23-2] · Email: [dima.chernikov.053@mail.ru] · GitHub: [dimain1]
+
+---
+
+## Лицензия
+
+MIT License — проект распространяется под лицензией MIT. Подробности в файле [LICENSE](LICENSE).
+
+---
+
+## Полезные ссылки
+
+- [Репозиторий проекта](https://github.com/[username]/ldoe-helper)
+- [Документация](docs/)
+- [Swagger UI](http://localhost:8080/swagger-ui.html)
+- [Пояснительная записка](docs/12-final-report/)

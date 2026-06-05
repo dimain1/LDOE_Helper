@@ -7,7 +7,7 @@ package com.example.kotlinclient.api_client
  * Для устройства: BASE_URL = "http://<IP_машины>:8080/"
  */
 object NetworkConfig {
-    const val BASE_URL = "http://192.168.0.10:8080/"
+    const val BASE_URL = "http://10.0.2.2:8080/"
 
     /**
      * Строит полный URL для изображения.
