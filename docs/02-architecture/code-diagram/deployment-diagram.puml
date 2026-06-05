@@ -1,0 +1,23 @@
+@startuml
+node "VPS (Linux)" {
+    node "Docker Compose" {
+        component "ldoe-backend\n(Spring Boot :8080)" as BE
+        database "ldoe-db\n(postgres:15 :5432)" as DB
+        storage "pgdata\n(volume)" as PG
+        storage "uploads\n(volume)" as UP
+    }
+    BE --> DB
+    DB --> PG
+    BE --> UP
+}
+
+node "Android Device" {
+    component "LDOE-Helper APK" as APK
+}
+
+cloud "Google Play" as GP
+
+GP --> APK : distribution
+APK --> BE : REST HTTP/JSON :8080
+
+@enduml

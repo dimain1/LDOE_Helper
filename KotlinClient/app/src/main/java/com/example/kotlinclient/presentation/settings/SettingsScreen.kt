@@ -1,0 +1,439 @@
+package com.example.kotlinclient.presentation.settings
+
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import android.provider.Settings
+import android.widget.Toast
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationManagerCompat
+import com.example.kotlinclient.state_management.viewModel.SettingsAction
+import com.example.kotlinclient.state_management.viewModel.SettingsDialogType
+import com.example.kotlinclient.state_management.viewModel.SettingsFormAction
+import com.example.kotlinclient.state_management.viewModel.SettingsFormUiState
+import com.example.kotlinclient.state_management.viewModel.SettingsUiState
+import com.example.kotlinclient.ui.theme.Typography
+
+
+@Composable
+fun SettingsScreen(
+    uiState: SettingsUiState,
+    onAction: (SettingsAction) -> Unit,
+    formUiState: SettingsFormUiState,
+    paddingValues: PaddingValues
+) {
+
+    val scrollState: ScrollState = rememberScrollState()
+    val textFieldState = rememberTextFieldState("")
+    val context = LocalContext.current
+
+
+    val dialog = uiState.activeDialog
+
+    if (dialog != null) {
+        SettingsModalDialog(
+            uiState,
+            formUiState,
+            {
+                onAction(SettingsAction.OnFormAction(SettingsFormAction.ClearUiState))
+                onAction(SettingsAction.DismissDialog)
+            },
+            onAction
+        )
+    }
+
+    // Контейнер всего экрана
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+    )
+    {
+
+        HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
+
+        // Основной контейнер экрана
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .verticalScroll(scrollState)
+                .background(color = colorScheme.secondaryContainer)
+                .padding(horizontal = 16.dp)
+        ) {
+            Spacer(Modifier.height(16.dp))
+            // Контейнер пользователя
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(colorScheme.surface, shape = RoundedCornerShape(10))
+                    .border(1.dp, colorScheme.outline, shape = RoundedCornerShape(10))
+                    .padding(24.dp)
+            )
+            {
+                //Контейнер иконки
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .background(colorScheme.tertiary, shape = CircleShape)
+                ) {
+                    Icon(
+                        Icons.Default.Person,
+                        "Иконка пользователя",
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .size(48.dp)
+
+                    )
+                }
+
+                Spacer(Modifier.width(16.dp))
+
+                //Столбец инфорации о пользователе
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    if (uiState.user == null) {
+                        Button(
+                            onClick = {
+                                onAction(SettingsAction.OnFormAction(SettingsFormAction.ClearUiState))
+                                onAction(SettingsAction.OpenDialog(SettingsDialogType.Authorization))
+                            }, colors = ButtonDefaults.buttonColors(
+                                containerColor = colorScheme.tertiary,
+                                contentColor = Color.White
+                            ), modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Войти", color = Color.White)
+                        }
+
+                        Spacer(Modifier.height(12.dp))
+
+                        Button(
+                            onClick = {
+                                onAction(SettingsAction.OnFormAction(SettingsFormAction.ClearUiState))
+                                onAction(SettingsAction.OpenDialog(SettingsDialogType.Registration))
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorScheme.tertiary,
+                                contentColor = Color.White
+                            ), modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Зарегистрироваться", color = Color.White)
+                        }
+
+                    } else {
+                        Text(
+                            text = uiState.user.login,
+                            style = Typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                            color = colorScheme.primary
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            text = uiState.user.email,
+                            style = Typography.bodyMedium,
+                            color = colorScheme.secondary
+                        )
+                    }
+                }
+            }
+
+            SettingsBlockTitle("Аккаунт")
+
+            SettingsBlock()
+            {
+                SettingsBlockRow(
+                    Icons.Default.Person,
+                    "Редактировать профиль",
+                    onRowClick = {
+                        if (uiState.user == null) {
+                            Toast.makeText(
+                                context,
+                                "Сначала нужно войти в аккаунт",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            onAction(SettingsAction.OnFormAction(SettingsFormAction.LoadUiState))
+                            onAction(SettingsAction.OpenDialog(SettingsDialogType.EditProfile))
+                        }
+                    }
+                )
+                {
+                    Icon(
+                        Icons.Default.KeyboardArrowRight,
+                        "Перейти",
+                        modifier = Modifier.size(16.dp),
+                        tint = colorScheme.secondary
+                    )
+                }
+
+                HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
+
+                SettingsBlockRow(
+                    Icons.Default.ExitToApp,
+                    "Выйти из аккаунта",
+                    true,
+                    onRowClick = { onAction(SettingsAction.ExitProfile) }
+                ) {}
+            }
+
+            SettingsBlockTitle("Параметры")
+
+            SettingsBlock()
+            {
+                SettingsBlockRow(Icons.Default.Clear, "Уведомления")
+                {
+                    CustomSwitcher(
+                        uiState.notification,
+                        {
+                            if(!checkNotificationPermission(context)){
+
+                            }
+                            else{
+                                onAction(SettingsAction.SwitchPreference("notification"))
+                            }
+
+                        })
+                }
+                HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
+                SettingsBlockRow(Icons.Default.Clear, "Звуковые эффекты")
+                {
+                    CustomSwitcher(
+                        uiState.sound,
+                        { onAction(SettingsAction.SwitchPreference("sound")) })
+                }
+                HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
+                SettingsBlockRow(Icons.Default.Clear, "Язык")
+                {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Русский",
+                            style = Typography.bodyMedium,
+                            color = colorScheme.secondary
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Icon(
+                            Icons.Default.KeyboardArrowRight,
+                            "Перейти",
+                            modifier = Modifier.size(16.dp),
+                            tint = colorScheme.secondary
+                        )
+                    }
+                }
+                HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
+                SettingsBlockRow(Icons.Default.Clear, "Тёмная тема")
+                {
+                    CustomSwitcher(
+                        uiState.theme,
+                        { onAction(SettingsAction.SwitchPreference("theme")) })
+                }
+            }
+
+
+            SettingsBlockTitle("О приложении")
+
+            SettingsBlock()
+            {
+                SettingsBlockRow(Icons.Default.Info, "Версия")
+                {
+                    Text("1.0.0", style = Typography.bodyMedium, color = colorScheme.secondary)
+                }
+                HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
+                SettingsBlockRow(Icons.Default.Info, "Условия использования")
+                {
+                    Icon(
+                        Icons.Default.KeyboardArrowRight,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = colorScheme.secondary
+                    )
+                }
+                HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
+                SettingsBlockRow(Icons.Default.Info, "Конфиденциальность")
+                {
+                    Icon(
+                        Icons.Default.KeyboardArrowRight,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = colorScheme.secondary
+                    )
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+        }
+
+        HorizontalDivider(thickness = 1.dp, color = colorScheme.outline)
+    }
+
+}
+
+// Заголовок блока настроек
+@Composable
+fun SettingsBlockTitle(title: String) {
+    Spacer(Modifier.height(28.dp))
+    // Заголовок Account-пунктов настроек
+    Text(
+        text = title,
+        style = Typography.bodyMedium,
+        color = colorScheme.secondary,
+        modifier = Modifier.padding(start = 8.dp)
+    )
+
+    Spacer(Modifier.height(16.dp))
+}
+
+// Строка блока настроек
+@Composable
+fun SettingsBlockRow(
+    icon: ImageVector,
+    text: String,
+    isImportant: Boolean = false,
+    onRowClick: () -> Unit = {},
+    content: @Composable () -> Unit
+) {
+
+    val importantColor = if (isImportant) colorScheme.tertiary else colorScheme.secondary
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = { onRowClick() })
+            .padding(all = 16.dp)
+
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(icon, text, modifier = Modifier.size(32.dp), tint = importantColor)
+            Spacer(Modifier.width(12.dp))
+            Text(
+                text,
+                style = Typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                color = if (isImportant) importantColor else colorScheme.primary
+            )
+        }
+
+        content()
+    }
+}
+
+// Контейнер блока настроек
+@Composable
+fun SettingsBlock(content: @Composable () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(colorScheme.surface, RoundedCornerShape(10))
+            .border(1.dp, colorScheme.outline, RoundedCornerShape(10))
+
+    )
+    {
+        content()
+    }
+}
+
+// Кастомный переключатель
+@Composable
+fun CustomSwitcher(checked: Boolean, onClick: () -> Unit = {}) {
+    val width by animateDpAsState(
+        targetValue = if (checked) 20.dp else 0.dp,
+        animationSpec = spring(dampingRatio = 2f)
+    )
+    Row(
+        modifier = Modifier
+            .background(
+                color = if (checked) colorScheme.tertiary else colorScheme.outline,
+                shape = RoundedCornerShape(50)
+            )
+            .clickable(onClick = {
+                onClick()
+            })
+            .width(50.dp)
+            .padding(all = 5.dp)
+
+    ) {
+        Spacer(Modifier.width(width))
+        Box(
+            modifier = Modifier
+                .size(20.dp)
+                .background(color = colorScheme.primary, shape = CircleShape)
+
+        ) {}
+    }
+}
+
+fun checkNotificationPermission(context: Context): Boolean {
+    val notificationManager = NotificationManagerCompat.from(context)
+
+    if (!notificationManager.areNotificationsEnabled()) {
+
+        val intent = Intent().apply {
+            when {
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> {
+                    action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+                    putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                }
+
+                else -> {
+                    action = "android.settings.APP_NOTIFICATION_SETTINGS"
+                    putExtra("app_package", context.packageName)
+                    putExtra("app_uid", context.applicationInfo.uid)
+                }
+            }
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        context.startActivity(intent)
+        return false
+    }
+    return true
+}
+
+

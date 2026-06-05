@@ -1,0 +1,117 @@
+@startuml DomainModel
+skinparam classBackgroundColor  #EEF5FF
+skinparam classBorderColor      #4A90D9
+skinparam arrowColor            #4A90D9
+skinparam classAttributeIconSize 0
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam packageBackgroundColor #F8F9FA
+skinparam packageBorderColor    #AAAAAA
+
+hide methods
+hide stereotype
+
+' ═══════════════════════════════════════════════
+'  ПАКЕТ: Пользователь
+' ═══════════════════════════════════════════════
+package "Пользователь и роли" {
+
+    class User {
+        id           : Long
+        username     : String
+        email        : String
+        passwordHash : String
+    }
+
+    class UserRole {
+        id   : Long
+        name : String
+        ..
+        USER | ADMIN
+    }
+
+    class Settings {
+        id                   : Long
+        notificationsEnabled : Boolean
+        language             : String
+    }
+
+}
+
+' ═══════════════════════════════════════════════
+'  ПАКЕТ: Игровой контент
+' ═══════════════════════════════════════════════
+package "Игровой контент" {
+
+    class GameContent {
+        id          : Long
+        name        : String
+        description : String
+        imageUrl    : String
+        attributes  : JSON
+    }
+
+    class ContentType {
+        id   : Long
+        name : String
+    }
+
+    class UserPinnedContent << (A,#FFCCCC) association >> {
+        userId    : Long
+        contentId : Long
+    }
+
+}
+
+' ═══════════════════════════════════════════════
+'  ПАКЕТ: События
+' ═══════════════════════════════════════════════
+package "События и шаблоны" {
+
+    class EventTemplate {
+        id          : Long
+        name        : String
+        description : String
+        imageUrl    : String
+        duration    : Long
+    }
+
+    class Event {
+        id          : Long
+        name        : String
+        description : String
+        imageUrl    : String
+        startTime   : Instant
+        endTime     : Instant
+        templateId  : Long <<nullable>>
+    }
+
+}
+
+' ═══════════════════════════════════════════════
+'  СВЯЗИ
+' ═══════════════════════════════════════════════
+
+' Пользователь → Роль
+User "N" -right-> "1" UserRole        : имеет роль >
+
+' Пользователь → Настройки
+User "1" *-down- "1" Settings         : хранит >
+
+' Пользователь → Событие
+User "1" -right-> "0..*" Event        : владеет >
+
+' Пользователь → Шаблон
+User "1" -right-> "0..*" EventTemplate : создаёт >
+
+' Событие → Шаблон
+Event "0..*" -up-> "0..1" EventTemplate : основано на >
+
+' Пользователь ↔ Контент (закрепление)
+User       "1"    --> "0..*" UserPinnedContent : закрепляет >
+UserPinnedContent "0..*" --> "1" GameContent   : ссылается >
+
+' Контент ↔ Тип (M:N)
+GameContent "0..*" -right-> "1..*" ContentType : классифицируется >
+
+@enduml

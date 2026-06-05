@@ -1,0 +1,97 @@
+@startuml PCMEF
+
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam packageStyle rectangle
+
+skinparam package {
+    BackgroundColor #EEF5FF
+    BorderColor     #4A90D9
+    FontStyle       bold
+    FontSize        13
+}
+skinparam rectangle {
+    BackgroundColor #F0F0F0
+    BorderColor     #888888
+    FontStyle       bold
+    FontSize        14
+}
+skinparam component {
+    BackgroundColor #FFFFFF
+    BorderColor     #4A90D9
+    FontSize        11
+}
+skinparam note {
+    BackgroundColor #FFFDE7
+    BorderColor     #F57F17
+}
+skinparam arrow {
+    Color           #333333
+    FontSize        10
+}
+
+' ═══════════════════════════════════════════════════════
+'  МОБИЛЬНЫЙ КЛИЕНТ
+' ═══════════════════════════════════════════════════════
+rectangle "Mobile Client  (Android / Kotlin)" as Client {
+
+    package "Presentation\n(Jetpack Compose)" as P
+    package "ViewModel\n(Koin DI)" as VM
+    package "Repository\n(interface)" as Repo
+
+    package "Room Database\n(Local Cache)" as Room #D5F5E3
+    package "Retrofit\n(API Client)" as Ret #FDEBD0
+
+}
+
+' ═══════════════════════════════════════════════════════
+'  СЕРВЕР
+' ═══════════════════════════════════════════════════════
+rectangle "Server  (Spring Boot / Java 17)" as Server {
+
+    package "Security\nJwtFilter" as Sec #FADBD8
+
+    package "Control\n(REST Controllers)" as C
+    package "Mediator\n(Services)" as M
+
+    package "Entity\n(JPA Entities)" as E #FFFDE7
+    package "Foundation\n(JPA Repositories)" as F
+
+}
+
+' ═══════════════════════════════════════════════════════
+'  БАЗА ДАННЫХ
+' ═══════════════════════════════════════════════════════
+database "PostgreSQL 15" as DB #E8F8F5
+
+' ═══════════════════════════════════════════════════════
+'  СВЯЗИ — клиент
+' ═══════════════════════════════════════════════════════
+P    -down-> VM   : StateFlow / collectAsState
+VM   -down-> Repo : suspend fun / Flow
+Repo -down-> Room : Room DAO
+Repo -down-> Ret  : Retrofit interface
+
+' ═══════════════════════════════════════════════════════
+'  СВЯЗИ — клиент → сервер
+' ═══════════════════════════════════════════════════════
+Ret -right-> C : REST HTTP/JSON\n(Bearer JWT)
+
+' ═══════════════════════════════════════════════════════
+'  СВЯЗИ — сервер (Security — сквозной)
+' ═══════════════════════════════════════════════════════
+Sec .down.> C : <<cross-cutting>>\nJWT validation
+
+C -down-> M
+M -down-> F
+M -right-> E
+F -right-> E
+F -down-> DB
+
+note right of Sec
+  Выполняется до Control.
+  Валидирует Bearer-токен,
+  заполняет SecurityContext.
+end note
+
+@enduml

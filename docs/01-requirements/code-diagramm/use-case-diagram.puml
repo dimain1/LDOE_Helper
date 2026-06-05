@@ -1,0 +1,113 @@
+@startuml UseCase
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+skinparam usecase {
+    BackgroundColor #EEF5FF
+    BorderColor     #4A90D9
+    ArrowColor      #4A90D9
+    FontSize        11
+}
+skinparam actor {
+    BackgroundColor #FFFDE7
+    BorderColor     #F57F17
+    FontSize        13
+    FontStyle       bold
+}
+skinparam rectangle {
+    BackgroundColor #F8F9FA
+    BorderColor     #AAAAAA
+    FontStyle       bold
+}
+
+left to right direction
+
+actor "Пользователь" as User
+actor "Администратор" as Admin
+
+' Администратор расширяет Пользователя
+Admin -|> User
+
+' ═══════════════════════════════════════════════
+'  БЛОКИ ПОЛЬЗОВАТЕЛЯ
+' ═══════════════════════════════════════════════
+
+rectangle "Аутентификация" {
+    usecase "UC-010\nРегистрация"        as UC010
+    usecase "UC-011\nАвторизация"        as UC011
+    usecase "UC-012\nВыход из системы"   as UC012
+}
+
+rectangle "Игровой контент" {
+    usecase "UC-001\nПоиск информации"              as UC001
+    usecase "UC-002\nПросмотр детальной информации" as UC002
+    usecase "UC-018\nЗакрепить контент"             as UC018
+    usecase "UC-019\nОткрепить контент"             as UC019
+}
+
+rectangle "События" {
+    usecase "UC-013\nСписок событий"       as UC013
+    usecase "UC-003\nСоздать событие"      as UC003
+    usecase "UC-004\nРедактировать событие" as UC004
+    usecase "UC-005\nУдалить событие"      as UC005
+    usecase "UC-006\nПолучить уведомление" as UC006
+}
+
+rectangle "Шаблоны событий" {
+    usecase "UC-017\nСписок шаблонов"          as UC017
+    usecase "UC-014\nСоздать шаблон"           as UC014
+    usecase "UC-015\nРедактировать шаблон"     as UC015
+    usecase "UC-016\nУдалить шаблон"           as UC016
+}
+
+rectangle "Профиль" {
+    usecase "UC-020\nРедактировать профиль" as UC020
+}
+
+' ═══════════════════════════════════════════════
+'  БЛОКИ АДМИНИСТРАТОРА
+' ═══════════════════════════════════════════════
+
+rectangle "Управление контентом" {
+    usecase "UC-007\nДобавить контент"          as UC007
+    usecase "UC-008\nИзменить контент"          as UC008
+    usecase "UC-009\nУдалить контент"           as UC009
+    usecase "UC-021\nУправление типами контента" as UC021
+}
+
+' ═══════════════════════════════════════════════
+'  СВЯЗИ
+' ═══════════════════════════════════════════════
+
+User --> UC010
+User --> UC011
+User --> UC012
+
+User --> UC001
+User --> UC002
+User --> UC018
+User --> UC019
+UC001 ..> UC002 : <<include>>
+
+User --> UC013
+User --> UC003
+User --> UC004
+User --> UC005
+User --> UC006
+UC003 ..> UC014 : <<extend>>
+
+User --> UC017
+User --> UC014
+User --> UC015
+User --> UC016
+
+User --> UC020
+
+Admin --> UC007
+Admin --> UC008
+Admin --> UC009
+Admin --> UC021
+
+@enduml

@@ -1,0 +1,76 @@
+@startuml SD_002_CreateEvent
+
+skinparam sequenceMessageAlign center
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam sequence {
+    ArrowColor       #333333
+    ParticipantBackgroundColor #EEF5FF
+    ParticipantBorderColor #4A90D9
+    LifeLineBorderColor #AAAAAA
+    BoxBackgroundColor #F8F9FA
+}
+
+title SD-002 — Создание события (POST /events)
+
+actor       "Client\n(Android)"          as Client
+participant "JwtFilter"                  as Filter
+participant "JwtService"                 as JwtSvc
+participant "UserDetailsService"         as UDS
+participant "SecurityContext"            as SecCtx
+participant "EventController"            as Controller
+participant "EventService"               as Service
+participant "UserRepository"             as UserRepo
+participant "EventTemplateRepository"    as TplRepo
+participant "EventRepository"            as EventRepo
+
+Client -> Filter : POST /events\nAuthorization: Bearer <token>\n{EventCreateRequest}
+activate Filter
+
+Filter -> JwtSvc : extractLogin(token)
+activate JwtSvc
+JwtSvc --> Filter : "alice"
+deactivate JwtSvc
+
+Filter -> UDS : loadUserByUsername("alice")
+activate UDS
+UDS --> Filter : UserDetails
+deactivate UDS
+
+Filter -> SecCtx : setAuthentication(authToken)
+
+Filter -> Controller : filterChain.doFilter()
+deactivate Filter
+activate Controller
+
+Controller -> Service : create("alice", EventCreateRequest)
+activate Service
+
+Service -> UserRepo : findByLogin("alice")
+activate UserRepo
+UserRepo --> Service : User
+deactivate UserRepo
+
+opt request.templateId != null
+    Service -> TplRepo : findById(templateId)
+    activate TplRepo
+    TplRepo --> Service : EventTemplate
+    deactivate TplRepo
+end
+
+Service -> Service : new Event(\n  user, template, name,\n  startTime, endTime\n)
+
+Service -> EventRepo : save(event)
+activate EventRepo
+EventRepo --> Service : Event (с id)
+deactivate EventRepo
+
+Service -> Service : toDto(event) → EventDto
+
+Service --> Controller : EventDto
+deactivate Service
+
+Controller --> Client : 200 OK  {EventDto}
+deactivate Controller
+
+@enduml

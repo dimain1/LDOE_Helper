@@ -1,0 +1,82 @@
+@startuml SD_001_Login
+
+skinparam sequenceMessageAlign center
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam sequence {
+    ArrowColor      #333333
+    ActorBorderColor #4A90D9
+    ParticipantBackgroundColor #EEF5FF
+    ParticipantBorderColor #4A90D9
+    LifeLineBorderColor #AAAAAA
+    BoxBackgroundColor #F8F9FA
+}
+
+title SD-001 — Авторизация (POST /auth/login)
+
+actor       "Client\n(Android)"        as Client
+participant "JwtFilter"                as Filter
+participant "AuthController"           as Controller
+participant "AuthService"              as Service
+participant "UserRepository"           as UserRepo
+participant "BCrypt"                   as BCrypt
+participant "JwtService"               as JwtSvc
+participant "RefreshTokenRepository"   as TokenRepo
+
+Client -> Filter : POST /auth/login\n{login, password}
+activate Filter
+
+note right of Filter
+  Нет заголовка Authorization →
+  запрос пропускается без изменений
+end note
+
+Filter -> Controller : filterChain.doFilter()
+deactivate Filter
+activate Controller
+
+Controller -> Service : login(LoginRequest)
+activate Service
+
+Service -> UserRepo : findByLogin(login)
+activate UserRepo
+UserRepo --> Service : Optional<User>
+deactivate UserRepo
+
+alt Пользователь не найден
+    Service --> Controller : ResponseStatusException(401)
+    Controller --> Client  : 401 Unauthorized
+else Пользователь найден
+    Service -> BCrypt : matches(password, user.passwordHash)
+    activate BCrypt
+    BCrypt --> Service : boolean
+    deactivate BCrypt
+
+    alt Пароль неверный
+        Service --> Controller : ResponseStatusException(401)
+        Controller --> Client  : 401 Unauthorized
+    else Пароль верный
+        Service -> JwtSvc : generateAccessToken(login)
+        activate JwtSvc
+        JwtSvc --> Service : accessToken (TTL 20 мин)
+        deactivate JwtSvc
+
+        Service -> JwtSvc : generateRefreshToken(login)
+        activate JwtSvc
+        JwtSvc --> Service : refreshToken (TTL 7 дней)
+        deactivate JwtSvc
+
+        Service -> TokenRepo : save(RefreshToken{user, token, expiryDate})
+        activate TokenRepo
+        TokenRepo --> Service : RefreshToken
+        deactivate TokenRepo
+
+        Service --> Controller : AuthResponse{accessToken, refreshToken}
+        deactivate Service
+
+        Controller --> Client : 200 OK\n{accessToken, refreshToken}
+        deactivate Controller
+    end
+end
+
+@enduml
